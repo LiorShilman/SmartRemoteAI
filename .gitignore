@@ -1,0 +1,32 @@
+# --- secrets and device pairing material: NEVER commit ---
+.env
+.env.*
+!.env.example
+!frontend/.env.production
+certs/
+*.pem
+*.key
+*.lgkey
+backend/data/
+*.db
+*.sqlite*
+
+# --- build output, dependencies, runtime ---
+logs/
+frontend/node_modules/
+frontend/dist/
+backend/.venv/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+.claude/
+
+# --- editor / OS ---
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# TypeScript incremental build state
+*.tsbuildinfo
