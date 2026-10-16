@@ -1,6 +1,6 @@
 import { Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
-import { Home, Mic, Satellite, Settings as Cog, Tv2, TriangleAlert } from 'lucide-react'
+import { CircleHelp, Home, Mic, Satellite, Settings as Cog, Tv2, TriangleAlert } from 'lucide-react'
 import { Toasts } from '../components/ui/Primitives'
 import { KidsBanner } from '../components/KidsBanner'
 import { useMe } from '../pages/SecurityCards'
@@ -10,6 +10,7 @@ import Dashboard from '../pages/Dashboard'
 import RemotePage from '../pages/RemotePage'
 import VoiceAssistant from '../pages/VoiceAssistant'
 import Settings from '../pages/Settings'
+import Help from '../pages/Help'
 
 const NAV = [
   { to: '/', label: 'בית', Icon: Home },
@@ -60,6 +61,10 @@ export default function App() {
             <span className="relative"><Icon size={20} aria-hidden />{to === '/settings' && pending > 0 && <span aria-label={`${pending} בקשות זמן ממתינות`} className="absolute -top-1 -end-1 w-2.5 h-2.5 rounded-full bg-danger ring-2 ring-bg" />}</span> {label}
           </NavLink>
         ))}
+        <NavLink to="/help"
+          className={({ isActive }) => `mt-auto flex items-center gap-3 px-4 min-h-12 rounded-2xl no-underline text-text ${isActive ? 'bg-white/10 font-bold' : 'text-muted hover:bg-white/5'}`}>
+          <CircleHelp size={20} aria-hidden /> מדריך
+        </NavLink>
       </aside>
 
       <div className="flex-1 min-w-0 flex flex-col">
@@ -70,6 +75,10 @@ export default function App() {
             <div className="text-lg font-extrabold tracking-wide ltr">SMART REMOTE</div>
             <div className="text-xs text-muted">סלון</div>
           </div>
+          <NavLink to="/help" aria-label="מדריך ועזרה" title="מדריך ועזרה"
+            className={({ isActive }) => `grid h-11 w-11 place-items-center rounded-full border border-white/10 no-underline ${isActive ? 'bg-white/10 text-secondary' : 'text-muted'}`}>
+            <CircleHelp size={22} aria-hidden />
+          </NavLink>
         </header>
         <main className="flex-1 w-full max-w-5xl mx-auto px-4 pt-4"
           style={{ paddingBottom: 'calc(var(--nav-h) + var(--safe-b) + 28px)' }}>
@@ -83,6 +92,7 @@ export default function App() {
                 <Route path="/hot" element={<Navigate to="/box" replace />} />
                 <Route path="/voice" element={<VoiceAssistant />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/help" element={<Help />} />
               </Routes>
             </motion.div>
           </AnimatePresence>

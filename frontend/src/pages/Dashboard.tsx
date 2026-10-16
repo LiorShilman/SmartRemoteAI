@@ -3,6 +3,7 @@ import { History, Mic, Search } from 'lucide-react'
 import { DeviceCard } from '../components/devices/DeviceCard'
 import { NetworkMap } from '../components/devices/NetworkMap'
 import { UsageCard } from '../components/devices/UsageCard'
+import { WelcomeCard } from '../components/WelcomeCard'
 import { useIsAdmin } from './SecurityCards'
 import { Card, SectionTitle } from '../components/ui/Primitives'
 import { SelectableRow, SelectToolbar, useSelection } from '../components/ui/Selectable'
@@ -36,6 +37,8 @@ export default function Dashboard() {
           {mode === 'demo' ? 'אתה במצב הדגמה — אפשר לבחון את העיצוב ללא מכשירים.' : 'מצב המכשירים בבית, ושליטה בלחיצה.'}
         </p>
       </div>
+
+      <WelcomeCard />
 
       <Link to="/voice" className="glass flex items-center gap-3 px-4 min-h-14 no-underline text-text">
         <Search size={20} className="text-muted" aria-hidden />

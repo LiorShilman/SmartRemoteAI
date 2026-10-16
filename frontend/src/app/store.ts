@@ -24,6 +24,8 @@ interface State {
   enterAfterDigits: boolean
   /** instant: every digit is sent the moment it is pressed (like a remote). buffered: type a number, then press send. */
   keypadMode: 'instant' | 'buffered'
+  /** The one-time welcome card on the home screen has been dismissed. */
+  introSeen: boolean
   /** Which key pair the HOT box actually uses for channel +/-. Chosen by the user after trying them (Settings). */
   channelStepMode: ChannelStepMode
   favorites: Favorite[]
@@ -58,6 +60,7 @@ export const useApp = create<State>()(
       digitDelayMs: 350,
       enterAfterDigits: false, // the box collects digits itself and switches after a short pause; an extra OK can PAUSE the stream
       keypadMode: 'instant',
+      introSeen: false,
       channelStepMode: 'tracked',
       favorites: [],
       liveCaps: {},
@@ -98,7 +101,7 @@ export const useApp = create<State>()(
       // `demoCaps`, toasts and last command are session-only.
       partialize: (s) => ({
         mode: s.mode, token: s.token, volumeRole: s.volumeRole, selected: s.selected, digitDelayMs: s.digitDelayMs,
-        enterAfterDigits: s.enterAfterDigits, keypadMode: s.keypadMode, channelStepMode: s.channelStepMode, favorites: s.favorites, liveCaps: s.liveCaps, log: s.log,
+        enterAfterDigits: s.enterAfterDigits, keypadMode: s.keypadMode, introSeen: s.introSeen, channelStepMode: s.channelStepMode, favorites: s.favorites, liveCaps: s.liveCaps, log: s.log,
       }),
     },
   ),
