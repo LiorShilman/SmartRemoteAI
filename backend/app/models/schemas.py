@@ -8,6 +8,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from app.models.policy import Policy
+
 DeviceKind = Literal["hot", "lg"]
 Connection = Literal["connected", "disconnected", "unpaired"]
 Role = Literal["tv", "box"]
@@ -34,6 +36,8 @@ class Action(StrEnum):
     LAUNCH_APP = "launch_app"
     CHANNEL_STEP = "channel_step"  # emulated: current channel +/-1, sent as digits
     CHANNEL_LAST = "channel_last"  # emulated: back to the previous channel, sent as digits
+    TEXT = "text"      # type text into the focused field of the device
+    SEARCH = "search"  # open an app straight on its search results
     DIGITS = "digits"  # whole channel number as one server-side timed key sequence
 
 
@@ -41,10 +45,10 @@ class Action(StrEnum):
 HOT_KEYS = frozenset(
     {"DPAD_UP", "DPAD_DOWN", "DPAD_LEFT", "DPAD_RIGHT", "DPAD_CENTER", "BACK", "HOME", "MENU",
      "SETTINGS", "GUIDE", "INFO", "MEDIA_PLAY_PAUSE", "MEDIA_REWIND", "MEDIA_FAST_FORWARD",
-     "CHANNEL_UP", "CHANNEL_DOWN", "PAGE_UP", "PAGE_DOWN", "LAST_CHANNEL", *(f"KEYCODE_{d}" for d in range(10))}
+     "CHANNEL_UP", "CHANNEL_DOWN", "PAGE_UP", "PAGE_DOWN", "LAST_CHANNEL", "DEL", "ENTER", *(f"KEYCODE_{d}" for d in range(10))}
 )
 LG_KEYS = frozenset({"DPAD_UP", "DPAD_DOWN", "DPAD_LEFT", "DPAD_RIGHT", "DPAD_CENTER", "BACK", "HOME",
-                     "MENU", "QMENU", "EXIT", "INFO", "GUIDE", "INPUT_HUB", "RED", "GREEN", "YELLOW", "BLUE"})
+                     "MENU", "QMENU", "EXIT", "INFO", "GUIDE", "INPUT_HUB", "RED", "GREEN", "YELLOW", "BLUE", "DEL"})
 KEYS_BY_KIND: dict[str, frozenset[str]] = {"hot": HOT_KEYS, "lg": LG_KEYS}
 APPS = frozenset({"youtube", "netflix", "spotify"})  # logical names; each adapter maps them to its own app ids
 LG_APPS = APPS
@@ -52,6 +56,8 @@ INPUT_RE = re.compile(r"^HDMI_[1-4]$")
 DIGITS_RE = re.compile(r"^\d{1,4}$")
 LG_ONLY_ACTIONS = frozenset({Action.POWER_OFF, Action.POWER_ON, Action.SET_INPUT})
 MAX_SCHEDULE_S = 12 * 3600
+CONTROL_CHARS = re.compile(r"[\x00-\x1f\x7f]")
+MAX_TEXT, MAX_QUERY = 120, 80
 IPV4_RE = re.compile(r"^(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\.){3}(?:25[0-5]|2[0-4]\d|1?\d?\d)$")
 
 
@@ -63,6 +69,18 @@ def check_params(action: Action, p: dict) -> None:
         raise ValueError("set_input requires params.input like HDMI_1")
     if action is Action.LAUNCH_APP and p.get("app") not in LG_APPS:
         raise ValueError("launch_app requires a known params.app")
+    if action is Action.TEXT:
+        t = p.get("text")
+        if not isinstance(t, str) or not 1 <= len(t) <= MAX_TEXT or CONTROL_CHARS.search(t):
+            raise ValueError(f"text must be 1-{MAX_TEXT} printable characters")
+        if not isinstance(p.get("submit", False), bool):
+            raise ValueError("submit must be boolean")
+    if action is Action.SEARCH:
+        q = p.get("query")
+        if p.get("app") not in APPS:
+            raise ValueError("search requires a known params.app")
+        if not isinstance(q, str) or not q.strip() or len(q) > MAX_QUERY or CONTROL_CHARS.search(q):
+            raise ValueError(f"query must be 1-{MAX_QUERY} printable characters")
     if action is Action.CHANNEL_STEP and p.get("delta") not in (1, -1):
         raise ValueError("delta must be 1 or -1")
     if action in (Action.DIGITS, Action.CHANNEL_STEP, Action.CHANNEL_LAST):
@@ -231,6 +249,7 @@ class ChannelSet(BaseModel):
 class TokenCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     name: str = Field(min_length=1, max_length=40)
+    policy: Policy | None = None  # kids mode; None = a normal (unrestricted, non-admin) code
 
     @field_validator("name")
     @classmethod
@@ -255,6 +274,7 @@ class TokenOut(BaseModel):
     last_used_at: float | None = None
     last_ip: str | None = None
     revoked: bool = False
+    policy: dict | None = None
 
 
 class TokenCreated(TokenOut):
@@ -270,9 +290,56 @@ class AuditOut(BaseModel):
     detail: str
 
 
+class TokenPolicy(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    policy: Policy | None = None  # null removes the restrictions
+
+
+class TimeRequestCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    minutes: Literal[15, 30, 60, 120]
+
+
+class TimeDecide(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    approve: bool
+    minutes: int | None = Field(default=None, ge=5, le=240)  # a parent may grant less/more than was asked
+
+
+class TimeRequestOut(BaseModel):
+    id: str
+    token_id: str
+    token_name: str
+    minutes: int
+    status: Literal["pending", "approved", "denied"]
+    created_at: float
+    decided_at: float | None = None
+    granted_minutes: int = 0
+
+
+class UsageDay(BaseModel):
+    day: str
+    total_min: int
+    apps: dict[str, int]
+
+
+class UsageOut(BaseModel):
+    today_min: int
+    days: list[UsageDay]
+
+
 class MeOut(BaseModel):
     kind: Literal["admin", "device"]
     name: str
+    # kids mode (only for restricted codes)
+    policy: dict | None = None
+    used_min: int | None = None
+    remaining_min: int | None = None
+    extra_min: int = 0
+    window_open: bool | None = None
+    request_status: Literal["pending", "approved", "denied"] | None = None
+    # admin only
+    pending_requests: int | None = None
 
 
 class HealthOut(BaseModel):

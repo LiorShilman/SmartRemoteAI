@@ -1,4 +1,4 @@
-import type { AuditEntry, Command, CommandOutcome, Device, DeviceKind, ErrorCode, IntentResult, Me, Role, Schedule, TokenCreated, TokenInfo } from '../types'
+import type { AuditEntry, Policy, TimeRequest, Usage, Command, CommandOutcome, Device, DeviceKind, ErrorCode, IntentResult, Me, Role, Schedule, TokenCreated, TokenInfo } from '../types'
 
 export const ERROR_TEXT: Record<ErrorCode, string> = {
   NOT_PAIRED: 'המכשיר עדיין לא מצומד. צמד אותו במסך ההגדרות.',
@@ -72,7 +72,16 @@ export const api = {
     request<Device>(`/api/devices/${id}/pair/confirm`, token, { method: 'POST', body: JSON.stringify({ code }) }),
   me: (token: string) => request<Me>('/api/me', token),
   tokens: (token: string) => request<TokenInfo[]>('/api/tokens', token),
-  createToken: (token: string, name: string) => request<TokenCreated>('/api/tokens', token, { method: 'POST', body: JSON.stringify({ name }) }),
+  createToken: (token: string, name: string, policy?: Policy) =>
+    request<TokenCreated>('/api/tokens', token, { method: 'POST', body: JSON.stringify({ name, ...(policy ? { policy } : {}) }) }),
+  setTokenPolicy: (token: string, id: string, policy: Policy | null) =>
+    request<TokenInfo>(`/api/tokens/${id}`, token, { method: 'PATCH', body: JSON.stringify({ policy }) }),
+  askForTime: (token: string, minutes: 15 | 30 | 60 | 120) =>
+    request<TimeRequest>('/api/requests', token, { method: 'POST', body: JSON.stringify({ minutes }) }),
+  timeRequests: (token: string) => request<TimeRequest[]>('/api/requests', token),
+  decideRequest: (token: string, id: string, approve: boolean, minutes?: number) =>
+    request<TimeRequest>(`/api/requests/${id}/decide`, token, { method: 'POST', body: JSON.stringify({ approve, ...(minutes ? { minutes } : {}) }) }),
+  usage: (token: string, days = 7) => request<Usage>(`/api/usage?days=${days}`, token),
   /** Removes REVOKED tokens from the list (ids, or all). Active ones are never removed this way. */
   clearTokens: (token: string, ids?: string[]) =>
     request<{ removed: number }>('/api/tokens/clear', token, { method: 'POST', body: JSON.stringify(ids ? { ids } : {}) }),

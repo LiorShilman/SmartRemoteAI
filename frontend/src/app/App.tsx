@@ -2,6 +2,8 @@ import { Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { Home, Mic, Satellite, Settings as Cog, Tv2, TriangleAlert } from 'lucide-react'
 import { Toasts } from '../components/ui/Primitives'
+import { KidsBanner } from '../components/KidsBanner'
+import { useMe } from '../pages/SecurityCards'
 import { useBackend } from '../hooks/useDevices'
 import { useApp } from './store'
 import Dashboard from '../pages/Dashboard'
@@ -41,6 +43,7 @@ function StatusBanner() {
 
 export default function App() {
   const loc = useLocation()
+  const pending = useMe().data?.pending_requests ?? 0 // admin only: kids waiting for more time
   return (
     <div className="min-h-dvh lg:flex lg:flex-row">
       <div className="aurora" aria-hidden />
@@ -54,13 +57,14 @@ export default function App() {
         {NAV.map(({ to, label, Icon }) => (
           <NavLink key={to} to={to} end={to === '/'}
             className={({ isActive }) => `flex items-center gap-3 px-4 min-h-12 rounded-2xl no-underline text-text ${isActive ? 'bg-white/10 font-bold' : 'text-muted hover:bg-white/5'}`}>
-            <Icon size={20} aria-hidden /> {label}
+            <span className="relative"><Icon size={20} aria-hidden />{to === '/settings' && pending > 0 && <span aria-label={`${pending} בקשות זמן ממתינות`} className="absolute -top-1 -end-1 w-2.5 h-2.5 rounded-full bg-danger ring-2 ring-bg" />}</span> {label}
           </NavLink>
         ))}
       </aside>
 
       <div className="flex-1 min-w-0 flex flex-col">
         <StatusBanner />
+        <KidsBanner />
         <header className="lg:hidden flex items-center justify-between px-4 pt-4">
           <div>
             <div className="text-lg font-extrabold tracking-wide ltr">SMART REMOTE</div>
@@ -92,7 +96,7 @@ export default function App() {
         {NAV.map(({ to, label, Icon }) => (
           <NavLink key={to} to={to} end={to === '/'}
             className={({ isActive }) => `flex flex-col items-center justify-center gap-1 text-xs no-underline min-h-11 ${isActive ? 'text-secondary font-bold' : 'text-muted'}`}>
-            <Icon size={22} aria-hidden /> {label}
+            <span className="relative"><Icon size={22} aria-hidden />{to === '/settings' && pending > 0 && <span aria-label={`${pending} בקשות זמן ממתינות`} className="absolute -top-1 -end-1 w-2.5 h-2.5 rounded-full bg-danger ring-2 ring-bg" />}</span> {label}
           </NavLink>
         ))}
       </nav>

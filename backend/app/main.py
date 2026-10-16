@@ -8,6 +8,7 @@ import time
 from collections import defaultdict, deque
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import Literal
 
 from fastapi import APIRouter, Depends, FastAPI, Header, Query, Request, WebSocket, WebSocketDisconnect
@@ -19,16 +20,18 @@ from app.config import VERSION, Settings
 from app.models.schemas import (
     KEYS_BY_KIND, LG_APPS, Action, AuditOut, ChannelSet, CommandRequest, CommandResponse, DeviceOut, DeviceUpdate,
     ErrorCode, HealthOut, IntentOut, IntentParseRequest, MeOut, NewDevice, PairConfirm, PointerEvent, ScheduleClear,
-    ScheduleCreate, ScheduleOut, TokenClear, TokenCreate, TokenCreated, TokenOut,
+    ScheduleCreate, ScheduleOut, TimeDecide, TimeRequestCreate, TimeRequestOut, TokenClear, TokenCreate, TokenCreated, TokenOut,
+    TokenPolicy, UsageDay, UsageOut,
 )
 from app.services.intents import build_provider
+from app.services.policy import deny_reason, over_limit, remaining_min, schedule_denied, window_open
 from app.services.manager import DeviceManager, ManagerError
 from app.services.scheduler import Scheduler, ScheduleStore
 from app.storage.db import Store
-from app.storage.security import AuditStore, TokenRow, TokenStore
+from app.storage.security import AuditStore, TimeStore, TokenRow, TokenStore, UsageStore
 
 # Commands worth a line in the audit log. Navigation, volume and pointer events are far too frequent to keep.
-AUDITED_ACTIONS = {Action.POWER_OFF, Action.POWER_ON, Action.SET_INPUT, Action.LAUNCH_APP,
+AUDITED_ACTIONS = {Action.POWER_OFF, Action.POWER_ON, Action.SET_INPUT, Action.LAUNCH_APP, Action.SEARCH,
                    Action.DIGITS, Action.CHANNEL_STEP, Action.CHANNEL_LAST}
 
 
@@ -42,6 +45,7 @@ class Identity:
     name: str
     ip: str
     token_id: str | None = None
+    policy: dict | None = None  # kids mode; None = unrestricted
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -53,6 +57,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     scheduler = Scheduler(schedules, manager)
     tokens = TokenStore(*store.connection)
     audit = AuditStore(*store.connection)
+    usage = UsageStore(*store.connection)
+    times = TimeStore(*store.connection)
+    manager.usage = usage
     intents = build_provider(settings.llm_api_key, settings.llm_model)
     manager.notify = lambda event, detail: audit.add("server", "אוטומטי", event, detail)
 
@@ -69,6 +76,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.settings, app.state.manager = settings, manager
     app.state.scheduler, app.state.schedules = scheduler, schedules
     app.state.tokens, app.state.audit = tokens, audit
+    app.state.usage, app.state.times = usage, times
+    app.state.clock = datetime.now  # tests replace it to control the time of day
 
     if settings.allowed_origins:  # explicit origins only; never "*"
         app.add_middleware(CORSMiddleware, allow_origins=settings.allowed_origins,
@@ -151,12 +160,50 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             previous = tokens.touch(row, ip, time.time())
             if previous:
                 audit.add(ip, name, "new_ip", f"{previous} ← {ip}")
-        return Identity(kind=kind, name=name, ip=ip, token_id=row.id if row else None)  # type: ignore[arg-type]
+        return Identity(kind=kind, name=name, ip=ip, token_id=row.id if row else None, policy=row.policy if row else None)  # type: ignore[arg-type]
 
     def admin(ident: Identity = Depends(auth)) -> Identity:
         if ident.kind != "admin":
             raise ManagerError(ErrorCode.DENIED, "הפעולה זמינה רק למנהל.", 403)
         return ident
+
+    denied_logged: dict[tuple[str, str], float] = {}
+
+    def kids_state(ident: Identity) -> dict:
+        """Today's numbers for a restricted code: minutes used, extra minutes granted, window and limit."""
+        now = app.state.clock()
+        day = now.strftime("%Y-%m-%d")
+        extra = times.extra_minutes(ident.token_id, day) if ident.token_id else 0
+        used = usage.total_seconds(day) / 60
+        p = ident.policy or {}
+        return {"now": now, "day": day, "extra": extra, "used": used,
+                "open": window_open(p, now, extra) if p else None, "over": over_limit(p, used, extra) if p else False}
+
+    def deny(ident: Identity, reason: str) -> None:
+        key = (ident.token_id or "", reason)
+        t = time.monotonic()
+        if t - denied_logged.get(key, -1e9) > 60:  # one audit line per minute per reason
+            denied_logged[key] = t
+            audit.add(ident.ip, ident.name, "policy_denied", reason)
+        raise ManagerError(ErrorCode.DENIED, reason, 403)
+
+    def enforce(ident: Identity, action: Action, params: dict) -> None:
+        """Kids mode: the server decides, whatever the UI shows. The admin code is never restricted."""
+        if not ident.policy:
+            return
+        k = kids_state(ident)
+        if (reason := deny_reason(ident.policy, action, params, k["now"], k["used"], k["extra"])):
+            deny(ident, reason)
+
+    def enforce_schedule(ident: Identity, action: Action | None = None, params: dict | None = None, delay_s: int = 0) -> None:
+        if not ident.policy:
+            return
+        if (reason := schedule_denied(ident.policy)):
+            deny(ident, reason)
+        if action is not None:  # the action must be allowed at the moment it will run, too
+            run_at = app.state.clock() + timedelta(seconds=delay_s)
+            if (reason := deny_reason(ident.policy, action, params or {}, run_at, 0, 0)):
+                deny(ident, reason)
 
     api = APIRouter(prefix="/api", dependencies=[Depends(auth)])
 
@@ -166,7 +213,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @api.get("/me", response_model=MeOut)
     async def me(ident: Identity = Depends(auth)) -> MeOut:
-        return MeOut(kind=ident.kind, name=ident.name)
+        if ident.kind == "admin":
+            return MeOut(kind="admin", name=ident.name, pending_requests=times.pending_count())
+        if not ident.policy:
+            return MeOut(kind="device", name=ident.name)
+        k = kids_state(ident)
+        req = times.latest_for(ident.token_id) if ident.token_id else None
+        fresh = req is not None and datetime.fromtimestamp(req.created_at).strftime("%Y-%m-%d") == k["day"]
+        return MeOut(kind="device", name=ident.name, policy=ident.policy, used_min=int(k["used"]),
+                     remaining_min=remaining_min(ident.policy, k["used"], k["extra"]), extra_min=k["extra"],
+                     window_open=k["open"], request_status=req.status if fresh and req else None)
 
     # ---- devices: reading and day-to-day control for any valid code; setup and pairing for the admin only
     @api.get("/devices", response_model=list[DeviceOut])
@@ -196,7 +252,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         audit.add(ident.ip, ident.name, "device_removed", name)
 
     @api.post("/devices/{device_id}/pointer", status_code=204)
-    async def pointer(device_id: str, body: PointerEvent) -> None:
+    async def pointer(device_id: str, body: PointerEvent, ident: Identity = Depends(auth)) -> None:
+        enforce(ident, Action.KEY_PRESS, {})  # the pointer is navigation: subject to hours and the daily limit
         await manager.pointer(device_id, body.dx, body.dy, body.scroll_dy, body.click)
 
     @api.post("/devices/{device_id}/pair/start")
@@ -222,6 +279,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @api.post("/devices/{device_id}/commands", response_model=CommandResponse)
     async def command(device_id: str, body: CommandRequest, ident: Identity = Depends(auth)) -> CommandResponse:
+        enforce(ident, body.action, body.params)
         status = await manager.send(device_id, body)
         if status == "sent" and body.action in AUDITED_ACTIONS:
             detail = ", ".join(f"{k}={v}" for k, v in body.params.items() if k in {"digits", "app", "input", "delta"})
@@ -243,6 +301,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @api.post("/schedule", response_model=ScheduleOut, status_code=201)
     async def create_schedule(body: ScheduleCreate, ident: Identity = Depends(auth)) -> ScheduleOut:
+        enforce_schedule(ident, body.action, body.params, body.delay_seconds)
         out = schedules.add(body, time.time())
         if out is None:
             raise ManagerError(ErrorCode.DENIED, "יש יותר מדי פעולות מתוזמנות. בטל חלק מהן.", 429)
@@ -250,11 +309,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return out
 
     @api.post("/schedule/clear")
-    async def clear_schedules(body: ScheduleClear) -> dict:
+    async def clear_schedules(body: ScheduleClear, ident: Identity = Depends(auth)) -> dict:
+        enforce_schedule(ident)
         return {"removed": schedules.delete(body.ids)}
 
     @api.delete("/schedule/{schedule_id}", response_model=ScheduleOut)
-    async def cancel_schedule(schedule_id: str) -> ScheduleOut:
+    async def cancel_schedule(schedule_id: str, ident: Identity = Depends(auth)) -> ScheduleOut:
+        enforce_schedule(ident)
         if not schedules.set_status(schedule_id, "cancelled", only_if="pending"):
             raise ManagerError(ErrorCode.INVALID_COMMAND, "הפעולה המתוזמנת לא נמצאה או שכבר בוצעה.", 404)
         return schedules.get(schedule_id)  # type: ignore[return-value]
@@ -262,7 +323,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     # ---- access control (admin only)
     def token_out(t: TokenRow) -> TokenOut:
         return TokenOut(id=t.id, name=t.name, prefix=t.prefix, created_at=t.created_at, last_used_at=t.last_used_at,
-                        last_ip=t.last_ip, revoked=t.revoked_at is not None)
+                        last_ip=t.last_ip, revoked=t.revoked_at is not None, policy=t.policy)
 
     @api.get("/tokens", response_model=list[TokenOut])
     async def list_tokens(_: Identity = Depends(admin)) -> list[TokenOut]:
@@ -270,9 +331,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @api.post("/tokens", response_model=TokenCreated, status_code=201)
     async def create_token(body: TokenCreate, ident: Identity = Depends(admin)) -> TokenCreated:
-        row, secret = tokens.create(body.name, time.time())
-        audit.add(ident.ip, ident.name, "token_created", row.name)
+        row, secret = tokens.create(body.name, time.time(), body.policy.model_dump() if body.policy else None)
+        audit.add(ident.ip, ident.name, "token_created", row.name + (" · מצב ילדים" if body.policy else ""))
         return TokenCreated(**token_out(row).model_dump(), token=secret)
+
+    @api.patch("/tokens/{token_id}", response_model=TokenOut)
+    async def set_token_policy(token_id: str, body: TokenPolicy, ident: Identity = Depends(admin)) -> TokenOut:
+        if not tokens.set_policy(token_id, body.policy.model_dump() if body.policy else None):
+            raise ManagerError(ErrorCode.INVALID_COMMAND, "הקוד לא נמצא או שכבר בוטל.", 404)
+        row = tokens.get(token_id)
+        audit.add(ident.ip, ident.name, "token_policy", f"{row.name}: " + ("מצב ילדים עודכן" if body.policy else "ההגבלות הוסרו"))  # type: ignore[union-attr]
+        return token_out(row)  # type: ignore[arg-type]
 
     @api.post("/tokens/clear")
     async def clear_tokens(body: TokenClear, _: Identity = Depends(admin)) -> dict:
@@ -289,6 +358,46 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @api.get("/audit", response_model=list[AuditOut])
     async def audit_log(limit: int = Query(default=50, ge=1, le=200), _: Identity = Depends(admin)) -> list[AuditOut]:
         return [AuditOut(id=r.id, at=r.at, ip=r.ip, who=r.who, event=r.event, detail=r.detail) for r in audit.recent(limit)]
+
+    # ---- kids: ask for more time; parents decide
+    def req_out(r) -> TimeRequestOut:
+        return TimeRequestOut(id=r.id, token_id=r.token_id, token_name=r.token_name, minutes=r.minutes, status=r.status,
+                              created_at=r.created_at, decided_at=r.decided_at, granted_minutes=r.granted_minutes)
+
+    @api.post("/requests", response_model=TimeRequestOut, status_code=201)
+    async def ask_for_time(body: TimeRequestCreate, ident: Identity = Depends(auth)) -> TimeRequestOut:
+        if ident.kind != "device" or not ident.policy or not ident.token_id:
+            raise ManagerError(ErrorCode.INVALID_COMMAND, "בקשת זמן רלוונטית רק לקוד במצב ילדים.", 422)
+        r = times.create(ident.token_id, ident.name, body.minutes, time.time())
+        if r is None:
+            raise ManagerError(ErrorCode.DENIED, "כבר יש כמה בקשות שממתינות לאישור.", 429)
+        audit.add(ident.ip, ident.name, "time_requested", f"{body.minutes} דקות")
+        return req_out(r)
+
+    @api.get("/requests", response_model=list[TimeRequestOut])
+    async def list_requests(_: Identity = Depends(admin)) -> list[TimeRequestOut]:
+        return [req_out(r) for r in times.list()]
+
+    @api.post("/requests/{request_id}/decide", response_model=TimeRequestOut)
+    async def decide_request(request_id: str, body: TimeDecide, ident: Identity = Depends(admin)) -> TimeRequestOut:
+        r0 = times.get(request_id)
+        if r0 is None or r0.status != "pending":
+            raise ManagerError(ErrorCode.INVALID_COMMAND, "הבקשה לא נמצאה או שכבר טופלה.", 404)
+        minutes = body.minutes or r0.minutes
+        r = times.decide(request_id, body.approve, minutes, app.state.clock().strftime("%Y-%m-%d"), time.time())
+        audit.add(ident.ip, ident.name, "time_granted" if body.approve else "time_denied", f"{r0.token_name}: {minutes if body.approve else 0} דקות")
+        return req_out(r)  # type: ignore[arg-type]
+
+    @api.get("/usage", response_model=UsageOut)
+    async def usage_report(days: int = Query(default=7, ge=1, le=30), _: Identity = Depends(admin)) -> UsageOut:
+        today = app.state.clock().date()
+        data = usage.by_day((today - timedelta(days=days - 1)).strftime("%Y-%m-%d"))
+        out = []
+        for i in range(days - 1, -1, -1):  # always return every day, oldest first, so the chart has no gaps
+            d = (today - timedelta(days=i)).strftime("%Y-%m-%d")
+            e = data.get(d, {"total": 0, "apps": {}})
+            out.append(UsageDay(day=d, total_min=round(e["total"] / 60), apps={a: round(s / 60) for a, s in e["apps"].items() if s >= 30}))
+        return UsageOut(today_min=out[-1].total_min, days=out)
 
     @api.get("/capabilities")
     async def capabilities() -> dict:

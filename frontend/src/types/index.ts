@@ -30,7 +30,7 @@ export type ErrorCode =
 
 export type CommandAction =
   | 'key_press' | 'digits' | 'volume_up' | 'volume_down' | 'mute'
-  | 'power_off' | 'power_on' | 'set_input' | 'launch_app' | 'channel_step' | 'channel_last'
+  | 'power_off' | 'power_on' | 'set_input' | 'launch_app' | 'channel_step' | 'channel_last' | 'text' | 'search'
 
 export interface Command {
   target: DeviceKind
@@ -70,7 +70,38 @@ export interface Schedule {
   error?: string | null
 }
 
-export interface Me { kind: 'admin' | 'device'; name: string }
+/** Kids mode: what a restricted access code may do (enforced by the server). */
+export interface Policy {
+  start: string
+  end: string
+  apps: ('youtube' | 'netflix' | 'spotify')[]
+  can_power_off: boolean
+  can_schedule: boolean
+  daily_limit_min: number | null
+}
+export interface Me {
+  kind: 'admin' | 'device'
+  name: string
+  policy?: Policy | null
+  used_min?: number | null
+  remaining_min?: number | null
+  extra_min?: number
+  window_open?: boolean | null
+  request_status?: 'pending' | 'approved' | 'denied' | null
+  pending_requests?: number | null
+}
+export interface TimeRequest {
+  id: string
+  token_id: string
+  token_name: string
+  minutes: number
+  status: 'pending' | 'approved' | 'denied'
+  created_at: number
+  decided_at: number | null
+  granted_minutes: number
+}
+export interface UsageDay { day: string; total_min: number; apps: Record<string, number> }
+export interface Usage { today_min: number; days: UsageDay[] }
 export interface TokenInfo {
   id: string
   name: string
@@ -79,6 +110,7 @@ export interface TokenInfo {
   last_used_at: number | null
   last_ip: string | null
   revoked: boolean
+  policy?: Policy | null
 }
 export interface TokenCreated extends TokenInfo { token: string }
 export interface AuditEntry { id: number; at: number; ip: string; who: string; event: string; detail: string }

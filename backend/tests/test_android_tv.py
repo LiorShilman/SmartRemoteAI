@@ -37,6 +37,10 @@ class FakeRemote:
         for cb in self.callbacks: cb(True)
 
     def add_is_available_updated_callback(self, cb): self.callbacks.append(cb)
+    def send_text(self, text):
+        if self.send_error: raise self.send_error
+        self.typed = getattr(self, 'typed', []) + [text]
+
     def send_launch_app_command(self, link):
         if self.send_error: raise self.send_error
         self.launched = getattr(self, 'launched', []) + [link]
@@ -252,3 +256,40 @@ async def test_selftest_requires_a_connection(adapter):
     with pytest.raises(AdapterError) as e:
         await adapter.selftest()
     assert e.value.code is ErrorCode.NOT_PAIRED
+
+
+async def test_text_is_typed_into_the_focused_field_with_optional_enter(adapter):
+    await paired(adapter)
+    await adapter.execute("text", {"text": "שלום עולם"})
+    await adapter.execute("text", {"text": "cats", "submit": True})
+    assert FakeRemote.last.typed == ["שלום עולם", "cats"]
+    assert FakeRemote.last.keys == ["KEYCODE_ENTER"]  # only the submitted one pressed Enter
+    await adapter.execute("key_press", {"key": "DEL"})
+    assert FakeRemote.last.keys[-1] == "KEYCODE_DEL"
+
+
+async def test_search_links_are_percent_encoded_and_confirmed(adapter, monkeypatch):
+    from app.adapters import android_tv
+    monkeypatch.setattr(android_tv, "APP_WAIT_S", 0.2)
+    q = "שלום & x=1/../?evil"
+    FakeRemote.opens = {
+        "https://www.youtube.com/results?search_query=" + __import__("urllib.parse", fromlist=["quote"]).quote(q, safe=""): "com.google.android.youtube.tv",
+        "nflx://www.netflix.com/search?q=cats": "com.netflix.ninja",
+    }
+    await paired(adapter)
+    await adapter.execute("search", {"app": "youtube", "query": q})
+    await adapter.execute("search", {"app": "netflix", "query": "cats"})
+    sent = FakeRemote.last.launched
+    assert sent[0].startswith("https://www.youtube.com/results?search_query=") and "&" not in sent[0].split("query=")[1]
+    assert "/../" not in sent[0] and "?evil" not in sent[0]            # the query cannot change the link's structure
+    assert sent[1] == "nflx://www.netflix.com/search?q=cats"
+
+
+async def test_search_in_an_app_that_is_not_installed_says_so(adapter, monkeypatch):
+    from app.adapters import android_tv
+    monkeypatch.setattr(android_tv, "APP_WAIT_S", 0.2)
+    FakeRemote.opens = {"market://details?id=com.spotify.tv.android": "com.android.vending"}
+    await paired(adapter)
+    with pytest.raises(AdapterError) as e:
+        await adapter.execute("search", {"app": "spotify", "query": "x"})
+    assert e.value.code is ErrorCode.UNSUPPORTED and "לא מותקנת" in e.value.message

@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+from urllib.parse import quote
 from pathlib import Path
 from typing import Any, Callable
 
@@ -17,6 +18,7 @@ from aiowebostv.exceptions import WebOsTvCommandTimeoutError
 
 from app.adapters.base import AdapterError, DeviceAdapter
 from app.models.schemas import CapabilityState, Connection, ErrorCode
+from app.services.appnames import friendly
 
 log = logging.getLogger("smart_remote.lg_webos")
 
@@ -209,6 +211,18 @@ class LgWebOsAdapter(DeviceAdapter):
         self.last_error = "הטלוויזיה דחתה את פקודת העוצמה."
         return AdapterError(ErrorCode.DENIED, self.last_error)
 
+    async def foreground(self) -> str | None:
+        c = self._client
+        if c is None or not self._available or not c.is_connected():
+            return None
+        try:
+            app = await c.get_current_app()
+        except Exception:  # noqa: BLE001 - statistics must never break anything
+            return None
+        if isinstance(app, dict):
+            app = app.get("appId") or app.get("id")
+        return friendly(app) if isinstance(app, str) else None
+
     async def selftest(self) -> dict:
         if not self.paired:
             raise AdapterError(ErrorCode.NOT_PAIRED, "המכשיר לא מצומד.")
@@ -242,6 +256,21 @@ class LgWebOsAdapter(DeviceAdapter):
             raise AdapterError(ErrorCode.NOT_CONNECTED, "החיבור לטלוויזיה נפל.") from e
 
     async def _dispatch(self, c: Any, action: str, params: dict) -> None:
+        if action == "text":
+            await c.request("com.webos.service.ime/insertText", {"text": str(params["text"]), "replace": 0})
+            if params.get("submit"):
+                await c.request("com.webos.service.ime/sendEnterKey")
+            return
+        if action == "search":
+            app = str(params.get("app"))
+            if app != "youtube":
+                raise AdapterError(ErrorCode.UNSUPPORTED, "בטלוויזיית LG נתמך רק חיפוש ב-YouTube.")
+            url = "https://www.youtube.com/results?search_query=" + quote(str(params["query"]).strip(), safe="")
+            await c.launch_app_with_params(APP_IDS["youtube"], {"contentTarget": url})
+            return
+        if action == "key_press" and params.get("key") == "DEL":
+            await c.request("com.webos.service.ime/deleteCharacters", {"count": 1})
+            return
         if action == "key_press":
             button = BUTTON_MAP.get(str(params.get("key")))
             if button is None:

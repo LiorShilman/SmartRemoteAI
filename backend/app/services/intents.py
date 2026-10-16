@@ -44,6 +44,8 @@ def _label(target: str, action: str, p: dict) -> str:
         "power_off": "טלוויזיה: כיבוי", "launch_app": f"{who}: פתיחת {str(p.get('app', '')).capitalize()}",
         "set_input": f"טלוויזיה: מעבר ל-{str(p.get('input', '')).replace('_', ' ')}",
         "key_press": f"{who}: {p.get('key')}",
+        "search": f"{who}: חיפוש ב-{str(p.get('app', '')).capitalize()}: {p.get('query')}",
+        "text": f"{who}: הקלדה",
     }.get(action, f"{who}: {action}")
 
 
@@ -126,6 +128,14 @@ class RuleBasedIntentProvider:
             return _step(vt, "volume_down", {}, delay)
         if re.match(r"^(?:תשתיק|השתק|שתק|מיוט|mute)(?:\s|$)", t):
             return _step(vt, "mute", {}, delay)
+        if (m := re.match(r"^(?:חפש|תחפש|חפשי)\s+(?:לי\s+)?(.+?)\s+(?:ב|ב-)?(יוטיוב|נטפליקס|ספוטיפיי|ספוטיפי)"
+                          r"(?:\s+(?:ב|על|ב-)\s*(ממיר|הממיר|טלוויזיה|הטלוויזיה|hot|lg))?$", t)):
+            app = {"יוטיוב": "youtube", "נטפליקס": "netflix"}.get(m.group(2), "spotify")
+            # LG can only search YouTube; Netflix/Spotify searches therefore default to the set-top box
+            where = "hot" if (m.group(3) or "") in ("ממיר", "הממיר", "hot") or app != "youtube" else "lg"
+            if (m.group(3) or "") in ("טלוויזיה", "הטלוויזיה", "lg"):
+                where = "lg"
+            return _step(where, "search", {"app": app, "query": m.group(1).strip()}, delay)
         if (m := re.match(r"^(?:פתח|תפתח|הפעל)\s+(יוטיוב|נטפליקס|ספוטיפיי|ספוטיפי|spotify|netflix|youtube)"
                           r"(?:\s+(?:ב|על|ב-)\s*(ממיר|הממיר|טלוויזיה|הטלוויזיה|hot|lg))?$", t)):
             app = {"יוטיוב": "youtube", "youtube": "youtube", "נטפליקס": "netflix", "netflix": "netflix"}.get(m.group(1), "spotify")
@@ -144,11 +154,12 @@ class RuleBasedIntentProvider:
 
 class LlmStep(BaseModel):
     target: Literal["hot", "lg"]
-    action: Literal["key_press", "digits", "volume_up", "volume_down", "mute", "power_off", "set_input", "launch_app"]
+    action: Literal["key_press", "digits", "volume_up", "volume_down", "mute", "power_off", "set_input", "launch_app", "search"]
     key: str | None = None
     digits: str | None = None
     input: str | None = None
     app: str | None = None
+    query: str | None = None
     delay_minutes: int | None = None
 
 
@@ -165,6 +176,7 @@ Actions and params:
 - key_press: key one of DPAD_UP DPAD_DOWN DPAD_LEFT DPAD_RIGHT DPAD_CENTER BACK HOME MENU CHANNEL_UP CHANNEL_DOWN MEDIA_PLAY_PAUSE. target hot (LG only accepts DPAD_* BACK HOME).
 - volume_up / volume_down / mute: target is {volume_target}.
 - power_off: target lg. set_input: input HDMI_1..HDMI_4, target lg. launch_app: app youtube, netflix or spotify; target lg unless the user says on the set-top box ("בממיר"), then hot.
+- search: app youtube/netflix/spotify and query = what to search for (the user's words, unchanged); netflix and spotify searches go to hot, youtube to lg unless the user says on the set-top box.
 - delay_minutes: only when the user asks to do it later ("in an hour" = 60). Omit otherwise.
 Split a sentence with several requests into ordered steps. Anything you cannot map to exactly these actions
 (searching for content, asking what is on TV, unknown apps, unclear requests) goes into `unrecognized` as the
@@ -216,7 +228,7 @@ class LLMIntentProvider:
         steps: list[IntentStepOut] = []
         unrecognized = [u for u in out.unrecognized if isinstance(u, str)][:10]
         for s in out.steps[:8]:
-            params = {k: v for k, v in (("key", s.key), ("digits", s.digits), ("input", s.input), ("app", s.app)) if v}
+            params = {k: v for k, v in (("key", s.key), ("digits", s.digits), ("input", s.input), ("app", s.app), ("query", s.query)) if v}
             step = _step(s.target, s.action, params, (s.delay_minutes or 0) * 60)
             if step:
                 steps.append(step)

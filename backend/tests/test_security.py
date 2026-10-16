@@ -70,7 +70,8 @@ def test_device_token_cannot_manage_access_or_devices(client):
         assert r.json()["detail"]["code"] == "DENIED"
     assert client.get("/api/devices", headers=t).status_code == 200       # but day-to-day use works
     assert client.get("/api/schedule", headers=t).status_code == 200
-    assert client.get("/api/me", headers=t).json() == {"kind": "device", "name": "הטלפון של דנה"}
+    me = client.get("/api/me", headers=t).json()
+    assert (me["kind"], me["name"], me["policy"]) == ("device", "הטלפון של דנה", None)
     assert client.get("/api/me", headers=H).json()["kind"] == "admin"
 
 

@@ -26,6 +26,11 @@ describe('parseIntent', () => {
     expect(parseIntent('פתח נטפליקס', lg).steps[0].command).toEqual({ target: 'lg', action: 'launch_app', params: { app: 'netflix' } })
     expect(parseIntent('פתח ספוטיפיי בממיר', lg).steps[0].command).toEqual({ target: 'hot', action: 'launch_app', params: { app: 'spotify' } })
   })
+  it('parses searches and routes Netflix/Spotify to the box', () => {
+    expect(parseIntent('חפש חתולים מצחיקים ביוטיוב', lg).steps[0].command).toEqual({ target: 'lg', action: 'search', params: { app: 'youtube', query: 'חתולים מצחיקים' } })
+    expect(parseIntent('חפש באטמן בנטפליקס', lg).steps[0].command.target).toBe('hot')
+    expect(parseIntent('חפש משהו', lg).unrecognized).toEqual(['חפש משהו'])
+  })
   it('accepts the Hebrew conjunction prefix', () => {
     const r = parseIntent('ערוץ 12, ותנמיך, וכבה את הטלוויזיה', lg)
     expect(r.steps.map((s) => s.command.action)).toEqual(['digits', 'volume_down', 'power_off'])

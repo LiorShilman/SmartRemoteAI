@@ -545,3 +545,41 @@ def test_edit_device_address_validates_and_rebuilds(client):
         assert client.patch(f"/api/devices/{d['id']}", json={"host": bad}, headers=H).status_code == 422
     other = client.post("/api/devices", json={"kind": "lg", "host": "192.168.1.82"}, headers=H).json()
     assert client.patch(f"/api/devices/{other['id']}", json={"host": "192.168.1.81"}, headers=H).status_code == 409  # taken
+
+
+
+# ------------------------------------------------------------------ keyboard and search
+def run(client, did, action, n, **params):
+    return client.post(f"/api/devices/{did}/commands", json={"target": did, "action": action, "params": params, "request_id": f"req-kb-{n:05d}"}, headers=H)
+
+
+def test_text_and_search_validation(client):
+    did = paired(client, "hot")
+    assert run(client, did, "text", 1, text="שלום").status_code == 200
+    for n, bad in enumerate([{"text": ""}, {"text": "x" * 121}, {"text": "a\nb"}, {"text": "a\x00"}, {"text": "ok", "submit": "yes"}, {}], start=2):
+        assert run(client, did, "text", n, **bad).status_code == 422, bad
+    assert run(client, did, "search", 20, app="youtube", query="חתולים מצחיקים").status_code == 200
+    for n, bad in enumerate([{"app": "tiktok", "query": "x"}, {"app": "youtube", "query": "  "}, {"app": "youtube", "query": "q" * 81},
+                             {"app": "youtube", "query": "a\tb"}, {"app": "youtube"}], start=30):
+        assert run(client, did, "search", n, **bad).status_code == 422, bad
+
+
+def test_search_is_audited_without_the_query_and_text_is_not_audited(client):
+    did = paired(client, "hot")
+    run(client, did, "search", 40, app="youtube", query="הסיסמה שלי היא 1234")
+    run(client, did, "text", 41, text="סיסמה סודית")
+    rows = client.get("/api/audit", headers=H).json()
+    assert any(r["event"] == "command" and r["detail"].startswith("search") for r in rows)
+    blob = " ".join(r["detail"] for r in rows)
+    assert "סיסמה" not in blob and "1234" not in blob
+
+
+async def test_search_rules_in_hebrew():
+    r = await rules.parse("חפש חתולים מצחיקים ביוטיוב", "lg")
+    assert (r.steps[0].target, r.steps[0].params) == ("lg", {"app": "youtube", "query": "חתולים מצחיקים"})
+    r = await rules.parse("חפש לי באטמן בנטפליקס", "lg")
+    assert (r.steps[0].target, r.steps[0].params) == ("hot", {"app": "netflix", "query": "באטמן"})  # LG cannot search Netflix
+    r = await rules.parse("תחפש שירי ילדים ביוטיוב בממיר", "lg")
+    assert r.steps[0].target == "hot" and r.steps[0].params["query"] == "שירי ילדים"
+    r = await rules.parse("חפש משהו", "lg")
+    assert not r.steps and r.unrecognized

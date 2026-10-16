@@ -38,6 +38,10 @@ class DeviceAdapter(ABC):
     async def execute(self, action: str, params: dict) -> None:
         """Raise AdapterError on failure. Returning means the command was transmitted."""
 
+    async def foreground(self) -> str | None:
+        """Friendly name of the app being shown right now, or None when idle/unknown (used for screen-time stats)."""
+        return None
+
     async def selftest(self) -> dict:
         """Prove the device really answers (not just that we wrote to a socket). Returns
         {"ok": bool|None, "detail": str, "healed": bool}; ok=None means "cannot be verified"."""

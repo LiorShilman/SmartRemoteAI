@@ -50,6 +50,8 @@ class FakeTv:
     async def get_inputs(self): return self.inputs
     async def set_input(self, i): await self._rec("set_input", i)
     async def launch_app(self, a): await self._rec("launch_app", a)
+    async def launch_app_with_params(self, a, p): await self._rec("launch_app_with_params", a, p)
+    async def request(self, uri, payload=None): await self._rec("request", uri, payload)
 
 
 def make(tmp_path, factory=FakeTv, device_id="lg1"):
@@ -255,4 +257,28 @@ async def test_menu_style_keys_map_to_webos_buttons(tmp_path):
     for k in ("MENU", "QMENU", "EXIT", "INFO", "GUIDE", "RED"):
         await a.execute("key_press", {"key": k})
     assert [c for c in FakeTv.last.calls] == [("button", k) for k in ("MENU", "QMENU", "EXIT", "INFO", "GUIDE", "RED")]
+    await a.close()
+
+
+async def test_text_and_delete_use_the_tv_keyboard_service(tmp_path):
+    a = make(tmp_path)
+    await pair(a)
+    await a.execute("text", {"text": "שלום", "submit": True})
+    await a.execute("key_press", {"key": "DEL"})
+    assert FakeTv.last.calls == [("request", "com.webos.service.ime/insertText", {"text": "שלום", "replace": 0}),
+                                 ("request", "com.webos.service.ime/sendEnterKey", None),
+                                 ("request", "com.webos.service.ime/deleteCharacters", {"count": 1})]
+    await a.close()
+
+
+async def test_youtube_search_launches_with_the_results_url_and_other_apps_are_unsupported(tmp_path):
+    a = make(tmp_path)
+    await pair(a)
+    await a.execute("search", {"app": "youtube", "query": "a b&c"})
+    call = FakeTv.last.calls[-1]
+    assert call[0] == "launch_app_with_params" and call[1] == "youtube.leanback.v4"
+    assert call[2] == {"contentTarget": "https://www.youtube.com/results?search_query=a%20b%26c"}
+    with pytest.raises(AdapterError) as e:
+        await a.execute("search", {"app": "netflix", "query": "x"})
+    assert e.value.code is ErrorCode.UNSUPPORTED
     await a.close()

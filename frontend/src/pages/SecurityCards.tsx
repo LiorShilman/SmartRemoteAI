@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, Copy, KeyRound, ScrollText, ShieldAlert } from 'lucide-react'
+import { Baby, Check, Copy, KeyRound, ScrollText, ShieldAlert } from 'lucide-react'
 import { Card, Key, SectionTitle } from '../components/ui/Primitives'
 import { SelectableRow, SelectToolbar, useSelection } from '../components/ui/Selectable'
 import { useApp } from '../app/store'
 import { ApiError, api } from '../services/api'
 import { useBackend } from '../hooks/useDevices'
-import type { TokenCreated } from '../types'
+import type { Policy, TokenCreated, TokenInfo } from '../types'
 
 /** Who is using this browser: admin (master code) or a per-device code. Unknown yet = treated as admin for display. */
 export function useMe() {
@@ -17,7 +17,8 @@ export function useMe() {
     queryFn: () => api.me(token),
     enabled: mode === 'live' && backend === 'online',
     retry: false,
-    staleTime: 60_000,
+    staleTime: 10_000,
+    refetchInterval: 15_000, // remaining time, pending requests and decisions change while the page is open
   })
 }
 /** False only when we KNOW this is a device code (the server enforces it either way). */
@@ -39,15 +40,76 @@ export function ago(ts: number | null | undefined, now = Date.now() / 1000): str
 const EVENT: Record<string, [string, 'ok' | 'bad' | 'warn' | '']> = {
   login_failed: ['ניסיון כניסה כושל', 'bad'],
   blocked_ip: ['כתובת נחסמה', 'bad'],
+  policy_denied: ['פעולה נחסמה (מצב ילדים)', 'warn'],
   new_ip: ['כניסה מכתובת חדשה', 'warn'],
   token_created: ['נוצר קוד גישה', 'ok'],
   token_revoked: ['קוד גישה בוטל', 'warn'],
+  token_policy: ['הגבלות קוד עודכנו', ''],
+  time_requested: ['התבקש עוד זמן', 'warn'],
+  time_granted: ['אושר עוד זמן', 'ok'],
+  time_denied: ['בקשת זמן נדחתה', ''],
   device_added: ['מכשיר נוסף', 'ok'],
   device_updated: ['מכשיר עודכן', ''],
   device_removed: ['מכשיר הוסר', 'warn'],
+  device_moved: ['מכשיר עבר לכתובת חדשה', ''],
   device_paired: ['מכשיר מצומד', 'ok'],
+  selftest: ['בדיקת חיבור', ''],
   schedule_created: ['נוצר תזמון', ''],
   command: ['פעולה', ''],
+}
+
+export const DEFAULT_POLICY: Policy = {
+  start: '07:00', end: '21:00', apps: ['youtube', 'netflix', 'spotify'], can_power_off: false, can_schedule: false, daily_limit_min: 120,
+}
+const APP_NAMES: Record<string, string> = { youtube: 'YouTube', netflix: 'Netflix', spotify: 'Spotify' }
+const LIMITS: [number | null, string][] = [[null, 'ללא מכסה'], [30, '30 דקות'], [60, 'שעה'], [90, 'שעה וחצי'], [120, 'שעתיים'], [180, '3 שעות'], [240, '4 שעות']]
+
+export function describePolicy(p: Policy): string {
+  const apps = p.apps.length ? p.apps.map((a) => APP_NAMES[a]).join(', ') : 'ללא אפליקציות'
+  return `${p.start}–${p.end} · ${p.daily_limit_min ? `מכסה ${p.daily_limit_min} דק׳` : 'ללא מכסה'} · ${apps}`
+}
+
+/** Editor for a kids-mode policy. All of it is enforced by the server. */
+export function PolicyEditor({ value, onChange }: { value: Policy; onChange: (p: Policy) => void }) {
+  const set = (patch: Partial<Policy>) => onChange({ ...value, ...patch })
+  const toggleApp = (a: Policy['apps'][number]) =>
+    set({ apps: value.apps.includes(a) ? value.apps.filter((x) => x !== a) : [...value.apps, a] })
+  const invalid = value.start >= value.end
+  return (
+    <div className="flex flex-col gap-3 rounded-2xl border border-white/10 p-3 text-sm">
+      <div className="grid grid-cols-2 gap-3">
+        <label className="flex flex-col gap-1">מותר מהשעה
+          <input type="time" className="input ltr" value={value.start} onChange={(e) => set({ start: e.target.value })} />
+        </label>
+        <label className="flex flex-col gap-1">עד השעה
+          <input type="time" className="input ltr" value={value.end} onChange={(e) => set({ end: e.target.value })} />
+        </label>
+      </div>
+      {invalid && <p className="text-xs text-danger" role="alert">שעת הסיום חייבת להיות אחרי שעת ההתחלה.</p>}
+      <fieldset className="flex flex-col gap-1">
+        <legend className="mb-1">אפליקציות מורשות</legend>
+        <div className="flex flex-wrap gap-x-4 gap-y-1">
+          {(['youtube', 'netflix', 'spotify'] as const).map((a) => (
+            <label key={a} className="flex items-center gap-2 min-h-9">
+              <input type="checkbox" className="w-5 h-5" checked={value.apps.includes(a)} onChange={() => toggleApp(a)} /> {APP_NAMES[a]}
+            </label>
+          ))}
+        </div>
+      </fieldset>
+      <label className="flex flex-col gap-1">מכסת זמן מסך יומית
+        <select className="input" value={value.daily_limit_min ?? ''} onChange={(e) => set({ daily_limit_min: e.target.value ? Number(e.target.value) : null })}>
+          {LIMITS.map(([v, l]) => <option key={l} value={v ?? ''}>{l}</option>)}
+        </select>
+      </label>
+      <label className="flex items-center gap-2 min-h-9">
+        <input type="checkbox" className="w-5 h-5" checked={value.can_power_off} onChange={(e) => set({ can_power_off: e.target.checked })} /> מותר לכבות ולהדליק
+      </label>
+      <label className="flex items-center gap-2 min-h-9">
+        <input type="checkbox" className="w-5 h-5" checked={value.can_schedule} onChange={(e) => set({ can_schedule: e.target.checked })} /> מותר לתזמן פעולות
+      </label>
+      <p className="text-xs text-muted">מחוץ לשעות, או אחרי המכסה, הכפתורים נחסמים בשרת. הילד יכול לבקש עוד זמן ואתה מאשר מכאן.</p>
+    </div>
+  )
 }
 
 function CopyButton({ text, label, toastText }: { text: string; label: string; toastText: string }) {
@@ -63,15 +125,55 @@ function CopyButton({ text, label, toastText }: { text: string; label: string; t
   )
 }
 
-/** Per-device access codes: create (shown once), see last use, revoke. Admin only. */
+/** Kids' "more time" requests waiting for a parent. Shown at the top of the access card. */
+function RequestsList() {
+  const { token, toast } = useApp()
+  const qc = useQueryClient()
+  const list = useQuery({ queryKey: ['requests', token], queryFn: () => api.timeRequests(token), refetchInterval: 10_000 })
+  const pending = (list.data ?? []).filter((r) => r.status === 'pending')
+  if (pending.length === 0) return null
+  const decide = async (id: string, approve: boolean, minutes?: number) => {
+    try {
+      await api.decideRequest(token, id, approve, minutes)
+      toast('info', approve ? 'אושר. הזמן נוסף להיום.' : 'הבקשה נדחתה.')
+    } catch (e) { toast('error', e instanceof ApiError ? e.message : 'הטיפול בבקשה נכשל.') }
+    void qc.invalidateQueries({ queryKey: ['requests'] }); void qc.invalidateQueries({ queryKey: ['me'] }); void qc.invalidateQueries({ queryKey: ['audit'] })
+  }
+  return (
+    <div className="rounded-2xl border border-warn/40 bg-warn/5 p-3 flex flex-col gap-3" role="region" aria-label="בקשות זמן">
+      <h3 className="text-sm font-bold text-warn">בקשות לעוד זמן ({pending.length})</h3>
+      {pending.map((r) => (
+        <div key={r.id} className="flex flex-col gap-2">
+          <div className="text-sm"><b><bdi>{r.token_name}</bdi></b> מבקש/ת עוד <b>{r.minutes} דקות</b> <span className="text-muted text-xs">· {ago(r.created_at)}</span></div>
+          <div className="flex flex-wrap gap-2">
+            <Key label={`אשר ${r.minutes} דקות ל${r.token_name}`} variant="primary" className="px-4 h-11 text-sm" onClick={() => void decide(r.id, true)}>אשר {r.minutes} דק׳</Key>
+            {r.minutes > 15 && <Key label={`אשר 15 דקות ל${r.token_name}`} className="px-4 h-11 text-sm" onClick={() => void decide(r.id, true, 15)}>רק 15</Key>}
+            <Key label={`דחה את הבקשה של ${r.token_name}`} className="px-4 h-11 text-sm" onClick={() => void decide(r.id, false)}>דחה</Key>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function PolicyChip({ t }: { t: TokenInfo }) {
+  return t.policy ? <span className="chip warn !text-[11px]"><Baby size={12} aria-hidden /> מצב ילדים</span> : null
+}
+
+/** Per-device access codes: create (shown once), kids mode, last use, revoke. Admin only. */
 export function SecuritySection() {
   const { token, toast } = useApp()
   const qc = useQueryClient()
   const [name, setName] = useState('')
+  const [kids, setKids] = useState(false)
+  const [policy, setPolicy] = useState<Policy>(DEFAULT_POLICY)
   const [created, setCreated] = useState<TokenCreated | null>(null)
   const [confirmId, setConfirmId] = useState<string | null>(null)
+  const [editId, setEditId] = useState<string | null>(null)
+  const [draft, setDraft] = useState<Policy>(DEFAULT_POLICY)
   const list = useQuery({ queryKey: ['tokens', token], queryFn: () => api.tokens(token), refetchInterval: 15_000 })
   const fail = (e: unknown, fb: string) => toast('error', e instanceof ApiError ? e.message : fb)
+  const refresh = () => { for (const k of ['tokens', 'audit', 'me']) void qc.invalidateQueries({ queryKey: [k] }) }
   const revokedIds = (list.data ?? []).filter((t) => t.revoked).map((t) => t.id)
   const sel = useSelection(revokedIds) // only revoked codes can be selected for removal; active ones are revoked first
 
@@ -84,21 +186,28 @@ export function SecuritySection() {
   }
 
   const create = async () => {
-    if (!name.trim()) return
-    try { setCreated(await api.createToken(token, name.trim())); setName(''); void qc.invalidateQueries({ queryKey: ['tokens'] }); void qc.invalidateQueries({ queryKey: ['audit'] }) }
+    if (!name.trim() || (kids && policy.start >= policy.end)) return
+    try { setCreated(await api.createToken(token, name.trim(), kids ? policy : undefined)); setName(''); setKids(false); refresh() }
     catch (e) { fail(e, 'יצירת הקוד נכשלה.') }
   }
   const revoke = async (id: string) => {
-    try { await api.revokeToken(token, id); setConfirmId(null); toast('info', 'הקוד בוטל. המכשיר שלו התנתק.'); void qc.invalidateQueries({ queryKey: ['tokens'] }); void qc.invalidateQueries({ queryKey: ['audit'] }) }
+    try { await api.revokeToken(token, id); setConfirmId(null); toast('info', 'הקוד בוטל. המכשיר שלו התנתק.'); refresh() }
     catch (e) { fail(e, 'הביטול נכשל.') }
+  }
+  const savePolicy = async (id: string, p: Policy | null) => {
+    if (p && p.start >= p.end) return
+    try { await api.setTokenPolicy(token, id, p); setEditId(null); toast('info', p ? 'מצב הילדים עודכן.' : 'ההגבלות הוסרו.'); refresh() }
+    catch (e) { fail(e, 'השמירה נכשלה.') }
   }
   const loginLink = created ? `${location.origin}${import.meta.env.BASE_URL}#token=${encodeURIComponent(created.token)}` : ''
 
   return (
     <Card className="flex flex-col gap-4">
-      <SectionTitle hint="קוד נפרד לכל טלפון או מחשב. אם מכשיר אובד, מבטלים רק אותו, בלי לגעת בשאר.">
+      <SectionTitle hint="קוד נפרד לכל טלפון או מחשב. אם מכשיר אובד, מבטלים רק אותו. קוד במצב ילדים מוגבל בשעות, באפליקציות ובזמן מסך.">
         <span className="inline-flex items-center gap-2"><KeyRound size={18} aria-hidden /> קודי גישה למכשירים</span>
       </SectionTitle>
+
+      <RequestsList />
 
       {created && (
         <div className="rounded-2xl border border-warn/40 bg-warn/5 p-3 flex flex-col gap-3" role="alert">
@@ -127,33 +236,62 @@ export function SecuritySection() {
           <SelectableRow key={t.id} s={t.revoked ? sel : { ...sel, on: false }} id={t.id}
             className={`rounded-2xl border border-white/5 bg-white/[0.03] p-3 ${t.revoked ? 'opacity-60' : ''}`}>
             <div className="flex-1 min-w-0 flex flex-col gap-2">
-            <div className="flex items-center justify-between gap-2">
-              <div className="min-w-0">
-                <div className="font-semibold break-words">{t.name}</div>
-                <div className="text-xs text-muted"><bdi className="ltr">{t.prefix}…</bdi></div>
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="font-semibold break-words">{t.name}</div>
+                  <div className="text-xs text-muted"><bdi className="ltr">{t.prefix}…</bdi></div>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <span className={`chip ${t.revoked ? 'bad' : 'ok'}`}>{t.revoked ? 'בוטל' : 'פעיל'}</span>
+                  <PolicyChip t={t} />
+                </div>
               </div>
-              <span className={`chip ${t.revoked ? 'bad' : 'ok'}`}>{t.revoked ? 'בוטל' : 'פעיל'}</span>
-            </div>
-            <div className="text-xs text-muted">
-              שימוש אחרון: {ago(t.last_used_at)}{t.last_ip ? <> · <bdi>{t.last_ip}</bdi></> : null}
-            </div>
-            {!t.revoked && (confirmId === t.id ? (
-              <div className="flex gap-2">
-                <Key label={`אשר ביטול ${t.name}`} variant="danger" className="px-4 h-11 text-sm font-bold" onClick={() => void revoke(t.id)}>לבטל את הקוד?</Key>
-                <Key label="ביטול" className="px-4 h-11 text-sm" onClick={() => setConfirmId(null)}>השאר</Key>
+              {t.policy && !t.revoked && <div className="text-xs text-warn">{describePolicy(t.policy)}</div>}
+              <div className="text-xs text-muted">
+                שימוש אחרון: {ago(t.last_used_at)}{t.last_ip ? <> · <bdi>{t.last_ip}</bdi></> : null}
               </div>
-            ) : (
-              <Key label={`בטל את הקוד של ${t.name}`} className="px-4 h-11 text-sm self-start" onClick={() => setConfirmId(t.id)}>בטל קוד</Key>
-            ))}
+              {!t.revoked && editId === t.id && (
+                <div className="flex flex-col gap-2">
+                  <PolicyEditor value={draft} onChange={setDraft} />
+                  <div className="flex flex-wrap gap-2">
+                    <Key label="שמור הגבלות" variant="primary" className="px-4 h-11 text-sm" onClick={() => void savePolicy(t.id, draft)}>שמור</Key>
+                    {t.policy && <Key label="הסר את כל ההגבלות" className="px-4 h-11 text-sm" onClick={() => void savePolicy(t.id, null)}>הסר הגבלות</Key>}
+                    <Key label="ביטול עריכה" className="px-4 h-11 text-sm" onClick={() => setEditId(null)}>ביטול</Key>
+                  </div>
+                </div>
+              )}
+              {!t.revoked && editId !== t.id && (
+                <div className="flex flex-wrap gap-2">
+                  <Key label={t.policy ? `הגדרות מצב ילדים של ${t.name}` : `הפוך את ${t.name} למצב ילדים`} className="px-4 h-11 text-sm"
+                    onClick={() => { setDraft(t.policy ?? DEFAULT_POLICY); setEditId(t.id); setConfirmId(null) }}>
+                    <Baby size={16} aria-hidden /> {t.policy ? 'הגדרות ילדים' : 'מצב ילדים'}
+                  </Key>
+                  {confirmId === t.id ? (
+                    <>
+                      <Key label={`אשר ביטול ${t.name}`} variant="danger" className="px-4 h-11 text-sm font-bold" onClick={() => void revoke(t.id)}>לבטל את הקוד?</Key>
+                      <Key label="ביטול" className="px-4 h-11 text-sm" onClick={() => setConfirmId(null)}>השאר</Key>
+                    </>
+                  ) : (
+                    <Key label={`בטל את הקוד של ${t.name}`} className="px-4 h-11 text-sm" onClick={() => setConfirmId(t.id)}>בטל קוד</Key>
+                  )}
+                </div>
+              )}
             </div>
           </SelectableRow>
         ))}
       </ul>
 
-      <form className="flex gap-2 pt-2 border-t border-white/5" onSubmit={(e) => { e.preventDefault(); void create() }}>
-        <input className="input flex-1" placeholder="שם המכשיר (למשל: הטלפון של דנה)" aria-label="שם הקוד החדש"
-          maxLength={40} value={name} onChange={(e) => setName(e.target.value)} />
-        <Key label="צור קוד" variant="primary" className="px-4 h-12 text-sm" type="submit" disabled={!name.trim()}>צור קוד</Key>
+      <form className="flex flex-col gap-3 pt-2 border-t border-white/5" onSubmit={(e) => { e.preventDefault(); void create() }}>
+        <div className="flex gap-2">
+          <input className="input flex-1" placeholder="שם המכשיר (למשל: הטלפון של דנה)" aria-label="שם הקוד החדש"
+            maxLength={40} value={name} onChange={(e) => setName(e.target.value)} />
+          <Key label="צור קוד" variant="primary" className="px-4 h-12 text-sm" type="submit" disabled={!name.trim() || (kids && policy.start >= policy.end)}>צור קוד</Key>
+        </div>
+        <label className="flex items-center gap-2 text-sm min-h-9">
+          <input type="checkbox" className="w-5 h-5" checked={kids} onChange={(e) => setKids(e.target.checked)} />
+          <Baby size={16} aria-hidden /> מצב ילדים (הגבלות לקוד הזה)
+        </label>
+        {kids && <PolicyEditor value={policy} onChange={setPolicy} />}
       </form>
     </Card>
   )

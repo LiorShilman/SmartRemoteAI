@@ -35,6 +35,11 @@ class MockAdapter(DeviceAdapter):
             raise AdapterError(ErrorCode.DENIED, "קוד הצימוד שגוי.")
         self.paired = True
 
+    foreground_app: str | None = None  # test hook
+
+    async def foreground(self) -> str | None:
+        return self.foreground_app if self.paired else None
+
     async def selftest(self) -> dict:
         if not self.paired:
             raise AdapterError(ErrorCode.NOT_PAIRED, "המכשיר לא מצומד.")

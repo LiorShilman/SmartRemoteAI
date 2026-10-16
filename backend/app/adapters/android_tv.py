@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+from urllib.parse import quote
 import time
 from pathlib import Path
 from typing import Any, Callable
@@ -16,6 +17,7 @@ from androidtvremote2 import AndroidTVRemote, CannotConnect, ConnectionClosed, I
 
 from app.adapters.base import AdapterError, DeviceAdapter
 from app.models.schemas import CapabilityState, Connection, ErrorCode
+from app.services.appnames import friendly
 
 log = logging.getLogger("smart_remote.android_tv")
 
@@ -26,7 +28,7 @@ KEY_MAP: dict[str, str] = {
     "DPAD_UP": "KEYCODE_DPAD_UP", "DPAD_DOWN": "KEYCODE_DPAD_DOWN",
     "DPAD_LEFT": "KEYCODE_DPAD_LEFT", "DPAD_RIGHT": "KEYCODE_DPAD_RIGHT",
     "DPAD_CENTER": "KEYCODE_DPAD_CENTER", "BACK": "KEYCODE_BACK", "HOME": "KEYCODE_HOME",
-    "MENU": "KEYCODE_MENU", "SETTINGS": "KEYCODE_SETTINGS", "GUIDE": "KEYCODE_GUIDE", "INFO": "KEYCODE_INFO", "MEDIA_PLAY_PAUSE": "KEYCODE_MEDIA_PLAY_PAUSE",
+    "DEL": "KEYCODE_DEL", "ENTER": "KEYCODE_ENTER", "MENU": "KEYCODE_MENU", "SETTINGS": "KEYCODE_SETTINGS", "GUIDE": "KEYCODE_GUIDE", "INFO": "KEYCODE_INFO", "MEDIA_PLAY_PAUSE": "KEYCODE_MEDIA_PLAY_PAUSE",
     "MEDIA_REWIND": "KEYCODE_MEDIA_REWIND", "MEDIA_FAST_FORWARD": "KEYCODE_MEDIA_FAST_FORWARD",
     "CHANNEL_UP": "KEYCODE_CHANNEL_UP", "CHANNEL_DOWN": "KEYCODE_CHANNEL_DOWN",
     "LAST_CHANNEL": "KEYCODE_LAST_CHANNEL", "PAGE_UP": "KEYCODE_PAGE_UP", "PAGE_DOWN": "KEYCODE_PAGE_DOWN",
@@ -38,6 +40,12 @@ HOT_APPS: dict[str, tuple[str, list[str]]] = {
     "netflix": ("com.netflix.ninja", ["https://www.netflix.com/title"]),
     "youtube": ("com.google.android.youtube.tv", ["https://www.youtube.com/tv"]),
     "spotify": ("com.spotify.tv.android", ["https://open.spotify.com"]),
+}
+# Search deep links, measured on the HOT Streamer: https opens YouTube; Netflix needs its own nflx:// scheme.
+SEARCH_LINKS = {
+    "youtube": "https://www.youtube.com/results?search_query={q}",
+    "netflix": "nflx://www.netflix.com/search?q={q}",
+    "spotify": "https://open.spotify.com/search/{q}",
 }
 STORE_PAGE = "market://details?id={package}"
 STORE_PACKAGE = "com.android.vending"
@@ -190,6 +198,20 @@ class AndroidTVAdapter(DeviceAdapter):
             await self._launch_app(str(params.get("app")))
             self.last_command_at = time.time()
             return
+        if action == "search":
+            await self._search(str(params.get("app")), str(params.get("query")))
+            self.last_command_at = time.time()
+            return
+        if action == "text":
+            try:
+                self._remote.send_text(str(params["text"]))
+                if params.get("submit"):
+                    self._remote.send_key_command("KEYCODE_ENTER")
+            except ConnectionClosed as e:
+                self._available = False
+                self._fail("החיבור לממיר נסגר", e)
+            self.last_command_at = time.time()
+            return
         code = ACTION_KEYS.get(action) or (KEY_MAP.get(str(params.get("key"))) if action == "key_press" else None)
         if code is None:
             raise AdapterError(ErrorCode.UNSUPPORTED, "הפעולה לא נתמכת ב-HOT.")
@@ -201,6 +223,11 @@ class AndroidTVAdapter(DeviceAdapter):
         except ValueError as e:
             self._fail("המקש לא מוכר לספרייה", e, ErrorCode.UNSUPPORTED)
         self.last_command_at = time.time()
+
+    async def foreground(self) -> str | None:
+        if self._remote is None or not self._available or getattr(self._remote, "is_on", True) is False:
+            return None
+        return friendly(getattr(self._remote, "current_app", None))
 
     async def selftest(self) -> dict:
         """Round trip through the volume keys: the box reports its own volume level, so a level change proves it
@@ -247,12 +274,21 @@ class AndroidTVAdapter(DeviceAdapter):
         return False
 
     async def _launch_app(self, app: str) -> None:
-        """Open an app and confirm it by the foreground package the box reports.
-        If it never comes up, open its Play Store page and say it is probably not installed."""
         entry = HOT_APPS.get(app)
         if entry is None:
             raise AdapterError(ErrorCode.UNSUPPORTED, "האפליקציה לא נתמכת בממיר.")
-        package, links = entry
+        await self._open_links(app, entry[0], entry[1])
+
+    async def _search(self, app: str, query: str) -> None:
+        entry = HOT_APPS.get(app)
+        if entry is None or app not in SEARCH_LINKS:
+            raise AdapterError(ErrorCode.UNSUPPORTED, "החיפוש באפליקציה הזו לא נתמך בממיר.")
+        # The query is percent-encoded into a fixed template: it can never change the scheme, host or app.
+        await self._open_links(app, entry[0], [SEARCH_LINKS[app].format(q=quote(query.strip(), safe=""))])
+
+    async def _open_links(self, app: str, package: str, links: list[str]) -> None:
+        """Open an app via the given links and confirm by the foreground package the box reports.
+        If it never comes up, open its Play Store page and say it is probably not installed."""
         try:
             for link in links:
                 self._remote.send_launch_app_command(link)

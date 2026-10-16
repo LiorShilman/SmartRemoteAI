@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp, FastForward, Home, Menu, Pause, Rewind, Undo2, 
 import { Card, CapChip, Key, SectionTitle } from '../../components/ui/Primitives'
 import { DPad, Favorites, Keypad } from '../../components/remote/Controls'
 import { AppLauncher } from '../../components/remote/AppLauncher'
+import { KeyboardCard } from '../../components/remote/KeyboardCard'
 import { Touchpad } from '../../components/remote/Touchpad'
 import { useVolumeDevice } from '../../hooks/useDevices'
 import { ROLE_LABEL } from '../../services/roles'
@@ -56,6 +57,11 @@ export default function AndroidPanel({ device: dev }: { device: Device }) {
             <div className="flex items-center gap-2 text-xs text-muted justify-center">
               מדיה: <CapChip state={device?.capabilities.media} />
             </div>
+          </Card>
+
+          <Card>
+            <SectionTitle hint="הקלד מהטלפון לשדה הפעיל בטלוויזיה, או קפוץ ישר לתוצאות חיפוש.">מקלדת וחיפוש</SectionTitle>
+            <KeyboardCard device={dev} press={press} disabled={!can('nav')} />
           </Card>
 
           <Card className={isBox ? '' : 'lg:flex-1'}>

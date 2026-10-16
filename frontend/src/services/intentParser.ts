@@ -54,6 +54,16 @@ function parseOne(raw: string, opts: Options): ParsedStep | null {
   if (/^(?:תשתיק|השתק|שתק|מיוט|mute)(?:\s|$)/u.test(t))
     return { command: { target: vt, action: 'mute' }, label: `${vname}: השתקה` }
 
+  m = t.match(/^(?:חפש|תחפש|חפשי)\s+(?:לי\s+)?(.+?)\s+(?:ב|ב-)?(יוטיוב|נטפליקס|ספוטיפיי|ספוטיפי)(?:\s+(?:ב|על|ב-)\s*(ממיר|הממיר|טלוויזיה|הטלוויזיה|hot|lg))?$/u)
+  if (m) {
+    const app = m[2] === 'יוטיוב' ? 'youtube' : m[2] === 'נטפליקס' ? 'netflix' : 'spotify'
+    const explicit = m[3] ?? ''
+    // LG can only search YouTube, so other apps default to the box
+    const target: DeviceKind = ['טלוויזיה', 'הטלוויזיה', 'lg'].includes(explicit) ? 'lg' : (['ממיר', 'הממיר', 'hot'].includes(explicit) || app !== 'youtube') ? 'hot' : 'lg'
+    const name = { youtube: 'YouTube', netflix: 'Netflix', spotify: 'Spotify' }[app]
+    return { command: { target, action: 'search', params: { app, query: m[1].trim() } }, label: `${target === 'hot' ? 'ממיר' : 'טלוויזיה'}: חיפוש ב-${name}: ${m[1].trim()}` }
+  }
+
   m = t.match(/^(?:פתח|תפתח|הפעל)\s+(יוטיוב|נטפליקס|ספוטיפיי|ספוטיפי)(?:\s+(?:ב|על|ב-)\s*(ממיר|הממיר|טלוויזיה|הטלוויזיה|hot|lg))?$/u)
   if (m) {
     const app = m[1] === 'יוטיוב' ? 'youtube' : m[1] === 'נטפליקס' ? 'netflix' : 'spotify'

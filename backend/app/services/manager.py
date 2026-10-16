@@ -16,10 +16,12 @@ from app.models.schemas import (
 from app.services.discovery import discover_android_tv
 from app.services.ssdp import discover_lg
 from app.storage.db import DeviceRow, Store
+from app.storage.security import UsageStore
 
 DEFAULT_ROLE = {"lg": "tv", "hot": "box"}  # unknown role falls back to what that driver usually is
 POINTER_PER_SECOND = 100
 RELOCATE_EVERY_S = 30.0
+USAGE_EVERY_S = 30
 RELOCATE_AFTER_S = 90.0  # unreachable this long before we go looking for it
 
 COMMAND_TIMEOUT_S = 8.0
@@ -47,6 +49,8 @@ class DeviceManager:
         self._pointer_hits: deque[float] = deque()
         self._lost_since: dict[str, float] = {}
         self._relocator: asyncio.Task | None = None
+        self._usage_task: asyncio.Task | None = None
+        self.usage = None  # UsageStore, set by the app
         self.notify = None  # optional callback(event, detail), set by the app to write the audit log
         for row in store.list():
             self._adapter_for(row)
@@ -139,6 +143,39 @@ class DeviceManager:
                     self.notify("device_moved", f"{row.name}: {old} ← {found[0]}")
         return moved
 
+    async def sample_usage(self, day: str) -> None:
+        """One sample of "what is on screen". The total counts once when ANY device shows content (a TV that
+        displays the box is not double counted); per-app rows are kept per device."""
+        if self.usage is None:
+            return
+        active = False
+        for row in self.store.list():
+            a = self._adapter_for(row)
+            if a.connection != "connected":
+                continue
+            try:
+                app = await asyncio.wait_for(a.foreground(), 3.0)
+            except Exception:  # noqa: BLE001
+                continue
+            if app:
+                self.usage.add(day, row.id, app, USAGE_EVERY_S)
+                active = True
+        if active:
+            self.usage.add(day, *UsageStore.TOTAL, USAGE_EVERY_S)
+
+    async def _usage_loop(self) -> None:
+        from datetime import datetime, timedelta
+        n = 0
+        while True:
+            await asyncio.sleep(USAGE_EVERY_S)
+            try:
+                await self.sample_usage(datetime.now().strftime("%Y-%m-%d"))
+                n += 1
+                if n % 120 == 0 and self.usage is not None:  # about hourly
+                    self.usage.prune((datetime.now() - timedelta(days=60)).strftime("%Y-%m-%d"))
+            except Exception:  # noqa: BLE001
+                pass
+
     async def find_lg(self) -> list[str]:
         return [t.host for t in await discover_lg(3.0)]
 
@@ -187,11 +224,13 @@ class DeviceManager:
                 asyncio.ensure_future(a.start())
         if not self.use_mock:
             self._relocator = asyncio.create_task(self._relocate_loop())
+            self._usage_task = asyncio.create_task(self._usage_loop())
 
     async def shutdown(self) -> None:
-        if self._relocator:
-            self._relocator.cancel()
-            await asyncio.gather(self._relocator, return_exceptions=True)
+        for t in (self._relocator, self._usage_task):
+            if t:
+                t.cancel()
+                await asyncio.gather(t, return_exceptions=True)
         for a in self.adapters.values():
             await a.close()
 

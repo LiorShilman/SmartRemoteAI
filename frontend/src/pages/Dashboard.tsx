@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom'
 import { History, Mic, Search } from 'lucide-react'
 import { DeviceCard } from '../components/devices/DeviceCard'
 import { NetworkMap } from '../components/devices/NetworkMap'
+import { UsageCard } from '../components/devices/UsageCard'
+import { useIsAdmin } from './SecurityCards'
 import { Card, SectionTitle } from '../components/ui/Primitives'
 import { SelectableRow, SelectToolbar, useSelection } from '../components/ui/Selectable'
 import { useDevices } from '../hooks/useDevices'
@@ -15,7 +17,8 @@ const OUTCOME: Record<string, string> = {
 }
 
 export default function Dashboard() {
-  const { devices, loading } = useDevices()
+  const { devices, loading, backend } = useDevices()
+  const admin = useIsAdmin()
   const { mode, log, removeLog, clearLog, toast } = useApp()
   const shown = log.slice(0, 8)
   const sel = useSelection(shown.map((e) => String(e.at)))
@@ -52,6 +55,8 @@ export default function Dashboard() {
           {cards.map((c) => <DeviceCard key={c.device?.id ?? c.role} role={c.role} device={c.device} />)}
         </div>
       )}
+
+      {admin && mode === 'live' && backend === 'online' && <UsageCard />}
 
       <Card>
         <SectionTitle hint="״נשלחה״ אומרת שהפקודה יצאה מהשרת. היא לא מוכיחה שהמכשיר הגיב.">

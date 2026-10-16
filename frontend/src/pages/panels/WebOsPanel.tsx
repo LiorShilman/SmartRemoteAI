@@ -3,6 +3,7 @@ import { Home, Power, Tv2, Undo2, Volume1, Volume2, VolumeX } from 'lucide-react
 import { Card, CapChip, Key, SectionTitle } from '../../components/ui/Primitives'
 import { DPad } from '../../components/remote/Controls'
 import { AppLauncher } from '../../components/remote/AppLauncher'
+import { KeyboardCard } from '../../components/remote/KeyboardCard'
 import { Touchpad } from '../../components/remote/Touchpad'
 import { useRemote } from '../../hooks/useRemote'
 import type { Device } from '../../types'
@@ -74,6 +75,11 @@ export default function WebOsPanel({ device: dev }: { device: Device }) {
           <Card>
             <SectionTitle>אפליקציות</SectionTitle>
             <AppLauncher target="lg" press={press} disabled={!can('apps')} />
+          </Card>
+
+          <Card>
+            <SectionTitle hint="הקלד מהטלפון לשדה הפעיל בטלוויזיה, או חפש ישר ב-YouTube.">מקלדת וחיפוש</SectionTitle>
+            <KeyboardCard device={device!} press={press} disabled={!can('nav')} />
           </Card>
 
           <Card className="lg:flex-1">
