@@ -1,4 +1,4 @@
-import type { AuditEntry, CycleConfig, CycleState, EqState, LoadResult, ProfilesState, LabControl, Policy, Rgb, SpeakerLab, SpeakerState, TimeRequest, Usage, Command, CommandOutcome, Device, DeviceKind, ErrorCode, IntentResult, Me, Role, Schedule, TokenCreated, TokenInfo } from '../types'
+import type { AuditEntry, CycleConfig, CycleState, EqState, LoadResult, ProfilesState, LabControl, Policy, Rgb, SpeakerBluetooth, SpeakerLab, SpeakerSources, SpeakerStandby, SpeakerState, TimeRequest, Usage, Command, CommandOutcome, Device, DeviceKind, ErrorCode, IntentResult, Me, Role, Schedule, TokenCreated, TokenInfo } from '../types'
 
 export const ERROR_TEXT: Record<ErrorCode, string> = {
   NOT_PAIRED: 'המכשיר עדיין לא מצומד. צמד אותו במסך ההגדרות.',
@@ -133,11 +133,22 @@ export const api = {
     request<ProfilesState>('/api/speaker/profiles', token, { method: 'POST', body: JSON.stringify({ name, include_volume: includeVolume }) }),
   speakerProfileRename: (token: string, id: string, name: string) =>
     request<ProfilesState>(`/api/speaker/profiles/${encodeURIComponent(id)}`, token, { method: 'PATCH', body: JSON.stringify({ name }) }),
+  /** Overwrite a profile with the speaker's current values (read fresh on the server; nothing is written to the speaker). */
+  speakerProfileUpdate: (token: string, id: string) =>
+    request<ProfilesState>(`/api/speaker/profiles/${encodeURIComponent(id)}/update`, token, { method: 'POST' }),
   speakerProfileDelete: (token: string, id: string) =>
     request<ProfilesState>(`/api/speaker/profiles/${encodeURIComponent(id)}`, token, { method: 'DELETE' }),
   speakerProfileLoad: (token: string, id: string) =>
     request<LoadResult>(`/api/speaker/profiles/${encodeURIComponent(id)}/load`, token, { method: 'POST' }),
   speakerProfileUndo: (token: string) => request<LoadResult>('/api/speaker/profiles/undo', token, { method: 'POST' }),
+  speakerStandby: (token: string) => request<SpeakerStandby>('/api/speaker/standby', token),
+  /** Only an option the speaker lists; resolves with the value read back from the speaker. */
+  speakerStandbySet: (token: string, seconds: number) =>
+    request<SpeakerStandby>('/api/speaker/standby', token, { method: 'POST', body: JSON.stringify({ seconds }) }),
+  speakerSources: (token: string) => request<SpeakerSources>('/api/speaker/sources', token),
+  speakerBluetooth: (token: string) => request<SpeakerBluetooth>('/api/speaker/bluetooth', token),
+  /** Opens pairing; resolves only once the speaker reports it is visible. Already visible: nothing is sent. */
+  speakerPairing: (token: string) => request<SpeakerBluetooth>('/api/speaker/bluetooth/pairing', token, { method: 'POST' }),
   speakerMute: (token: string, enabled: boolean) =>
     request<SpeakerState>('/api/speaker/mute', token, { method: 'POST', body: JSON.stringify({ enabled }) }),
   speakerRgb: (token: string, c: Rgb) =>

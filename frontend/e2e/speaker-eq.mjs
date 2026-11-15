@@ -64,10 +64,11 @@ await page.keyboard.press('ArrowUp')
 await slider('12kHz').focus()
 await page.keyboard.press('ArrowDown')
 await page.keyboard.press('ArrowDown')
+await slider('3.5kHz').evaluate((el) => el.scrollIntoView({ block: 'center' })) // not under the fixed bottom bar
 const h = await slider('3.5kHz').boundingBox() // drag 3.5kHz far up: lands on that band's own max
 await page.mouse.move(h.x + h.width / 2, h.y + h.height / 2)
 await page.mouse.down()
-await page.mouse.move(h.x + h.width / 2, h.y - 400, { steps: 8 })
+await page.mouse.move(h.x + h.width / 2, Math.max(2, h.y - 400), { steps: 8 }) // stay inside the window, or the browser drops the events
 await page.mouse.up()
 if ((await slider('3.5kHz').getAttribute('aria-valuenow')) !== '6') fail('drag did not reach the band max')
 await page.waitForTimeout(800)

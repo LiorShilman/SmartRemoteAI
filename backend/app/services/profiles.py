@@ -70,6 +70,13 @@ class ProfileStore:
             self._db.commit()
         return self.get(pid) if n else None
 
+    def replace_data(self, pid: str, data: dict, now: float) -> dict | None:
+        """Overwrite a profile's saved values (name and include_volume stay)."""
+        with self._lock:
+            n = self._db.execute("UPDATE speaker_profiles SET data=?, updated_at=? WHERE id=?", (json.dumps(data), now, pid)).rowcount
+            self._db.commit()
+        return self.get(pid) if n else None
+
     def delete(self, pid: str) -> bool:
         with self._lock:
             n = self._db.execute("DELETE FROM speaker_profiles WHERE id=?", (pid,)).rowcount

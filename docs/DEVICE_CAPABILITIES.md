@@ -22,13 +22,15 @@ Every write is read back, and success is reported only if the speaker reports th
 
 | Control | Path | Type | Status |
 |---|---|---|---|
-| Volume | `player:volume` | `i32_` | verified (23, 28 heard). UI/server range 0–100 assumed, full range not verified |
-| Treble | `settings:/mediaPlayer/treble` | `double_` | verified (5, 6; syncs with the B&W app). Range −6…+6 assumed from the app |
+| Volume | `player:volume` | `i32_` | verified (23, 28 heard). Range **0–50 step 1, declared by the speaker** (`edit` metadata; `volumeMap` has 51 entries −120…0 dB); values above 50 are rejected. Server accepts 0–50 and the UI shows the same 0–50 (user's choice). Windows/phones over Bluetooth show it as 0–100, hence their 2% jumps |
+| Treble | `settings:/mediaPlayer/treble` | `double_` | verified (5, 6, 7 written and read back; 11 came back clamped to 10; syncs with the B&W app). Range −10…+10 step 0.5 as declared by the node; audible effect beyond 6 not verified yet |
 | Ambient light on/off | `settings:/ui/ambientLightEnabled` | `bool_` | verified physically |
-| Bass | `settings:/mediaPlayer/bass` | `double_` | verified in the lab 2026-11-15 (change heard). Range −6…+6 chosen by the user |
+| Bass | `settings:/mediaPlayer/bass` | `double_` | verified in the lab 2026-11-15 (change heard). Range −10…+10 step 0.5 from the node's metadata only; audible effect beyond 6 not verified |
+| Standby timeout | `settings:/system/maxIdleTime` | `i32_` (seconds) | verified 2026-11-16 (1200 → 1800 written and read back, restored to 1200). Choices only from the speaker's own list `settings:/system/maxIdleTimeValues` (off, 5, 10, 15, 30 min); factory value 1200 is not in that list and is shown as is |
+| Audio sources | `ui:/bw` → `bw:<source>` | `bwAudioInput` (read only) | read 2026-11-16: per source `active`/`plugged`; the menu's `disabled` matches `plugged=false`. Shown on the card; switching (activating `bw:<source>`) not verified, not offered |
 | Light brightness | `settings:/ui/ambientLightBrightness` | `i32_` | verified in the lab 2026-11-15 (change seen). Range 0–100 chosen by the user |
 | Light colour | `settings:/ui/ambientLightRgb` | `formationDownlightRgb` | verified in the lab 2026-11-15 (change seen). Channels 0–255 |
-| Loudness | `settings:/mediaPlayer/loudness` | `bool_` | on/off write + read-back verified 2026-11-15; no clear audible difference heard — labelled experimental in the UI |
+| Loudness | `settings:/mediaPlayer/loudness` | `bool_` | on/off write + read-back verified 2026-11-15. Effect heard by the user when playing over Wi-Fi, taking a few seconds to apply (not heard earlier over Bluetooth from the PC). Back on the main card |
 | Mute | `settings:/mediaPlayer/mute` | `bool_` | verified by listening 2026-11-15 |
 | Balance | `settings:/mediaPlayer/balance` | `double_` | 1 and 6 read back; no audible effect found. Card slider −6…+6 chosen by the user; which sign is left/right unknown, so no labels. Lab accepts any number |
 | Source gain | `settings:/mediaPlayer/sourceGain` | — | the speaker rejects writes explicitly ("Setting is not modifiable") — no control, not exposed |
@@ -42,7 +44,7 @@ its range; the ranges above are a choice, and whether values beyond them have an
 
 ## Loudness and balance — investigation (2026-11-15, read-only)
 
-Both store and read back, but no audible effect. Still experimental; at the user's request both controls are hidden from the main card and remain only in the test lab (the API endpoints are unchanged).
+Both store and read back. **Update (2026-11-15):** Loudness was heard working when playing over Wi-Fi, a few seconds after the change, so it is back on the main card; the earlier "no effect" was observed over Bluetooth from the PC (why Bluetooth differs is not verified). Balance is still not heard and stays only in the test lab (the API endpoints are unchanged).
 
 **Verified on this speaker (StreamSDK 1.12.1.1, board `Stream800_demo_client`):**
 - The speaker's own menu (`ui:/settings/audio/tone`) lists Postprocessing, Bass, Treble, Loudness and Balance together;
@@ -67,6 +69,34 @@ Both store and read back, but no audible effect. Still experimental; at the user
 
 Test lab (Settings, admin only): tries bass/brightness/colour with saved originals and restore, and records what the user
 observed. Kids-mode codes can read the speaker state but cannot change it.
+
+## Bluetooth pairing — investigation (2026-11-15, read-only, nothing written)
+
+**Verified on this speaker:**
+- `settings:/bluetooth` holds settings only (e.g. `bluetoothPairingTimeout` 300 s, `disablePairingOncePaired` false,
+  `agentCapability` noInputNoOutput, `maxPairedAudioDevices` 8). `bluetooth:` alone is `invalidPath`: the scheme exists only with sub-paths.
+- `ui:/bluetooth` lists the speaker's own Bluetooth menu, pointing to nodes under `bluetooth:`:
+  - `bluetooth:deviceList/discoverable` — `type: action`, title "Not visible to other devices" (the title reflects the current state).
+  - `bluetooth:deviceList/discovery` — `type: action`, "Scan for other Bluetooth devices" (the speaker as a source, for BT speakers).
+  - per paired device `bluetooth:devices/<mac_with_underscores>/{play,disconnect,unpair}` — action nodes (`disabled: true` when not applicable).
+- `bluetooth:state` (`modifiable: true`, type `bluetoothState`) reports `discoverable`, `pairable`, `discovering`, `connected`,
+  `activeDevice`, `connectedDevice` and `pairedDevices`. Now: discoverable=false, pairable=false.
+
+**From public code on the same API (not tried on this speaker):** three independent StreamSDK integrations
+(zzznz27/Fosi-S3, herofuve/homeassistant-vssl-mx incl. its APK-derived PROTOCOL.md, sbesh91/aioharmanluxury) invoke action
+nodes with `POST /api/setData {"path": <action>, "role": "activate", "value": {}}`. None of them uses the `discoverable` node.
+
+**Observed (2026-11-15, passive watch, read-only):** while the user pressed "Pair new device" in the B&W app, `bluetooth:state`
+went `discoverable/pairable: false → true` and the `discoverable` action's title changed to "Visible to other devices"
+(at 44 s; again at 132 s after a second press). It returned to false/"Not visible" ~33 s later, when the phone reconnected.
+So the app drives exactly this state. Which request the app sends (this node or StateD) was not captured.
+
+**Verified by one test write (2026-11-15, user-approved):** with the speaker not visible, `POST /api/setData
+{"path":"bluetooth:deviceList/discoverable","role":"activate","value":{}}` answered `200 null`; within 0.5 s `bluetooth:state`
+showed `discoverable/pairable: true` and the title "Visible to other devices". So this action opens pairing mode.
+
+**Hypotheses (not verified):** pairing mode lasts `bluetoothPairingTimeout` (300 s) or until a device connects; activating it again
+while visible probably turns it off. The B&W app may instead use its own StateD API (port 42425), which was not examined for pairing.
 
 ## Automatic colour cycling (`backend/app/services/colorcycle.py`)
 

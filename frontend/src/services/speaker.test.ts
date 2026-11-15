@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { BRIGHTNESS, TREBLE, VOLUME, bandLabel, changeToSend, clamp, hexToRgb, rgbToHex, snapToStep, trebleLabel } from './speaker'
+import { BASS, BRIGHTNESS, TREBLE, VOLUME, bandLabel, changeToSend, clamp, hexToRgb, rgbToHex, snapToStep, trebleLabel } from './speaker'
 
 describe('speaker helpers', () => {
   it('sends nothing without a user-picked value or a known current value', () => {
@@ -17,9 +17,17 @@ describe('speaker helpers', () => {
   })
 
   it('clamps to the allowed ranges', () => {
-    expect(clamp(103, VOLUME.min, VOLUME.max)).toBe(100)
+    expect(clamp(53, VOLUME.min, VOLUME.max)).toBe(50)
     expect(clamp(-1, VOLUME.min, VOLUME.max)).toBe(0)
-    expect(clamp(7, TREBLE.min, TREBLE.max)).toBe(6)
+    expect(clamp(11, TREBLE.min, TREBLE.max)).toBe(10)
+  })
+
+  it('bass and treble follow the declared -10..+10 in half steps; EQ bands keep -6..+6', () => {
+    expect([TREBLE.min, TREBLE.max, TREBLE.step, BASS.min, BASS.max, BASS.step]).toEqual([-10, 10, 0.5, -10, 10, 0.5])
+    expect(snapToStep(7.3, TREBLE.min, TREBLE.max, TREBLE.step)).toBe(7.5)
+    expect(snapToStep(-12, BASS.min, BASS.max, BASS.step)).toBe(-10)
+    expect(snapToStep(7, -6, 6, 0.5)).toBe(6)
+    expect(trebleLabel(7.5)).toBe('+7.5')
   })
 
   it('labels treble with a sign', () => {

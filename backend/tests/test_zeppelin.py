@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 
 from app.config import Settings
 from app.main import create_app
-from app.services.zeppelin import ZeppelinClient
+from app.services.zeppelin import SpeakerError, ZeppelinClient
 
 MASTER = "master-token-123"
 H = {"Authorization": f"Bearer {MASTER}"}
@@ -158,17 +158,18 @@ def test_unexpected_type_is_rejected(client, fake):
 
 
 @pytest.mark.parametrize("url,payload", [
-    ("/api/speaker/volume", {"value": 101}),
+    ("/api/speaker/volume", {"value": 51}),
     ("/api/speaker/volume", {"value": -1}),
     ("/api/speaker/volume", {"value": 20.5}),
     ("/api/speaker/volume", {"value": "20"}),
     ("/api/speaker/volume", {"value": True}),
-    ("/api/speaker/treble", {"value": 7}),
+    ("/api/speaker/treble", {"value": 10.5}), ("/api/speaker/treble", {"value": -11}), ("/api/speaker/treble", {"value": 7.25}),
     ("/api/speaker/treble", {"value": "5"}),
     ("/api/speaker/light", {"enabled": "true"}),
     ("/api/speaker/light", {"enabled": 1}),
     ("/api/speaker/volume", {"value": 20, "path": "settings:/mediaPlayer/attenuation"}),
-    ("/api/speaker/bass", {"value": 7}), ("/api/speaker/bass", {"value": -6.5}), ("/api/speaker/bass", {"value": "2"}),
+    ("/api/speaker/bass", {"value": 11}), ("/api/speaker/bass", {"value": -10.5}), ("/api/speaker/bass", {"value": 2.3}),
+    ("/api/speaker/bass", {"value": "2"}),
     ("/api/speaker/brightness", {"value": 101}), ("/api/speaker/brightness", {"value": -1}), ("/api/speaker/brightness", {"value": 50.5}),
     ("/api/speaker/rgb", {"red": 256, "green": 0, "blue": 0}), ("/api/speaker/rgb", {"red": 1, "green": 2}),
     ("/api/speaker/rgb", {"red": True, "green": 0, "blue": 0}),
@@ -226,6 +227,26 @@ def test_kids_code_can_read_but_not_change(client, fake):
     r = client.post("/api/speaker/volume", json={"value": 60}, headers=kid)
     assert r.status_code == 403 and r.json()["detail"]["code"] == "DENIED"
     assert fake.sets() == []
+
+
+@pytest.mark.parametrize("name,value", [("treble", 7), ("treble", 10), ("treble", -10), ("treble", 6.5),
+                                        ("bass", -10), ("bass", 10), ("bass", 7.5), ("bass", -6.5)])
+def test_tone_full_declared_range_in_half_steps(client, fake, name, value):
+    """Both nodes declare -10..+10 step 0.5; the reply is the value read back from the speaker."""
+    r = client.post(f"/api/speaker/{name}", json={"value": value}, headers=H)
+    assert r.status_code == 200 and r.json()[name] == float(value)
+    assert json.loads(fake.sets()[-1]["value"]) == {"type": "double_", "double_": float(value)}
+
+
+async def test_client_refuses_tone_outside_range_or_step(fake):
+    """The client checks again, so a stored profile with a bad value can never reach the speaker either."""
+    sp = ZeppelinClient(transport=httpx.MockTransport(fake.handler))
+    for name, bad in (("treble", 10.5), ("bass", -11), ("bass", 1.25), ("treble", True), ("bass", "3")):
+        with pytest.raises(SpeakerError) as e:
+            await sp.write(name, bad)
+        assert e.value.http == 422
+    assert fake.sets() == []
+    await sp.aclose()
 
 
 def test_bass_brightness_and_colour(client, fake):

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bookmark, Check, Pencil, Save, Trash2, Undo2, X } from 'lucide-react'
+import { Bookmark, Check, Pencil, RefreshCw, Save, Trash2, Undo2, X } from 'lucide-react'
 import { Card, Key } from '../ui/Primitives'
 import { useApp } from '../../app/store'
 import { useBackend } from '../../hooks/useDevices'
@@ -43,6 +43,7 @@ export function SpeakerProfiles() {
   const [busy, setBusy] = useState<string | null>(null)
   const [editing, setEditing] = useState<{ id: string; name: string } | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const [confirmUpdate, setConfirmUpdate] = useState(false)
   const [result, setResult] = useState<(LoadResult & { title: string }) | null>(null)
 
   if (!live) return null
@@ -66,6 +67,8 @@ export function SpeakerProfiles() {
     for (const k of ['speaker', 'speaker-eq', 'speaker-cycle']) void qc.invalidateQueries({ queryKey: [k] }) // read everything back
   }
   const load = (p: Profile) => call('load-' + p.id, () => api.speakerProfileLoad(token, p.id), (r) => { setResult({ ...r, title: p.name }); resync() })
+  const update = (p: Profile) => call('update-' + p.id, () => api.speakerProfileUpdate(token, p.id),
+    () => { setConfirmUpdate(false); setResult(null); toast('success', `הפרופיל ${p.name} עודכן למצב הנוכחי`); resync() })
   const undo = () => call('undo', () => api.speakerProfileUndo(token), (r) => { setResult({ ...r, title: 'חזרה למצב הקודם' }); resync() })
 
   return (
@@ -81,6 +84,26 @@ export function SpeakerProfiles() {
           </span>
         )}
       </div>
+
+      {loaded && same === false && (
+        <div className="flex items-center gap-2 rounded-xl border border-warn/30 bg-warn/5 px-3 py-2 text-xs">
+          <span className="flex-1 text-muted">שינית הגדרות מאז שנטען <bdi className="text-text">{loaded.name}</bdi>.{loaded.include_volume ? ' העוצמה תעודכן גם היא.' : ''}</span>
+          {confirmUpdate ? (
+            <>
+              <Key label={`אשר עדכון ${loaded.name}`} variant="primary" className="h-9 !min-h-9 px-3 text-xs font-bold" aria-busy={busy === 'update-' + loaded.id}
+                disabled={busy !== null || data?.loading} onClick={() => void update(loaded)}>
+                {busy === 'update-' + loaded.id ? 'מעדכן…' : 'לדרוס?'}
+              </Key>
+              <Key label="בטל עדכון" className="!min-w-9 !min-h-9 !rounded-full" disabled={busy !== null} onClick={() => setConfirmUpdate(false)}><X size={14} aria-hidden /></Key>
+            </>
+          ) : (
+            <Key label={`עדכן את ${loaded.name} למצב הנוכחי`} className="h-9 !min-h-9 px-3 text-xs font-bold" disabled={busy !== null || data?.loading}
+              onClick={() => setConfirmUpdate(true)}>
+              <RefreshCw size={14} aria-hidden /> עדכן פרופיל
+            </Key>
+          )}
+        </div>
+      )}
 
       {data?.undo && (
         <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs">

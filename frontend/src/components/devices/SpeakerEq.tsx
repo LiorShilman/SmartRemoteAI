@@ -37,27 +37,32 @@ export function SpeakerEq() {
   const backend = useBackend() // always called: hooks must not be conditional
   const live = mode === 'live' && backend === 'online'
   const qc = useQueryClient()
+  const applyingRef = useRef(false)
+  // Live mode: the newest wanted values, sent after the request in flight is confirmed. Never two requests at once.
+  const target = useRef<Record<string, number> | null>(null)
+  const editingRef = useRef(false) // a drag or unapplied local edit: a background read must not interfere
+  const idle = () => !applyingRef.current && !target.current && !editingRef.current
   const q = useQuery({
     queryKey: ['speaker-eq', token],
     queryFn: () => api.speakerEq(token), // read only
     enabled: live,
     retry: false,
-    refetchOnWindowFocus: false,
+    // pick up changes made on another device, but only while nothing is being edited or sent here
+    refetchInterval: () => (idle() ? 10_000 : false),
+    refetchOnWindowFocus: () => idle(),
   })
   const bands = q.data?.bands ?? null
   const [draft, setDraft] = useState<Record<string, number>>({})
   const [applying, setApplying] = useState(false)
   const [drag, setDrag] = useState<string | null>(null)
-  const applyingRef = useRef(false)
   const svgRef = useRef<SVGSVGElement>(null)
-  // Live mode: the newest wanted values, sent after the request in flight is confirmed. Never two requests at once.
-  const target = useRef<Record<string, number> | null>(null)
 
   if (!live) return null
 
   const valueOf = (b: EqBand) => draft[b.band] ?? b.value
   const edited = (b: EqBand) => draft[b.band] !== undefined && Math.abs(draft[b.band] - b.value) > 1e-9
   const dirty = !!bands?.some(edited)
+  editingRef.current = drag !== null || dirty
   const confirmed = (want: Record<string, number>) => {
     const cur = qc.getQueryData<EqState>(['speaker-eq', token])?.bands
     return !cur || cur.every((b) => Math.abs((want[b.band] ?? b.value) - b.value) < 1e-9)

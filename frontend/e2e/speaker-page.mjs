@@ -8,6 +8,7 @@ const b = await chromium.launch({ channel: process.env.BROWSER ?? 'msedge' })
 const page = await (await b.newContext({ viewport: { width: 1280, height: 1000 } })).newPage()
 const writes = []
 const BANDS = ['60', '250', '1000', '3500', '12000']
+let volume = 20, eq60 = 0
 await page.route('**/api/**', async (route) => {
   const req = route.request(), path = new URL(req.url()).pathname.replace(/^.*\/api/, '/api')
   const json = (body) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) })
@@ -16,8 +17,8 @@ await page.route('**/api/**', async (route) => {
   if (path === '/api/me') return json({ kind: 'admin', name: 'מנהל', pending_requests: 0 })
   if (path === '/api/devices') return json([])
   if (path === '/api/usage') return json({ today_min: 0, days: [{ day: '2026-11-15', total_min: 0, apps: {} }] })
-  if (path === '/api/speaker') return json({ host: '192.168.1.52', reachable: true, volume: 20, treble: 0, light: true, bass: 0, brightness: 50, rgb: { red: 0, green: 0, blue: 255 }, mute: false, loudness: false, balance: 0, errors: {} })
-  if (path === '/api/speaker/eq') return json({ bands: BANDS.map((band) => ({ band, min: -6, max: 6, step: 0.5, value: 0 })), enabled: true, errors: {} })
+  if (path === '/api/speaker') return json({ host: '192.168.1.52', reachable: true, volume, treble: 0, light: true, bass: 0, brightness: 50, rgb: { red: 0, green: 0, blue: 255 }, mute: false, loudness: false, balance: 0, errors: {} })
+  if (path === '/api/speaker/eq') return json({ bands: BANDS.map((band) => ({ band, min: -6, max: 6, step: 0.5, value: band === '60' ? eq60 : 0 })), enabled: true, errors: {} })
   if (path === '/api/speaker/cycle') return json({ config: { interval_s: 10, mode: 'random', smooth: false, palette: [] }, status: { running: false, state: 'stopped', message: null, last_colour: null, changed_at: null, steps: 0 } })
   if (path === '/api/speaker/profiles') return json({ profiles: [], loaded_id: null, undo: null, loading: false })
   return json([])
@@ -42,5 +43,19 @@ for (const [w, h] of [[1280, 1000], [390, 860]]) {
   await page.screenshot({ path: (process.env.SHOT ?? 'speaker-page') + `-${w}.png`, fullPage: true })
 }
 if (writes.length) fail(`writes while opening the page: ${writes}`)
+
+// A change made on another device (here: the mocked server's values change) shows without reloading.
+volume = 41; eq60 = 3
+await page.getByText('41', { exact: true }).waitFor({ timeout: 7000 }).catch(() => fail('volume changed elsewhere not shown within 7 s'))
+await page.getByRole('slider', { name: /60/ }).first().evaluate((el) => el.getAttribute('aria-valuenow'))
+  .then(async () => {
+    const t0 = Date.now()
+    while (Date.now() - t0 < 12000) {
+      if ((await page.getByRole('slider', { name: /60/ }).first().getAttribute('aria-valuenow')) === '3') return
+      await page.waitForTimeout(300)
+    }
+    fail('EQ changed elsewhere not shown within 12 s')
+  })
+if (writes.length) fail(`polling wrote to the speaker: ${writes}`)
 await b.close()
 console.log(process.exitCode ? 'speaker page e2e: FAILED' : 'speaker page e2e: OK')

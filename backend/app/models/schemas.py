@@ -350,12 +350,19 @@ class HealthOut(BaseModel):
 # ---- B&W Zeppelin speaker: one schema per verified control. There is no "path" field anywhere, by design.
 class SpeakerVolume(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    value: int = Field(strict=True, ge=0, le=100)
+    value: int = Field(strict=True, ge=0, le=50)  # speaker units (player:volume declares 0..50), shown as is
 
 
 class SpeakerTreble(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    value: float = Field(strict=True, ge=-6, le=6)
+    value: float = Field(strict=True, ge=-10, le=10)  # dB; the node declares -10..+10 step 0.5
+
+    @field_validator("value")
+    @classmethod
+    def _half_steps(cls, v: float) -> float:
+        if abs(v * 2 - round(v * 2)) > 1e-9:
+            raise ValueError("value must be a multiple of 0.5")
+        return v
 
 
 class SpeakerLight(BaseModel):
@@ -365,7 +372,14 @@ class SpeakerLight(BaseModel):
 
 class SpeakerBass(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    value: float = Field(strict=True, ge=-6, le=6)
+    value: float = Field(strict=True, ge=-10, le=10)  # dB; the node declares -10..+10 step 0.5
+
+    @field_validator("value")
+    @classmethod
+    def _half_steps(cls, v: float) -> float:
+        if abs(v * 2 - round(v * 2)) > 1e-9:
+            raise ValueError("value must be a multiple of 0.5")
+        return v
 
 
 class SpeakerBrightness(BaseModel):
@@ -405,6 +419,42 @@ class SpeakerConfig(BaseModel):
     @classmethod
     def _host(cls, v: str) -> str:
         return check_host(v)
+
+
+class SpeakerStandbyOption(BaseModel):
+    seconds: int
+    title: str                     # as the speaker names it ("30 minutes")
+
+
+class SpeakerStandby(BaseModel):
+    seconds: int                   # current value; may be one the list does not contain (factory 1200)
+    options: list[SpeakerStandbyOption]
+
+
+class SpeakerStandbySet(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    seconds: int = Field(strict=True, ge=0, le=86400)  # must also be in the speaker's list (checked against it)
+
+
+class SpeakerSource(BaseModel):
+    id: str                        # "airplay", "bluetooth", "spdif"…
+    title: str
+    active: bool                   # currently playing from it
+    plugged: bool                  # connected / available according to the speaker
+    available: bool                # the speaker's menu does not mark it disabled
+
+
+class SpeakerSources(BaseModel):
+    sources: list[SpeakerSource]
+
+
+class SpeakerBluetooth(BaseModel):
+    name: str                      # the name phones see ("Living Room")
+    discoverable: bool             # visible / accepting a new pairing right now
+    pairable: bool
+    connected_device: str | None = None
+    paired: list[str] = []
+    sent: bool | None = None       # pairing request only: False = was already visible, nothing sent
 
 
 class SpeakerState(BaseModel):

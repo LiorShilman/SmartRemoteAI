@@ -125,6 +125,20 @@ export interface LogEntry {
 }
 
 /** B&W Zeppelin speaker, as read by the server. null = that value could not be read (see errors). */
+/** Speaker Bluetooth (read from bluetooth:state). `sent` only on a pairing request: false = already visible. */
+export interface SpeakerStandby { seconds: number; options: { seconds: number; title: string }[] }
+export interface SpeakerSource { id: string; title: string; active: boolean; plugged: boolean; available: boolean }
+export interface SpeakerSources { sources: SpeakerSource[] }
+
+export interface SpeakerBluetooth {
+  name: string
+  discoverable: boolean
+  pairable: boolean
+  connected_device: string | null
+  paired: string[]
+  sent?: boolean | null
+}
+
 export interface SpeakerState {
   host: string
   reachable: boolean

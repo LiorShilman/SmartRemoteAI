@@ -41,6 +41,11 @@ await page.route('**/api/**', async (route) => {
   const one = path.match(/^\/api\/speaker\/profiles\/(p\d+)$/)
   if (one && m === 'PATCH') { state = { ...state, profiles: state.profiles.map((p) => (p.id === one[1] ? { ...p, name: body.name } : p)) }; return json(state) }
   if (one && m === 'DELETE') { state = { ...state, profiles: state.profiles.filter((p) => p.id !== one[1]) }; return json(state) }
+  const up = path.match(/^\/api\/speaker\/profiles\/(p\d+)\/update$/)
+  if (up) {
+    state = { ...state, loaded_id: up[1], profiles: state.profiles.map((p) => (p.id === up[1] ? { ...p, data: capture(p.include_volume), updated_at: Date.now() / 1000 } : p)) }
+    return json({ updated: state.profiles.find((p) => p.id === up[1]), ...state })
+  }
   const ld = path.match(/^\/api\/speaker\/profiles\/(p\d+)\/load$/)
   if (ld) {
     const p = state.profiles.find((x) => x.id === ld[1])
@@ -96,6 +101,17 @@ await card.getByText('נטען במלואו ונקרא בחזרה מהרמקול
 speaker = { ...speaker, bass: -3 }
 await page.getByRole('button', { name: 'רענן את מצב הרמקול' }).click()
 await card.getByText('· שונה').waitFor({ timeout: 4000 }).catch(() => fail('"changed" chip missing'))
+
+// 3b. Update the loaded profile to the current state (with confirmation): it matches again, nothing written to the speaker.
+const nUpd = () => posts.filter((p) => p.path.endsWith('/update')).length
+await card.getByRole('button', { name: 'עדכן את ערב למצב הנוכחי' }).click()
+if (nUpd()) fail('updated without confirmation')
+await card.getByRole('button', { name: 'אשר עדכון ערב' }).click()
+await card.getByText('· תואם').waitFor({ timeout: 4000 }).catch(() => fail('"matches" chip missing after updating'))
+if (nUpd() !== 1) fail(`update calls: ${nUpd()}`)
+if (state.profiles.find((p) => p.name === 'ערב').data.bass !== -3) fail('profile not updated to current values')
+if (await card.getByRole('button', { name: 'עדכן את ערב למצב הנוכחי' }).count()) fail('update button still shown when matching')
+if (posts.some((p) => !p.path.startsWith('/api/speaker/profiles'))) fail('speaker written outside profiles')
 
 // 4. Undo appears after a load and restores.
 await card.getByRole('button', { name: 'חזור למצב הקודם' }).waitFor({ timeout: 3000 }).catch(() => fail('undo missing after load'))

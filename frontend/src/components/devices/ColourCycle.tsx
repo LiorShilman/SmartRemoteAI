@@ -5,7 +5,7 @@ import { Key } from '../ui/Primitives'
 import { useApp } from '../../app/store'
 import { ApiError, api } from '../../services/api'
 import { hexToRgb, rgbToHex, type Rgb } from '../../services/speaker'
-import type { CycleConfig, CycleState, SpeakerState } from '../../types'
+import type { CycleConfig, CycleState } from '../../types'
 
 const MAX_COLOURS = 12
 
@@ -29,11 +29,6 @@ export function ColourCycle({ lightOn, disabled, Switch }: {
   // guard the shape: an unexpected reply must not take the card down
   const st = q.data && typeof q.data === 'object' && 'status' in q.data ? q.data.status : undefined
   const cfg = q.data && typeof q.data === 'object' && 'config' in q.data ? q.data.config : undefined
-
-  // While cycling, keep the card's colour display in step with what the server last wrote.
-  useEffect(() => {
-    if (st?.last_colour) qc.setQueryData<SpeakerState>(['speaker', token], (old) => (old ? { ...old, rgb: st.last_colour! } : old))
-  }, [st?.last_colour?.red, st?.last_colour?.green, st?.last_colour?.blue]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const run = async (fn: () => Promise<CycleState>, ok?: string) => {
     if (busyRef.current) return

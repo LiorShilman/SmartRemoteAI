@@ -1,12 +1,14 @@
 /** B&W Zeppelin: value ranges and the "should this be sent?" rule, kept pure so they can be unit-tested.
  * The server validates the same ranges again; these only shape the UI. */
 
-export const VOLUME = { min: 0, max: 100, step: 1, button: 2 } as const
-/** Matches the B&W app's slider. Only 5 and 6 have been verified on the real speaker so far. */
-export const TREBLE = { min: -6, max: 6, step: 1, button: 1 } as const
-/** The speaker stores any value it is sent, so it cannot report its range. Chosen by the user after the lab tests
- * (every edge was stored by the speaker): bass like treble, brightness as a percentage. */
-export const BASS = { min: -6, max: 6, step: 1, button: 1 } as const
+/** The speaker's own units, shown as is (chosen by the user): `player:volume` declares a slider 0..50 step 1
+ * (volumeMap has 51 entries, -120..0 dB; 1 dB per step above 10). */
+export const VOLUME = { min: 0, max: 50, step: 1, button: 1 } as const
+/** Bass and treble: both nodes declare a slider -10..+10 dB in steps of 0.5. Treble 7 was written and read back and 11
+ * came back clamped to 10; whether values beyond 6 change the sound is not verified. Bass rests on the metadata alone. */
+export const TREBLE = { min: -10, max: 10, step: 0.5, button: 0.5 } as const
+export const BASS = { min: -10, max: 10, step: 0.5, button: 0.5 } as const
+/** Brightness: the speaker stores any value; a percentage, chosen by the user. */
 export const BRIGHTNESS = { min: 0, max: 100, step: 1, button: 10 } as const
 /** Chosen by the user (the speaker stores any value). Which sign is left/right is unknown: no labels. */
 export const BALANCE = { min: -6, max: 6, step: 1, button: 1 } as const

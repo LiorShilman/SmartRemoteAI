@@ -68,6 +68,22 @@ LAB: dict[str, Control] = {
     "balance": Control("settings:/mediaPlayer/balance", "double_"),
 }
 
+# Bluetooth pairing (2026-11-15): the speaker's own menu (ui:/bluetooth) offers this action; the B&W app's
+# "Pair new device" was seen to flip exactly bluetooth:state, and one user-approved test of
+# POST /api/setData {"path": BT_PAIRING_ACTION, "role": "activate", "value": {}} made the speaker visible within 0.5 s.
+# Fixed paths only. What a second activation does while visible is NOT verified, so it is never sent then.
+BT_STATE = Control("bluetooth:state", "bluetoothState")
+BT_PAIRING_ACTION = "bluetooth:deviceList/discoverable"
+BT_CONFIRM_S = 3.0  # how long to wait for the speaker to report that it became visible
+# Standby timeout: the value the speaker's own menu shows as "Standby Timeout" (ui:/settings/powerManagement/idleTime).
+# A write is accepted only if it is one of the options the speaker lists under its enumPath, read fresh each time.
+# Verified 2026-11-16: 1200 -> 1800 written and read back, then restored to 1200.
+STANDBY = Control("settings:/system/maxIdleTime", "i32_")
+STANDBY_OPTIONS = "settings:/system/maxIdleTimeValues"
+# Audio sources: the speaker's own "B&W Audio Sources" menu. Read only (switching is not verified).
+SOURCES_MENU = "ui:/bw"
+ROW_ROLES = "title,value,path,type,disabled"  # getRows then returns each row as a list in exactly this order
+
 # 5-band equalizer: write + read-back verified (2026-11-15); the speaker sends each band's own min/max/step, which are
 # the only limits used. Written as the whole band list, keeping every field the speaker sent, with only "value" changed.
 EQ = Control("settings:/mediaPlayer/equalizer", "eqBandList")
@@ -77,15 +93,19 @@ SOURCE_GAIN = Control("settings:/mediaPlayer/sourceGain", "sourceGainList")
 EQ_ENABLED = LAB["eq_enabled"]
 RGB_KEYS = ("red", "green", "blue")
 
-# Validation ranges for writes. Volume 0..100 and treble -6..+6 match the B&W app's sliders; on the speaker itself
-# only volume 23/28 and treble 5/6 have been verified so far.
-VOLUME_MIN, VOLUME_MAX = 0, 100
-TREBLE_MIN, TREBLE_MAX = -6.0, 6.0
-# The speaker stores ANY value (bass -7/7 and brightness 101 were stored as sent), so it cannot tell us its range.
-# Chosen by the user: bass like treble in the B&W app, brightness as a percentage. Every edge was stored by the speaker;
-# whether values beyond them have an effect was not tested.
-BASS_MIN, BASS_MAX = -6.0, 6.0
+# Validation ranges for writes. Volume is in the speaker's own units: player:volume declares edit {min 0, max 50, step 1}
+# and volumeMap has 51 entries (-120..0 dB); values above 50 are rejected by the speaker. The UI shows the same 0..50.
+# Bass and treble: both nodes declare edit {min -10, max 10, step 0.5, slider} (double_, dB). Treble 7 was written and
+# read back, and 11 came back clamped to 10 (user test); whether values beyond 6 change the sound is not verified yet.
+# The bass range rests on the metadata alone. The 5 EQ bands keep their own -6..+6 (declared per band).
+VOLUME_MIN, VOLUME_MAX = 0, 50
+TREBLE_MIN, TREBLE_MAX = -10.0, 10.0
+BASS_MIN, BASS_MAX = -10.0, 10.0
+TONE_STEP = 0.5
+# The speaker stores ANY brightness (101 was stored as sent); 0..100 chosen by the user as a percentage.
 BRIGHTNESS_MIN, BRIGHTNESS_MAX = 0, 100
+
+TONE_RANGE = {"bass": (BASS_MIN, BASS_MAX), "treble": (TREBLE_MIN, TREBLE_MAX)}
 
 
 class SpeakerError(Exception):
@@ -213,6 +233,24 @@ class ZeppelinClient:
             raise SpeakerError(ErrorCode.DENIED, f"הרמקול החזיר קוד {r.status_code}.", 502)
         return body
 
+    async def _activate(self, path: str) -> None:
+        """Invoke an action node, in the exact form that was verified: POST JSON (encoded by httpx), empty value."""
+        url = f"http://{self.host}/api/setData"
+        try:
+            r = await self._http.post(url, json={"path": path, "role": "activate", "value": {}})
+        except httpx.TimeoutException:
+            raise SpeakerError(ErrorCode.TIMEOUT, "הרמקול לא הגיב בזמן.", 504) from None
+        except httpx.HTTPError:
+            raise SpeakerError(ErrorCode.NOT_CONNECTED, f"אין חיבור לרמקול בכתובת {self.host}.", 503) from None
+        try:
+            body = r.json() if r.content else None
+        except ValueError:
+            body = None
+        if (msg := _error_in(body)) is not None:
+            raise SpeakerError(ErrorCode.DENIED, f"הרמקול החזיר שגיאה: {msg}", 502)
+        if r.status_code != 200:
+            raise SpeakerError(ErrorCode.DENIED, f"הרמקול החזיר קוד {r.status_code}.", 502)
+
     async def _read(self, control: Control) -> Any:
         return _unwrap(control, await self._call("getData", {"path": control.path, "roles": "value"}))
 
@@ -250,11 +288,103 @@ class ZeppelinClient:
     async def write(self, name: str, value: Any) -> Any:
         """Write one verified control, then read it back. Returns the value the speaker now reports."""
         control = CONTROLS[name]
+        if name in TONE_RANGE and not (isinstance(value, (int, float)) and not isinstance(value, bool)
+                                       and on_step(float(value), *TONE_RANGE[name], TONE_STEP)):
+            lo, hi = TONE_RANGE[name]
+            raise SpeakerError(ErrorCode.INVALID_COMMAND, f"ערך לא תקין: {value} (מותר {lo:g} עד {hi:g} בצעד {TONE_STEP:g}).", 422)
         async with self._lock:
             now = await self._set_and_read(control, value)
         if not _same(control, now, value):
             raise SpeakerError(ErrorCode.DENIED, f"הרמקול קיבל את הבקשה, אבל הערך לא השתנה (מדווח: {now}).", 502)
         return now
+
+    # ---- Bluetooth pairing
+    async def _bt(self) -> dict:
+        body = await self._call("getData", {"path": BT_STATE.path, "roles": "value"})
+        if isinstance(body, list) and len(body) == 1:
+            body = body[0]
+        st = body.get(BT_STATE.type) if isinstance(body, dict) and body.get("type") == BT_STATE.type else None
+        if not isinstance(st, dict) or not isinstance(st.get("discoverable"), bool):
+            raise SpeakerError(ErrorCode.UNSUPPORTED, "הרמקול החזיר מצב Bluetooth בפורמט לא צפוי.", 502)
+        dev = st.get("connectedDevice") if st.get("connected") is True else None
+        return {"name": str(st.get("name") or ""), "discoverable": st["discoverable"], "pairable": st.get("pairable") is True,
+                "connected_device": str(dev.get("name") or "") if isinstance(dev, dict) else None,
+                "paired": [str(d.get("name") or "") for d in st.get("pairedDevices") or [] if isinstance(d, dict)]}
+
+    async def bluetooth(self) -> dict:
+        async with self._lock:
+            return await self._bt()
+
+    async def open_pairing(self) -> dict:
+        """Make the speaker visible for pairing. Already visible: nothing is sent (a second activation is not verified).
+        Success only once the speaker itself reports discoverable=true. Returns the state plus whether it was sent."""
+        async with self._lock:
+            before = await self._bt()
+            if before["discoverable"]:
+                return {**before, "sent": False}
+            await self._activate(BT_PAIRING_ACTION)
+            waited = 0.0
+            while True:
+                now = await self._bt()
+                if now["discoverable"] or waited >= BT_CONFIRM_S:
+                    break
+                await asyncio.sleep(0.5)
+                waited += 0.5
+        if not now["discoverable"]:
+            raise SpeakerError(ErrorCode.DENIED, "הרמקול קיבל את הבקשה, אבל לא דיווח שנכנס למצב צימוד.", 502)
+        return {**now, "sent": True}
+
+    # ---- lists the speaker publishes (getRows; read only)
+    async def _rows(self, path: str) -> list[list]:
+        out: list[list] = []
+        while True:
+            body = await self._call("getRows", {"path": path, "roles": ROW_ROLES, "from": str(len(out)), "to": str(len(out) + 49)})
+            rows = body.get("rows") if isinstance(body, dict) else None
+            total = body.get("rowsCount") if isinstance(body, dict) else None
+            if not isinstance(rows, list) or not isinstance(total, int) or not all(isinstance(r, list) and len(r) == 5 for r in rows):
+                raise SpeakerError(ErrorCode.UNSUPPORTED, "הרמקול החזיר רשימה בפורמט לא צפוי.", 502)
+            out.extend(rows)
+            if not rows or len(out) >= total:
+                return out
+
+    async def _standby_options(self) -> list[dict]:
+        opts = []
+        for title, value, _path, kind, _disabled in await self._rows(STANDBY_OPTIONS):
+            if kind == "value" and isinstance(value, dict) and value.get("type") == "i32_":
+                sec = value.get("i32_")
+                if isinstance(sec, int) and not isinstance(sec, bool) and sec >= 0:
+                    opts.append({"seconds": sec, "title": str(title or "")})
+        if not opts:
+            raise SpeakerError(ErrorCode.UNSUPPORTED, "הרמקול לא החזיר את רשימת זמני הכיבוי.", 502)
+        return opts
+
+    async def standby(self) -> dict:
+        async with self._lock:
+            return {"seconds": await self._read(STANDBY), "options": await self._standby_options()}
+
+    async def write_standby(self, seconds: int) -> dict:
+        """Only an option the speaker itself lists right now; then read back like every other write."""
+        async with self._lock:
+            options = await self._standby_options()
+            if seconds not in {o["seconds"] for o in options}:
+                raise SpeakerError(ErrorCode.INVALID_COMMAND, "יש לבחור זמן כיבוי מתוך הרשימה שהרמקול מציג.", 422)
+            now = await self._set_and_read(STANDBY, seconds)
+        if now != seconds:
+            raise SpeakerError(ErrorCode.DENIED, f"הרמקול קיבל את הבקשה, אבל הערך לא השתנה (מדווח: {now}).", 502)
+        return {"seconds": now, "options": options}
+
+    async def sources(self) -> list[dict]:
+        """The speaker's source list with its own flags. Device names/addresses inside the value are not passed on."""
+        async with self._lock:
+            rows = await self._rows(SOURCES_MENU)
+        out = []
+        for title, value, path, kind, disabled in rows:
+            inp = value.get("bwAudioInput") if isinstance(value, dict) and value.get("type") == "bwAudioInput" else None
+            if kind != "action" or not isinstance(path, str) or not path.startswith("bw:") or not isinstance(inp, dict):
+                continue
+            out.append({"id": path[3:], "title": str(title or path[3:]), "active": inp.get("active") is True,
+                        "plugged": inp.get("plugged") is True, "available": disabled is not True})
+        return out
 
     # ---- 5-band equalizer
     async def read_eq(self) -> list[dict]:

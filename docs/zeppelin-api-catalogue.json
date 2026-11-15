@@ -1,0 +1,7069 @@
+{
+ "host": "192.168.1.52",
+ "root": "settings:",
+ "crawledAt": "2026-11-16 00:12:28",
+ "nodeCount": 421,
+ "stats": {
+  "getRows": 73,
+  "getData": 350,
+  "http_err": 0,
+  "json_err": 0,
+  "body_err": 0,
+  "timeout": 0
+ },
+ "errors": [],
+ "playerVolume": {
+  "path": "player:volume",
+  "title": "Volume",
+  "type": "value",
+  "modifiable": true,
+  "edit": {
+   "step": "1",
+   "min": "0",
+   "max": "50",
+   "type": "slider"
+  },
+  "valueType": "i32_",
+  "currentValue": {
+   "type": "i32_",
+   "i32_": 11
+  }
+ },
+ "playerVolumeError": null,
+ "nodes": [
+  {
+   "path": "settings:/airable",
+   "title": "airable",
+   "type": "container",
+   "childCount": 4,
+   "redacted": true
+  },
+  {
+   "path": "settings:/airable/bitrate",
+   "title": "Airable stream audio bitrate",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "type": "enum_"
+   },
+   "valueType": "airableStreamBitrate",
+   "redacted": true
+  },
+  {
+   "path": "settings:/airable/bitrateValues",
+   "title": "bitrateValues",
+   "type": "container",
+   "childCount": 4,
+   "redacted": true
+  },
+  {
+   "path": "settings:/airable/bitrateValues/00130000-low",
+   "title": "Low",
+   "type": "value",
+   "valueType": "airableStreamBitrate",
+   "redacted": true
+  },
+  {
+   "path": "settings:/airable/bitrateValues/00350000-normal",
+   "title": "Normal",
+   "type": "value",
+   "valueType": "airableStreamBitrate",
+   "redacted": true
+  },
+  {
+   "path": "settings:/airable/bitrateValues/01600000-high",
+   "title": "High",
+   "type": "value",
+   "valueType": "airableStreamBitrate",
+   "redacted": true
+  },
+  {
+   "path": "settings:/airable/bitrateValues/10000000-unlimited",
+   "title": "Premium",
+   "type": "value",
+   "valueType": "airableStreamBitrate",
+   "redacted": true
+  },
+  {
+   "path": "settings:/airable/deezerSignUpLink",
+   "title": "Deezer url to sign/create account",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/airplay",
+   "title": "airplay",
+   "type": "container",
+   "childCount": 11
+  },
+  {
+   "path": "settings:/airplay/addedToHome",
+   "title": "addedToHome",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/airplay/batteryPowered",
+   "title": "Battery powered",
+   "type": "value",
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/airplay/deviceName",
+   "title": "AirPlay Name",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "string_": "",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/airplay/homeIntegration",
+   "title": "HomeKit Integration",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/airplay/metricsAllowed",
+   "title": "metricsAllowed",
+   "type": "value",
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/airplay/pairingPreferences",
+   "title": "HomeKit pairing preferences",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/airplay/password",
+   "title": "Password",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/airplay/pipelineLengthUs",
+   "title": "The length of airplay audio pipeline in microseconds",
+   "type": "value",
+   "valueType": "i32_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/airplay/platformAudioLatency",
+   "title": "Platform audio latency in microseconds",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 667000
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/al",
+   "title": "al",
+   "type": "container",
+   "childCount": 3
+  },
+  {
+   "path": "settings:/al/favorites",
+   "title": "favorites",
+   "type": "container",
+   "modifiable": true,
+   "childCount": 0
+  },
+  {
+   "path": "settings:/al/playHistory",
+   "title": "playHistory",
+   "type": "container",
+   "modifiable": true,
+   "childCount": 0
+  },
+  {
+   "path": "settings:/al/presets",
+   "title": "presets",
+   "type": "container",
+   "modifiable": true,
+   "childCount": 10
+  },
+  {
+   "path": "settings:/al/presets/0",
+   "title": "0",
+   "type": "value",
+   "modifiable": true
+  },
+  {
+   "path": "settings:/al/presets/1",
+   "title": "1",
+   "type": "value",
+   "modifiable": true
+  },
+  {
+   "path": "settings:/al/presets/2",
+   "title": "2",
+   "type": "value",
+   "modifiable": true
+  },
+  {
+   "path": "settings:/al/presets/3",
+   "title": "3",
+   "type": "value",
+   "modifiable": true
+  },
+  {
+   "path": "settings:/al/presets/4",
+   "title": "4",
+   "type": "value",
+   "modifiable": true
+  },
+  {
+   "path": "settings:/al/presets/5",
+   "title": "5",
+   "type": "value",
+   "modifiable": true
+  },
+  {
+   "path": "settings:/al/presets/6",
+   "title": "6",
+   "type": "value",
+   "modifiable": true
+  },
+  {
+   "path": "settings:/al/presets/7",
+   "title": "7",
+   "type": "value",
+   "modifiable": true
+  },
+  {
+   "path": "settings:/al/presets/8",
+   "title": "8",
+   "type": "value",
+   "modifiable": true
+  },
+  {
+   "path": "settings:/al/presets/9",
+   "title": "9",
+   "type": "value",
+   "modifiable": true
+  },
+  {
+   "path": "settings:/alerts",
+   "title": "alerts",
+   "type": "container",
+   "childCount": 5
+  },
+  {
+   "path": "settings:/alerts/data",
+   "title": "Stored alerts",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "alertsList": {
+     "alarms": [],
+     "timers": []
+    },
+    "type": "alertsList"
+   },
+   "valueType": "alertsList"
+  },
+  {
+   "path": "settings:/alerts/defaultSound",
+   "title": "Default alert sound",
+   "type": "value",
+   "defaultValue": {
+    "string_": "/usr/share/sounds/soundbible-1599-store-door-chime.mp3",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/alerts/maxExpireTime",
+   "title": "Maximum time in seconds after alert expires",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 300
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/alerts/minimumVolume",
+   "title": "Minimum system volume when alert fires",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 20
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/alerts/snoozeTime",
+   "title": "Snooze time:",
+   "type": "value",
+   "modifiable": true,
+   "valueUnit": {
+    "string_": "minutes",
+    "type": "string_"
+   },
+   "edit": {
+    "step": "1",
+    "min": "1",
+    "max": "30",
+    "type": "slider"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 10
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/amazonMusic",
+   "title": "amazonMusic",
+   "type": "container",
+   "childCount": 9
+  },
+  {
+   "path": "settings:/amazonMusic/deviceHDCapability",
+   "title": "HD playback capabilities (STD_RES / HI_FI / HI_RES)",
+   "type": "value",
+   "defaultValue": {
+    "string_": "STD_RES, HI_FI, HI_RES",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/amazonMusic/endpointBaseUrl",
+   "title": "Amazon music url",
+   "type": "value",
+   "defaultValue": {
+    "string_": "https://music-api.amazon.com/",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/amazonMusic/maxQueueSize",
+   "title": "Maximal radio queue size",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 30
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/analytics",
+   "title": "analytics",
+   "type": "container",
+   "childCount": 2
+  },
+  {
+   "path": "settings:/appleAuthChip",
+   "title": "appleAuthChip",
+   "type": "container",
+   "childCount": 3,
+   "redacted": true
+  },
+  {
+   "path": "settings:/appleAuthChip/address",
+   "title": "Apple Authentication Coprocessor I2C address",
+   "type": "value",
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/appleAuthChip/address_streamkitprime",
+   "title": "Apple Authentication Coprocessor I2C address",
+   "type": "value",
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/appleAuthChip/device",
+   "title": "Apple Authentication Coprocessor I2C device name",
+   "type": "value",
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/audiogum",
+   "title": "audiogum",
+   "type": "container",
+   "childCount": 3
+  },
+  {
+   "path": "settings:/avs",
+   "title": "avs",
+   "type": "container",
+   "childCount": 18
+  },
+  {
+   "path": "settings:/avs/ace",
+   "title": "ace",
+   "type": "container",
+   "childCount": 4
+  },
+  {
+   "path": "settings:/avs/ace/ffsMode",
+   "title": "Frustration Free Setup mode",
+   "type": "value",
+   "defaultValue": {
+    "ffsMode": {
+     "userGuidedSetup": true,
+     "zeroTouchSetup": true,
+     "barcodeSetup": true
+    },
+    "type": "ffsMode"
+   },
+   "valueType": "ffsMode"
+  },
+  {
+   "path": "settings:/avs/enableAudioCues",
+   "title": "enableAudioCues",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/avs/enableLocaleCombinations",
+   "title": "enableLocaleCombinations",
+   "type": "value",
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/avs/enableSetupMode",
+   "title": "enableSetupMode",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/avs/endOfSpeechConfirmation",
+   "title": "End of speech confirmation",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/avs/hd",
+   "title": "hd",
+   "type": "container",
+   "childCount": 3
+  },
+  {
+   "path": "settings:/avs/multiroom",
+   "title": "multiroom",
+   "type": "container",
+   "childCount": 5
+  },
+  {
+   "path": "settings:/avs/multiroom/audioDevice",
+   "title": "Audio Device",
+   "type": "value",
+   "defaultValue": {
+    "audioDevice": {
+     "device": "plug:default",
+     "sampleRate": 48000
+    },
+    "type": "audioDevice"
+   },
+   "valueType": "audioDevice"
+  },
+  {
+   "path": "settings:/avs/multiroom/audioDriftPpm",
+   "title": "Audio Drift",
+   "type": "value",
+   "defaultValue": {
+    "double_": 0,
+    "type": "double_"
+   },
+   "valueType": "double_"
+  },
+  {
+   "path": "settings:/avs/multiroom/driftTolerancePpm",
+   "title": "Drift Tolerance",
+   "type": "value",
+   "defaultValue": {
+    "double_": 20,
+    "type": "double_"
+   },
+   "valueType": "double_"
+  },
+  {
+   "path": "settings:/avs/multiroom/nominalDriftPpm",
+   "title": "Nominal Drift",
+   "type": "value",
+   "defaultValue": {
+    "double_": 0,
+    "type": "double_"
+   },
+   "valueType": "double_"
+  },
+  {
+   "path": "settings:/avs/multiroom/playOffsetUs",
+   "title": "Play Offset",
+   "type": "value",
+   "defaultValue": {
+    "i64_": 0,
+    "type": "i64_"
+   },
+   "valueType": "i64_"
+  },
+  {
+   "path": "settings:/avs/storage",
+   "title": "storage",
+   "type": "container",
+   "childCount": 8
+  },
+  {
+   "path": "settings:/avs/storage/alerts",
+   "title": "Alexa voice service alert storage",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "avsAlertDb": {},
+    "type": "avsAlertDb"
+   },
+   "valueType": "avsAlertDb"
+  },
+  {
+   "path": "settings:/avs/storage/bluetooth",
+   "title": "Alexa voice service bluetooth storage",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "avsBluetoothDb": {},
+    "type": "avsBluetoothDb"
+   },
+   "valueType": "avsBluetoothDb"
+  },
+  {
+   "path": "settings:/avs/storage/capabilitiesDelegate",
+   "title": "Alexa voice service capabilities delegate storage",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "avsCapabilityDelegateDb": {},
+    "type": "avsCapabilityDelegateDb"
+   },
+   "valueType": "avsCapabilityDelegateDb"
+  },
+  {
+   "path": "settings:/avs/storage/deviceSettings",
+   "title": "Alexa voice device setting storage",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "avsDeviceSettingDb": {},
+    "type": "avsDeviceSettingDb"
+   },
+   "valueType": "avsDeviceSettingDb"
+  },
+  {
+   "path": "settings:/avs/storage/messages",
+   "title": "Alexa voice service messages storage",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "avsMessageDb": {},
+    "type": "avsMessageDb"
+   },
+   "valueType": "avsMessageDb"
+  },
+  {
+   "path": "settings:/avs/storage/misc",
+   "title": "misc",
+   "type": "container",
+   "modifiable": true,
+   "childCount": 0
+  },
+  {
+   "path": "settings:/avs/storage/notifications",
+   "title": "Alexa voice service notifications storage",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "avsNotificationDb": {},
+    "type": "avsNotificationDb"
+   },
+   "valueType": "avsNotificationDb"
+  },
+  {
+   "path": "settings:/avs/storage/offlineAlerts",
+   "title": "Alexa voice service offline alert storage",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "avsAlertDb": {},
+    "type": "avsAlertDb"
+   },
+   "valueType": "avsAlertDb"
+  },
+  {
+   "path": "settings:/avs/wakewordConfirmation",
+   "title": "Wakeword confirmation",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/bleControl",
+   "title": "bleControl",
+   "type": "container",
+   "childCount": 2
+  },
+  {
+   "path": "settings:/bleControl/advertiseConnected",
+   "title": "Advertise in connected state",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/bleControl/wifiServiceUuid",
+   "title": "Wifi Pairing Service UUID",
+   "type": "value",
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/bluetooth",
+   "title": "bluetooth",
+   "type": "container",
+   "childCount": 18
+  },
+  {
+   "path": "settings:/bluetooth/a2dpDelay",
+   "title": "A2DP Delay",
+   "type": "value",
+   "valueUnit": {
+    "string_": "us",
+    "type": "string_"
+   },
+   "defaultValue": {
+    "i64_": 350000,
+    "type": "i64_"
+   },
+   "valueType": "i64_"
+  },
+  {
+   "path": "settings:/bluetooth/a2dpOutputAllowedServices",
+   "title": "a2dpOutputAllowedServices",
+   "type": "value",
+   "defaultValue": {
+    "stringList": [
+     "Files",
+     "Storage",
+     "VTuner",
+     "sirius",
+     "tuneIn",
+     "UPnP",
+     "QPlay",
+     "AUX",
+     "cdrom",
+     "airable",
+     "airableRadios",
+     "airablePodcasts",
+     "napster",
+     "qobuz",
+     "deezer",
+     "tidal",
+     "avs",
+     "amazonmusic",
+     "spotify"
+    ],
+    "type": "stringList"
+   },
+   "valueType": "stringList"
+  },
+  {
+   "path": "settings:/bluetooth/agentCapabilities",
+   "title": "agentCapabilities",
+   "type": "container",
+   "childCount": 5
+  },
+  {
+   "path": "settings:/bluetooth/agentCapabilities/00-displayOnly",
+   "title": "Display only",
+   "type": "value",
+   "defaultValue": {
+    "type": "bluetoothAgentCapability",
+    "bluetoothAgentCapability": "displayOnly"
+   },
+   "valueType": "bluetoothAgentCapability"
+  },
+  {
+   "path": "settings:/bluetooth/agentCapabilities/01-displayYesNo",
+   "title": "Display yes/no",
+   "type": "value",
+   "defaultValue": {
+    "type": "bluetoothAgentCapability",
+    "bluetoothAgentCapability": "displayYesNo"
+   },
+   "valueType": "bluetoothAgentCapability"
+  },
+  {
+   "path": "settings:/bluetooth/agentCapabilities/02-keyboardOnly",
+   "title": "Keyboard only",
+   "type": "value",
+   "valueType": "bluetoothAgentCapability",
+   "redacted": true
+  },
+  {
+   "path": "settings:/bluetooth/agentCapabilities/03-noInputNoOutput",
+   "title": "No input no output",
+   "type": "value",
+   "defaultValue": {
+    "type": "bluetoothAgentCapability",
+    "bluetoothAgentCapability": "noInputNoOutput"
+   },
+   "valueType": "bluetoothAgentCapability"
+  },
+  {
+   "path": "settings:/bluetooth/agentCapabilities/04-keyboardDisplay",
+   "title": "Keyboard display",
+   "type": "value",
+   "valueType": "bluetoothAgentCapability",
+   "redacted": true
+  },
+  {
+   "path": "settings:/bluetooth/agentCapability",
+   "title": "Bluetooth agent capability",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/bluetooth/agentCapabilities",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "type": "bluetoothAgentCapability",
+    "bluetoothAgentCapability": "noInputNoOutput"
+   },
+   "valueType": "bluetoothAgentCapability"
+  },
+  {
+   "path": "settings:/bluetooth/aptxEnabled",
+   "title": "Enable AptX codec",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/bluetooth/autoConnectMode",
+   "title": "Auto-connect to last known A2DP source on startup",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/bluetooth/autoPlayMode",
+   "title": "Bluetooth Auto Play Mode",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/bluetooth/autoPlayModes",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "string_": "playbackOnEveryPlaying",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/bluetooth/autoPlayModes",
+   "title": "autoPlayModes",
+   "type": "container",
+   "childCount": 4
+  },
+  {
+   "path": "settings:/bluetooth/autoPlayModes/01-noAutoPlayback",
+   "title": "No auto playback",
+   "type": "value",
+   "defaultValue": {
+    "string_": "noAutoPlayback",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/bluetooth/autoPlayModes/02-onFirstPlaying",
+   "title": "On first playing event",
+   "type": "value",
+   "defaultValue": {
+    "string_": "playbackOnFirstPlaying",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/bluetooth/autoPlayModes/03-onEveryPlaying",
+   "title": "On every playing event",
+   "type": "value",
+   "defaultValue": {
+    "string_": "playbackOnEveryPlaying",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/bluetooth/autoPlayModes/04-onConnected",
+   "title": "On connection",
+   "type": "value",
+   "defaultValue": {
+    "string_": "playbackOnConnected",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/bluetooth/bluetoothPairingTimeout",
+   "title": "bluetoothPairingTimeout- timeout to leave Bluetooth pairing mode. In seconds",
+   "type": "value",
+   "modifiable": true,
+   "valueUnit": {
+    "string_": "s",
+    "type": "string_"
+   },
+   "valueType": "i32_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/bluetooth/certificationMode",
+   "title": "Bluetooth certification mode",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "bool_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/bluetooth/disableMicEchoCanceling",
+   "title": "Disable EchoCancelingNoiseReduction feature in the phone, for handsfree calls",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/bluetooth/disablePairingOncePaired",
+   "title": "Disable pairing mode after device is paired",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "bool_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/bluetooth/fullFeatured",
+   "title": "Default fullfeatured BT function, disable after LWA",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/bluetooth/hasBeenDeviceListPopulated",
+   "title": "hasBeenDeviceListPopulated",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/bluetooth/maxPairedAudioDevices",
+   "title": "Maximum number of paired audio devices",
+   "type": "value",
+   "valueType": "i32_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/bluetooth/micAmplification",
+   "title": "Microphone Amplification",
+   "type": "value",
+   "defaultValue": {
+    "double_": 1,
+    "type": "double_"
+   },
+   "valueType": "double_"
+  },
+  {
+   "path": "settings:/bluetooth/micVolume",
+   "title": "Mic volume",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "step": "1",
+    "min": "0",
+    "max": "100",
+    "type": "slider"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 100
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/bluetooth/qcDspLoopbackGain",
+   "title": "QC DSP loopback gain",
+   "type": "value",
+   "defaultValue": {
+    "double_": 1,
+    "type": "double_"
+   },
+   "valueType": "double_"
+  },
+  {
+   "path": "settings:/bw",
+   "title": "bw",
+   "type": "container",
+   "childCount": 1
+  },
+  {
+   "path": "settings:/bw/zeppSpdifConnected",
+   "title": "Enable Zeppelin SPDIF source",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/configurator",
+   "title": "configurator",
+   "type": "container",
+   "childCount": 1
+  },
+  {
+   "path": "settings:/deviceName",
+   "title": "Device Name",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "string_": "",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/deviceNameChangeCount",
+   "title": "deviceNameChangeCount",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/dspControl",
+   "title": "dspControl",
+   "type": "container",
+   "childCount": 3
+  },
+  {
+   "path": "settings:/dspControl/fadeInStep",
+   "title": "fadeInStep",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 500
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/dspControl/fadeOutStep",
+   "title": "fadeOutStep",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 500
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/dspControl/fadeStepSleepMs",
+   "title": "fadeStepSleepMs",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 2
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/formation",
+   "title": "formation",
+   "type": "container",
+   "childCount": 13
+  },
+  {
+   "path": "settings:/formation/assemblyNo",
+   "title": "Formation assembly number unique identifier",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "string_": "",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/formation/audioTuningId",
+   "title": "Audio tuning ID",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "string_": "0",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/formation/bleDeviceType",
+   "title": "Formation device type identifier for BTLE communication",
+   "type": "value",
+   "defaultValue": {
+    "byte_": 16,
+    "type": "byte_"
+   },
+   "valueType": "byte_"
+  },
+  {
+   "path": "settings:/formation/bleDeviceTypeZpr",
+   "title": "Formation device type identifier for BTLE communication",
+   "type": "value",
+   "defaultValue": {
+    "byte_": 18,
+    "type": "byte_"
+   },
+   "valueType": "byte_"
+  },
+  {
+   "path": "settings:/formation/endpoint",
+   "title": "Formation cloud endpoint",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/formation/meshId",
+   "title": "Formation mesh unique identifier (generated if no meshes are configured on the network)",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "formationMeshId",
+   "redacted": true
+  },
+  {
+   "path": "settings:/formation/nodeId",
+   "title": "Formation node (device) unique identifier (generated on module start)",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "string_": "",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/formation/nodeSettings",
+   "title": "Defines B&W Formation node modifiable settings",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "formationNode": {
+     "audioCuePlaySound": "/usr/share/nsdk/audio-cues/speaker_ready_success_mastered.aif",
+     "spaceName": "",
+     "digitalName": "Digital",
+     "role": "primary",
+     "hdmiName": "",
+     "swPlatform": "Stream",
+     "digitalIcon": "digital_stream",
+     "analogName": "Analog",
+     "spaceId": "",
+     "audioCuePinkNoise": "/usr/share/nsdk/audio-cues/speaker_long_press_mastered.aif",
+     "analogIcon": "analog"
+    },
+    "type": "formationNode"
+   },
+   "valueType": "formationNode"
+  },
+  {
+   "path": "settings:/formation/productGenerationInfo",
+   "title": "Defines B&W Product Generation Information",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bwProductGenInfo": {},
+    "type": "bwProductGenInfo"
+   },
+   "valueType": "bwProductGenInfo"
+  },
+  {
+   "path": "settings:/formation/setupCompleted",
+   "title": "Formation OOBE settings completed",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/fwupdate",
+   "title": "fwupdate",
+   "type": "container",
+   "childCount": 10
+  },
+  {
+   "path": "settings:/fwupdate/enablePeriodicChecks",
+   "title": "Enable periodic checks",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/fwupdate/firmwareUpdateServerUrl",
+   "title": "Firmware Update Server",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "string_": "https://update.bowerswilkinscloud.com/software/streamunlimited/l-zep/next_update",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/fwupdate/hawkbitRetryCounter",
+   "title": "Hawkbit installation retry-counter",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "type": "hawkbitRetryCounter",
+    "hawkbitRetryCounter": {}
+   },
+   "valueType": "hawkbitRetryCounter"
+  },
+  {
+   "path": "settings:/fwupdate/hawkbitTask",
+   "title": "Current Hawkbit Task",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "type": "NsdkHawkbitTask",
+    "NsdkHawkbitTask": {
+     "task": {
+      "id": "",
+      "time": ""
+     },
+     "serverUrl": ""
+    }
+   },
+   "valueType": "NsdkHawkbitTask"
+  },
+  {
+   "path": "settings:/fwupdate/minSystemIdleTime",
+   "title": "Minimum system-idle-time when to perform silent swupdate",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 600
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/fwupdate/periodicCheckInterval",
+   "title": "Periodic check interval [h]",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 24
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/fwupdate/resumeUpdateData",
+   "title": "Resume fwupdate data",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "firmwareDownloadResumeData": {
+     "actualSize": 0,
+     "url": ""
+    },
+    "type": "firmwareDownloadResumeData"
+   },
+   "valueType": "firmwareDownloadResumeData"
+  },
+  {
+   "path": "settings:/fwupdate/retryCount",
+   "title": "retryCount",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 3
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/fwupdate/updateDescription",
+   "title": "Description of last available update",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "firmwareUpdateDescription",
+   "redacted": true
+  },
+  {
+   "path": "settings:/grouping",
+   "title": "grouping",
+   "type": "container",
+   "childCount": 4
+  },
+  {
+   "path": "settings:/grouping/heartbeatInterval",
+   "title": "heartbeatInterval",
+   "type": "value",
+   "valueUnit": {
+    "string_": "ms",
+    "type": "string_"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 1000
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/grouping/persistentGroup",
+   "title": "persistentGroup",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "groupingPersistentGroup": {
+     "members": [],
+     "name": "",
+     "timestamp": 0
+    },
+    "type": "groupingPersistentGroup"
+   },
+   "valueType": "groupingPersistentGroup"
+  },
+  {
+   "path": "settings:/grouping/requestStreamingTimeout",
+   "title": "requestStreamingTimeout",
+   "type": "value",
+   "valueUnit": {
+    "string_": "ms",
+    "type": "string_"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 1000
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/grouping/stopStreamingTimeout",
+   "title": "stopStreamingTimeout",
+   "type": "value",
+   "valueUnit": {
+    "string_": "ms",
+    "type": "string_"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 6000
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/illusonic",
+   "title": "illusonic",
+   "type": "container",
+   "childCount": 2
+  },
+  {
+   "path": "settings:/illusonic/initialConfigName",
+   "title": "Illusonic initial configuration file name",
+   "type": "value",
+   "defaultValue": {
+    "string_": "soundbar_startup.txt",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/illusonic/soundbarType",
+   "title": "Illusonic soundbar type",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 13
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/imx8AudioFramework",
+   "title": "imx8AudioFramework",
+   "type": "container",
+   "childCount": 4
+  },
+  {
+   "path": "settings:/imx8AudioFramework/asrcResampler",
+   "title": "Asrc resampler configuration",
+   "type": "value",
+   "defaultValue": {
+    "imx8AfResampler": {
+     "services": [],
+     "name": "asrc0",
+     "rates": [
+      48000
+     ]
+    },
+    "type": "imx8AfResampler"
+   },
+   "valueType": "imx8AfResampler"
+  },
+  {
+   "path": "settings:/imx8AudioFramework/dacConf",
+   "title": "Dac configuration",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "imx8AfDacConf": {
+     "numChannels": 8,
+     "routeDelay": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0",
+     "routeMap": "1,2,27,28,19,20,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+    },
+    "type": "imx8AfDacConf"
+   },
+   "valueType": "imx8AfDacConf"
+  },
+  {
+   "path": "settings:/imx8AudioFramework/lipSyncConf",
+   "title": "Lip sync delay in ms",
+   "type": "value",
+   "edit": {
+    "step": "1",
+    "min": "0",
+    "max": "500",
+    "type": "slider"
+   },
+   "valueType": "i32_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/imx8AudioFramework/ssrcResampler",
+   "title": "Ssrc resampler configuration",
+   "type": "value",
+   "defaultValue": {
+    "imx8AfResampler": {
+     "services": [],
+     "name": "ssrc0",
+     "rates": [
+      48000
+     ]
+    },
+    "type": "imx8AfResampler"
+   },
+   "valueType": "imx8AfResampler"
+  },
+  {
+   "path": "settings:/ir",
+   "title": "ir",
+   "type": "container",
+   "childCount": 1
+  },
+  {
+   "path": "settings:/ir/settings",
+   "title": "Defines IR module modifiable settings",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "irSettings": {
+     "learningCaptureSuccessSound": "/usr/share/nsdk/audio-cues/speaker_audio_pull_mastered.aif",
+     "holdMaxDelay": 350,
+     "learningTimeout": 30000,
+     "learningRounds": 3,
+     "learningFinishedSound": "/usr/share/nsdk/audio-cues/speaker_ready_success_mastered.aif",
+     "pressNholdTimeout": 2000,
+     "keyMap": "",
+     "learningFailedSound": "/usr/share/nsdk/audio-cues/speaker_ready_fail_new_mastered.aif"
+    },
+    "type": "irSettings"
+   },
+   "valueType": "irSettings"
+  },
+  {
+   "path": "settings:/locationCountry",
+   "title": "Country",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "timemanager:/uiAvailableCountries",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "string_": "",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/locationRegion",
+   "title": "Region",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "timemanager:/uiAvailableRegions",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "string_": "",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/mediaPlayer",
+   "title": "mediaPlayer",
+   "type": "container",
+   "childCount": 42
+  },
+  {
+   "path": "settings:/mediaPlayer/a2dpOutputMode",
+   "title": "A2DP Output mode",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/mediaPlayer/alsaDevices",
+   "title": "alsaDevices",
+   "type": "container",
+   "childCount": 6
+  },
+  {
+   "path": "settings:/mediaPlayer/alsaDevices/defaultOut",
+   "type": "value",
+   "defaultValue": {
+    "audioDevice": {
+     "device": "",
+     "sampleRate": 0,
+     "dsdDevice": "",
+     "compressOffloadDevice": "",
+     "channels": 0
+    },
+    "type": "audioDevice"
+   },
+   "valueType": "audioDevice"
+  },
+  {
+   "path": "settings:/mediaPlayer/alsaDevices/hdmiIn",
+   "title": "HDMI input device",
+   "type": "value",
+   "defaultValue": {
+    "audioDevice": {
+     "device": "",
+     "sampleRate": 48000,
+     "channels": 2,
+     "bps": 16
+    },
+    "type": "audioDevice"
+   },
+   "valueType": "audioDevice"
+  },
+  {
+   "path": "settings:/mediaPlayer/alsaDevices/lineIn",
+   "title": "LINE input device",
+   "type": "value",
+   "defaultValue": {
+    "audioDevice": {
+     "device": "aux_plug",
+     "bufferTime": 50,
+     "sampleRate": 48000,
+     "periodTime": 5,
+     "channels": 2,
+     "bps": 16
+    },
+    "type": "audioDevice"
+   },
+   "valueType": "audioDevice"
+  },
+  {
+   "path": "settings:/mediaPlayer/alsaDevices/micIn",
+   "title": "Microphone input device",
+   "type": "value",
+   "defaultValue": {
+    "audioDevice": {
+     "device": "mics_plug",
+     "bufferTime": 100,
+     "displayName": "Microphone",
+     "periodTime": 10
+    },
+    "type": "audioDevice"
+   },
+   "valueType": "audioDevice"
+  },
+  {
+   "path": "settings:/mediaPlayer/alsaDevices/notificationOut",
+   "type": "value",
+   "defaultValue": {
+    "audioDevice": {
+     "device": "output",
+     "sampleRate": 0,
+     "channels": 0
+    },
+    "type": "audioDevice"
+   },
+   "valueType": "audioDevice"
+  },
+  {
+   "path": "settings:/mediaPlayer/alsaDevices/spdifIn",
+   "title": "SPDIF input device",
+   "type": "value",
+   "defaultValue": {
+    "audioDevice": {
+     "device": "",
+     "displayName": "Digital",
+     "sampleRate": 48000,
+     "channels": 2,
+     "bps": 16
+    },
+    "type": "audioDevice"
+   },
+   "valueType": "audioDevice"
+  },
+  {
+   "path": "settings:/mediaPlayer/alsaMixerElements",
+   "title": "Control Alsa Elements Names",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "alsaMixerElements": {
+     "muteElem": "Master",
+     "trebleElem": "Treble",
+     "attenuationElem": "Master",
+     "bassElem": "Bass"
+    },
+    "type": "alsaMixerElements"
+   },
+   "valueType": "alsaMixerElements"
+  },
+  {
+   "path": "settings:/mediaPlayer/attenuation",
+   "title": "Attenuation",
+   "type": "value",
+   "modifiable": true,
+   "valueUnit": {
+    "string_": "dB",
+    "type": "string_"
+   },
+   "edit": {
+    "min": "-120",
+    "max": "0",
+    "type": "slider"
+   },
+   "defaultValue": {
+    "double_": -40,
+    "type": "double_"
+   },
+   "valueType": "double_"
+  },
+  {
+   "path": "settings:/mediaPlayer/attenuationType",
+   "title": "Platform output attenuation type",
+   "type": "value",
+   "defaultValue": {
+    "attenuationType": "alsamixer",
+    "type": "attenuationType"
+   },
+   "valueType": "attenuationType"
+  },
+  {
+   "path": "settings:/mediaPlayer/balance",
+   "title": "Balance",
+   "type": "value",
+   "modifiable": true,
+   "valueUnit": {
+    "string_": "dB",
+    "type": "string_"
+   },
+   "edit": {
+    "step": "0.5",
+    "min": "-10",
+    "max": "10",
+    "type": "slider"
+   },
+   "defaultValue": {
+    "double_": 0,
+    "type": "double_"
+   },
+   "valueType": "double_",
+   "currentValue": {
+    "double_": 0,
+    "type": "double_"
+   }
+  },
+  {
+   "path": "settings:/mediaPlayer/bass",
+   "title": "Bass",
+   "type": "value",
+   "modifiable": true,
+   "valueUnit": {
+    "string_": "dB",
+    "type": "string_"
+   },
+   "edit": {
+    "step": "0.5",
+    "min": "-10",
+    "max": "10",
+    "type": "slider"
+   },
+   "defaultValue": {
+    "double_": 0,
+    "type": "double_"
+   },
+   "valueType": "double_",
+   "currentValue": {
+    "double_": 2,
+    "type": "double_"
+   }
+  },
+  {
+   "path": "settings:/mediaPlayer/bitrateUpdateInterval",
+   "title": "bitrateUpdateInterval",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 5000
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/mediaPlayer/cuesFixedAttenuation",
+   "title": "Cues Fixed Attenuation",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "double_": -50,
+    "type": "double_"
+   },
+   "valueType": "double_"
+  },
+  {
+   "path": "settings:/mediaPlayer/defaultVolume",
+   "title": "Volume",
+   "type": "value",
+   "modifiable": true
+  },
+  {
+   "path": "settings:/mediaPlayer/defaultVolumeTimeout",
+   "title": "Path to the value item with timeout [sec] to set default volume. Default is 0",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/mediaPlayer/duckingAttenuation",
+   "title": "Ducking Attenuation",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "double_": -26,
+    "type": "double_"
+   },
+   "valueType": "double_"
+  },
+  {
+   "path": "settings:/mediaPlayer/equalizer",
+   "title": "Equalizer",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "eqBandList": [
+     {
+      "value": 0,
+      "band": "60",
+      "step": 0.5,
+      "min": -6,
+      "max": 6
+     },
+     {
+      "value": 0,
+      "band": "250",
+      "step": 0.5,
+      "min": -6,
+      "max": 6
+     },
+     {
+      "value": 0,
+      "band": "1000",
+      "step": 0.5,
+      "min": -6,
+      "max": 6
+     },
+     {
+      "value": 0,
+      "band": "3500",
+      "step": 0.5,
+      "min": -6,
+      "max": 6
+     },
+     {
+      "value": 0,
+      "band": "12000",
+      "step": 0.5,
+      "min": -6,
+      "max": 6
+     }
+    ],
+    "type": "eqBandList"
+   },
+   "valueType": "eqBandList",
+   "currentValue": {
+    "eqBandList": [
+     {
+      "value": 0,
+      "band": "60",
+      "step": 0.5,
+      "min": -6,
+      "max": 6
+     },
+     {
+      "value": -3,
+      "band": "250",
+      "step": 0.5,
+      "min": -6,
+      "max": 6
+     },
+     {
+      "value": 0,
+      "band": "1000",
+      "step": 0.5,
+      "min": -6,
+      "max": 6
+     },
+     {
+      "value": 4.5,
+      "band": "3500",
+      "step": 0.5,
+      "min": -6,
+      "max": 6
+     },
+     {
+      "value": 6,
+      "band": "12000",
+      "step": 0.5,
+      "min": -6,
+      "max": 6
+     }
+    ],
+    "type": "eqBandList"
+   }
+  },
+  {
+   "path": "settings:/mediaPlayer/equalizerOnOff",
+   "title": "Equalizer On/Off",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_",
+   "currentValue": {
+    "bool_": true,
+    "type": "bool_"
+   }
+  },
+  {
+   "path": "settings:/mediaPlayer/loudness",
+   "title": "Loudness",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_",
+   "currentValue": {
+    "bool_": true,
+    "type": "bool_"
+   }
+  },
+  {
+   "path": "settings:/mediaPlayer/maxID3AlbumArtSize",
+   "title": "maxID3AlbumArtSize",
+   "type": "value",
+   "defaultValue": {
+    "i64_": 1048576,
+    "type": "i64_"
+   },
+   "valueType": "i64_"
+  },
+  {
+   "path": "settings:/mediaPlayer/maxStreamerPlayTime",
+   "title": "Stop streamer playback after this time [milliseconds]",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/mediaPlayer/maxVolume",
+   "title": "Max allowed volume [steps]",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/mediaPlayer/micMute",
+   "title": "Microphone Mute",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/mediaPlayer/micMuteHwSwitchType",
+   "title": "Platform mic-mute-switch type",
+   "type": "value",
+   "defaultValue": {
+    "micMuteType": "inputEvent",
+    "type": "micMuteType"
+   },
+   "valueType": "micMuteType"
+  },
+  {
+   "path": "settings:/mediaPlayer/micMuteHwSwitchType_streamkit1832",
+   "title": "Platform mic-mute-switch type",
+   "type": "value",
+   "defaultValue": {
+    "micMuteType": "hostlink",
+    "type": "micMuteType"
+   },
+   "valueType": "micMuteType"
+  },
+  {
+   "path": "settings:/mediaPlayer/micMuteHwSwitchType_streamkit1955",
+   "title": "Platform mic-mute-switch type",
+   "type": "value",
+   "defaultValue": {
+    "micMuteType": "hostlink",
+    "type": "micMuteType"
+   },
+   "valueType": "micMuteType"
+  },
+  {
+   "path": "settings:/mediaPlayer/micMuteHwSwitchType_streamkit3d",
+   "title": "Platform mic-mute-switch type",
+   "type": "value",
+   "defaultValue": {
+    "micMuteType": "inputEvent",
+    "type": "micMuteType"
+   },
+   "valueType": "micMuteType"
+  },
+  {
+   "path": "settings:/mediaPlayer/micMuteHwSwitchTypes",
+   "title": "micMuteHwSwitchTypes",
+   "type": "container",
+   "childCount": 3
+  },
+  {
+   "path": "settings:/mediaPlayer/micMuteHwSwitchTypes/01-settings",
+   "title": "Settings",
+   "type": "value",
+   "defaultValue": {
+    "micMuteType": "settings",
+    "type": "micMuteType"
+   },
+   "valueType": "micMuteType"
+  },
+  {
+   "path": "settings:/mediaPlayer/micMuteHwSwitchTypes/02-hostlink",
+   "title": "Hostlink",
+   "type": "value",
+   "defaultValue": {
+    "micMuteType": "hostlink",
+    "type": "micMuteType"
+   },
+   "valueType": "micMuteType"
+  },
+  {
+   "path": "settings:/mediaPlayer/micMuteHwSwitchTypes/03-inputEvent",
+   "title": "Input event",
+   "type": "value",
+   "defaultValue": {
+    "micMuteType": "inputEvent",
+    "type": "micMuteType"
+   },
+   "valueType": "micMuteType"
+  },
+  {
+   "path": "settings:/mediaPlayer/multiroomBlacklist",
+   "title": "List of services not allowing 3rd part multiroom",
+   "type": "value",
+   "defaultValue": {
+    "stringList": [
+     "airplay",
+     "googlecast",
+     "roon"
+    ],
+    "type": "stringList"
+   },
+   "valueType": "stringList"
+  },
+  {
+   "path": "settings:/mediaPlayer/mute",
+   "title": "Mute",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_",
+   "currentValue": {
+    "bool_": false,
+    "type": "bool_"
+   }
+  },
+  {
+   "path": "settings:/mediaPlayer/muteTimeout",
+   "title": "Path to the value item with timeout [sec] to set mute. Default is 0",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/mediaPlayer/networkThrottleSleepPeriod",
+   "title": "Delay after each packet reception, usefull for network throttling [microseconds]",
+   "type": "value",
+   "valueType": "i32_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/mediaPlayer/playMode",
+   "title": "Play Mode",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/mediaPlayer/playModes",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "playerPlayMode": "normal",
+    "type": "playerPlayMode"
+   },
+   "valueType": "playerPlayMode"
+  },
+  {
+   "path": "settings:/mediaPlayer/playModes",
+   "title": "playModes",
+   "type": "container",
+   "childCount": 6
+  },
+  {
+   "path": "settings:/mediaPlayer/playModes/01-normal",
+   "title": "Normal",
+   "type": "value",
+   "defaultValue": {
+    "playerPlayMode": "normal",
+    "type": "playerPlayMode"
+   },
+   "valueType": "playerPlayMode"
+  },
+  {
+   "path": "settings:/mediaPlayer/playModes/02-shuffle",
+   "title": "Shuffle",
+   "type": "value",
+   "defaultValue": {
+    "playerPlayMode": "shuffle",
+    "type": "playerPlayMode"
+   },
+   "valueType": "playerPlayMode"
+  },
+  {
+   "path": "settings:/mediaPlayer/playModes/03-repeatOne",
+   "title": "Repeat One",
+   "type": "value",
+   "defaultValue": {
+    "playerPlayMode": "repeatOne",
+    "type": "playerPlayMode"
+   },
+   "valueType": "playerPlayMode"
+  },
+  {
+   "path": "settings:/mediaPlayer/playModes/04-shuffleRepeatOne",
+   "title": "Repeat One + Shuffle",
+   "type": "value",
+   "defaultValue": {
+    "playerPlayMode": "shuffleRepeatOne",
+    "type": "playerPlayMode"
+   },
+   "valueType": "playerPlayMode"
+  },
+  {
+   "path": "settings:/mediaPlayer/playModes/05-repeatAll",
+   "title": "Repeat All",
+   "type": "value",
+   "defaultValue": {
+    "playerPlayMode": "repeatAll",
+    "type": "playerPlayMode"
+   },
+   "valueType": "playerPlayMode"
+  },
+  {
+   "path": "settings:/mediaPlayer/playModes/06-shuffleRepeatAll",
+   "title": "Repeat All + Shuffle",
+   "type": "value",
+   "defaultValue": {
+    "playerPlayMode": "shuffleRepeatAll",
+    "type": "playerPlayMode"
+   },
+   "valueType": "playerPlayMode"
+  },
+  {
+   "path": "settings:/mediaPlayer/postprocessing",
+   "title": "Postprocessing",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/mediaPlayer/pulseAudio",
+   "title": "pulseAudio",
+   "type": "container",
+   "childCount": 2
+  },
+  {
+   "path": "settings:/mediaPlayer/pulseAudio/duckingSink",
+   "type": "value",
+   "defaultValue": {
+    "audioDevice": {
+     "device": "ducking-offload-low-latency"
+    },
+    "type": "audioDevice"
+   },
+   "valueType": "audioDevice"
+  },
+  {
+   "path": "settings:/mediaPlayer/pulseAudio/masterVolumeSink",
+   "type": "value",
+   "defaultValue": {
+    "audioDevice": {
+     "device": "volctrl-offload-low-latency"
+    },
+    "type": "audioDevice"
+   },
+   "valueType": "audioDevice"
+  },
+  {
+   "path": "settings:/mediaPlayer/resetOnTransaction",
+   "title": "Reset On Transaction",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/mediaPlayer/sourceGain",
+   "title": "Source gain",
+   "type": "value",
+   "defaultValue": {
+    "sourceGainList": [
+     {
+      "path": "",
+      "value": 0,
+      "alsaMixer": "",
+      "name": "All",
+      "sources": [],
+      "min": -60,
+      "max": 20
+     }
+    ],
+    "type": "sourceGainList"
+   },
+   "valueType": "sourceGainList",
+   "currentValue": {
+    "sourceGainList": [
+     {
+      "path": "",
+      "value": 0,
+      "alsaMixer": "",
+      "name": "All",
+      "sources": [],
+      "min": -60,
+      "max": 20
+     }
+    ],
+    "type": "sourceGainList"
+   }
+  },
+  {
+   "path": "settings:/mediaPlayer/streamerBufferingConfig",
+   "title": "streamerBufferingConfig",
+   "type": "value",
+   "defaultValue": {
+    "variant": {
+     "bufferLevelReportsEnabled": false,
+     "estimationDuration": 6500,
+     "lowThreshold": 50000,
+     "highThreshold": 230000,
+     "maxSize": 1048576
+    },
+    "type": "variant"
+   },
+   "valueType": "variant"
+  },
+  {
+   "path": "settings:/mediaPlayer/streamerMqaConfig",
+   "title": "MQA Configuration",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "mqaConfig": {
+     "ipcKey": 0,
+     "fixedRate": "off",
+     "mode": "decoderrenderer",
+     "maxRate": 0
+    },
+    "type": "mqaConfig"
+   },
+   "valueType": "mqaConfig"
+  },
+  {
+   "path": "settings:/mediaPlayer/streamerRestartOnStop",
+   "title": "Restart streamer after each track",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/mediaPlayer/tagUpdateInterval",
+   "title": "tagUpdateInterval",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 250
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/mediaPlayer/timeToPrepNextMedia",
+   "title": "timeToPrepNextMedia",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 10000
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/mediaPlayer/treble",
+   "title": "Treble",
+   "type": "value",
+   "modifiable": true,
+   "valueUnit": {
+    "string_": "dB",
+    "type": "string_"
+   },
+   "edit": {
+    "step": "0.5",
+    "min": "-10",
+    "max": "10",
+    "type": "slider"
+   },
+   "defaultValue": {
+    "double_": 0,
+    "type": "double_"
+   },
+   "valueType": "double_",
+   "currentValue": {
+    "double_": 6,
+    "type": "double_"
+   }
+  },
+  {
+   "path": "settings:/mediaPlayer/volumeMap",
+   "title": "Volume map (modifiable)",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "doubleList": [
+     -120,
+     -91,
+     -77.5,
+     -68.5,
+     -62,
+     -56.5,
+     -52,
+     -48,
+     -44.5,
+     -42,
+     -40,
+     -39,
+     -38,
+     -37,
+     -36,
+     -35,
+     -34,
+     -33,
+     -32,
+     -31,
+     -30,
+     -29,
+     -28,
+     -27,
+     -26,
+     -25,
+     -24,
+     -23,
+     -22,
+     -21,
+     -20,
+     -19,
+     -18,
+     -17,
+     -16,
+     -15,
+     -14,
+     -13,
+     -12,
+     -11,
+     -10,
+     -9,
+     -8,
+     -7,
+     -6,
+     -5,
+     -4,
+     -3,
+     -2,
+     -1,
+     0
+    ],
+    "type": "doubleList"
+   },
+   "valueType": "doubleList"
+  },
+  {
+   "path": "settings:/mediaPlayer/volumeOnDsp",
+   "title": "volumeOnDsp",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/network",
+   "title": "network",
+   "type": "container",
+   "childCount": 13,
+   "redacted": true
+  },
+  {
+   "path": "settings:/network/maxWirelessAuthAttempts",
+   "title": "maxWirelessAuthAttempts",
+   "type": "value",
+   "valueType": "i32_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/network/profileTypes",
+   "title": "profileTypes",
+   "type": "container",
+   "childCount": 4,
+   "redacted": true
+  },
+  {
+   "path": "settings:/network/profileTypes/01-auto",
+   "title": "Auto",
+   "type": "value",
+   "valueType": "networkProfileType",
+   "redacted": true
+  },
+  {
+   "path": "settings:/network/profileTypes/02-wired",
+   "title": "Wired",
+   "type": "value",
+   "valueType": "networkProfileType",
+   "redacted": true
+  },
+  {
+   "path": "settings:/network/profileTypes/03-wireless",
+   "title": "Wireless",
+   "type": "value",
+   "valueType": "networkProfileType",
+   "redacted": true
+  },
+  {
+   "path": "settings:/network/profileTypes/04-hybrid",
+   "title": "Hybrid",
+   "type": "value",
+   "valueType": "networkProfileType",
+   "redacted": true
+  },
+  {
+   "path": "settings:/network/profileWirelessEncryptions",
+   "title": "profileWirelessEncryptions",
+   "type": "container",
+   "childCount": 3,
+   "redacted": true
+  },
+  {
+   "path": "settings:/network/profileWirelessEncryptions/01-none",
+   "title": "None",
+   "type": "value",
+   "valueType": "networkProfileWirelessEncryption",
+   "redacted": true
+  },
+  {
+   "path": "settings:/network/profileWirelessEncryptions/02-wep",
+   "title": "WEP",
+   "type": "value",
+   "valueType": "networkProfileWirelessEncryption",
+   "redacted": true
+  },
+  {
+   "path": "settings:/network/profileWirelessEncryptions/03-wpa_psk",
+   "title": "WPA-PSK",
+   "type": "value",
+   "valueType": "networkProfileWirelessEncryption",
+   "redacted": true
+  },
+  {
+   "path": "settings:/network/softapAutoEnabled",
+   "title": "softapAutoEnabled",
+   "type": "value",
+   "valueType": "bool_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/network/softapConfig",
+   "title": "softapConfig",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "networkProfile",
+   "redacted": true
+  },
+  {
+   "path": "settings:/network/softapDefaultSsid",
+   "title": "softapDefaultSsid",
+   "type": "value",
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/network/wiredInterface",
+   "title": "Wired interface",
+   "type": "value",
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/network/wirelessInterface",
+   "title": "Wireless interface",
+   "type": "value",
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/oauth2",
+   "title": "oauth2",
+   "type": "container",
+   "childCount": 3,
+   "redacted": true
+  },
+  {
+   "path": "settings:/oauth2/appRedirectUri",
+   "title": "URI that will be redirected to at the end of the OAuth login procedure (mobile app flow)",
+   "type": "value",
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/oauth2/redirectUri",
+   "title": "URI that will be redirected to at the end of the OAuth login procedure",
+   "type": "value",
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/pandora",
+   "title": "pandora",
+   "type": "container",
+   "childCount": 11
+  },
+  {
+   "path": "settings:/pandora/collectionSortBy",
+   "title": "Sort By",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/pandora/collectionSortByValues",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "pandoraCollectionSortBy": "name",
+    "type": "pandoraCollectionSortBy"
+   },
+   "valueType": "pandoraCollectionSortBy"
+  },
+  {
+   "path": "settings:/pandora/collectionSortByValues",
+   "title": "collectionSortByValues",
+   "type": "container",
+   "childCount": 2
+  },
+  {
+   "path": "settings:/pandora/collectionSortByValues/01-name",
+   "title": "Sort By Name",
+   "type": "value",
+   "defaultValue": {
+    "pandoraCollectionSortBy": "name",
+    "type": "pandoraCollectionSortBy"
+   },
+   "valueType": "pandoraCollectionSortBy"
+  },
+  {
+   "path": "settings:/pandora/collectionSortByValues/02-added_time",
+   "title": "Sort by When Added",
+   "type": "value",
+   "defaultValue": {
+    "pandoraCollectionSortBy": "added_time",
+    "type": "pandoraCollectionSortBy"
+   },
+   "valueType": "pandoraCollectionSortBy"
+  },
+  {
+   "path": "settings:/pandora/collectionSortOrder",
+   "title": "Sort Ordering",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/pandora/collectionSortOrderValues",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "pandoraCollectionSortOrder": "asc",
+    "type": "pandoraCollectionSortOrder"
+   },
+   "valueType": "pandoraCollectionSortOrder"
+  },
+  {
+   "path": "settings:/pandora/collectionSortOrderValues",
+   "title": "collectionSortOrderValues",
+   "type": "container",
+   "childCount": 2
+  },
+  {
+   "path": "settings:/pandora/collectionSortOrderValues/01-asc",
+   "title": "Sort Ascending",
+   "type": "value",
+   "defaultValue": {
+    "pandoraCollectionSortOrder": "asc",
+    "type": "pandoraCollectionSortOrder"
+   },
+   "valueType": "pandoraCollectionSortOrder"
+  },
+  {
+   "path": "settings:/pandora/collectionSortOrderValues/02-desc",
+   "title": "Sort Descending",
+   "type": "value",
+   "defaultValue": {
+    "pandoraCollectionSortOrder": "desc",
+    "type": "pandoraCollectionSortOrder"
+   },
+   "valueType": "pandoraCollectionSortOrder"
+  },
+  {
+   "path": "settings:/playlists",
+   "title": "playlists",
+   "type": "container",
+   "childCount": 4
+  },
+  {
+   "path": "settings:/playlists/collections",
+   "title": "Show Collections",
+   "type": "value",
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/playlists/dbItemsLimit",
+   "title": "PlayLists db item limit number",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 1000
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/playlists/dbVacuum",
+   "title": "Playlists db vacuum",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/playlists/playqueue",
+   "title": "Show Playqueue",
+   "type": "value",
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/powerManager",
+   "title": "powerManager",
+   "type": "container",
+   "childCount": 5
+  },
+  {
+   "path": "settings:/powerManager/cpuDisabledGovernorSettings",
+   "title": "CPU-disabled governor settings",
+   "type": "value",
+   "defaultValue": {
+    "powerGovernorSettings": {
+     "scalingGovernor": "powersave",
+     "scalingMaxFreq": "",
+     "scalingMinFreq": ""
+    },
+    "type": "powerGovernorSettings"
+   },
+   "valueType": "powerGovernorSettings"
+  },
+  {
+   "path": "settings:/powerManager/cpuEnabledGovernorSettings",
+   "title": "CPU-enabled governor settings",
+   "type": "value",
+   "defaultValue": {
+    "powerGovernorSettings": {
+     "scalingGovernor": "performance",
+     "scalingMaxFreq": "",
+     "scalingMinFreq": ""
+    },
+    "type": "powerGovernorSettings"
+   },
+   "valueType": "powerGovernorSettings"
+  },
+  {
+   "path": "settings:/powerManager/lan8720aPowerSaveOfftime",
+   "title": "LAN8720A Off Duty Cycle in ms in Network-Standby mode",
+   "type": "value",
+   "valueType": "i32_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/powerManager/lan8720aPowerSaveOntime",
+   "title": "LAN8720A On Duty Cycle in ms",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 2000
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/powerManager/usbHubs",
+   "title": "Active USB Hubs on the target",
+   "type": "value",
+   "defaultValue": {
+    "stringList": [],
+    "type": "stringList"
+   },
+   "valueType": "stringList"
+  },
+  {
+   "path": "settings:/qcs40xDolby",
+   "title": "qcs40xDolby",
+   "type": "container",
+   "childCount": 1
+  },
+  {
+   "path": "settings:/qcs40xDolby/loopbackParameters",
+   "title": "Additional parameters to be passed to the loop_back_app",
+   "type": "value",
+   "valueType": "stringList",
+   "redacted": true
+  },
+  {
+   "path": "settings:/qobuz",
+   "title": "qobuz",
+   "type": "container",
+   "childCount": 4,
+   "redacted": true
+  },
+  {
+   "path": "settings:/qobuz/soundQualities",
+   "title": "soundQualities",
+   "type": "container",
+   "childCount": 4,
+   "redacted": true
+  },
+  {
+   "path": "settings:/qobuz/soundQualities/01-mp3",
+   "title": "Lossy",
+   "type": "value",
+   "valueType": "qobuzSoundQuality",
+   "redacted": true
+  },
+  {
+   "path": "settings:/qobuz/soundQualities/02-cd",
+   "title": "CD Quality",
+   "type": "value",
+   "valueType": "qobuzSoundQuality",
+   "redacted": true
+  },
+  {
+   "path": "settings:/qobuz/soundQualities/03-hires",
+   "title": "Hi-Res",
+   "type": "value",
+   "valueType": "qobuzSoundQuality",
+   "redacted": true
+  },
+  {
+   "path": "settings:/qobuz/soundQualities/04-veryHires",
+   "title": "Very Hi-Res",
+   "type": "value",
+   "valueType": "qobuzSoundQuality",
+   "redacted": true
+  },
+  {
+   "path": "settings:/qobuz/soundQuality",
+   "title": "Sound Quality",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "type": "enum_"
+   },
+   "valueType": "qobuzSoundQuality",
+   "redacted": true
+  },
+  {
+   "path": "settings:/releasetext",
+   "title": "Release Text",
+   "type": "value",
+   "defaultValue": {
+    "string_": "not approved",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/sddp",
+   "title": "sddp",
+   "type": "container",
+   "childCount": 7
+  },
+  {
+   "path": "settings:/sddp/configUrl",
+   "title": "The url of the device configuration page",
+   "type": "value",
+   "defaultValue": {
+    "string_": "",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/sddp/driver",
+   "title": "The driver file name that is used on the online driver database",
+   "type": "value",
+   "defaultValue": {
+    "string_": "mediaservice_ip_bowerswilkins_zeppelin.c4z",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/sddp/enabled",
+   "title": "SDDP enabled",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/sddp/maxAge",
+   "title": "The anouncement interval in seconds",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 1800
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/sddp/primaryProxy",
+   "title": "The primary proxy type.  This must match the OnlineCategory specified in the referenced Driver",
+   "type": "value",
+   "defaultValue": {
+    "string_": "amplifier",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/sddp/proxies",
+   "title": "All proxies implemented by the referenced Driver",
+   "type": "value",
+   "defaultValue": {
+    "string_": "amplifier,media_service",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/sddp/type",
+   "title": "The Search type/Namespace of device",
+   "type": "value",
+   "defaultValue": {
+    "string_": "bowerswilkins:amplifier:Zeppelin",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/simpleSoundServer",
+   "title": "simpleSoundServer",
+   "type": "container",
+   "childCount": 2
+  },
+  {
+   "path": "settings:/simpleSoundServer/audioDeviceIn",
+   "title": "Simple Sound Server input device",
+   "type": "value",
+   "defaultValue": {
+    "audioDevice": {
+     "device": "default",
+     "bufferTime": 80,
+     "sampleRate": 48000,
+     "periodTime": 10,
+     "channels": 2
+    },
+    "type": "audioDevice"
+   },
+   "valueType": "audioDevice"
+  },
+  {
+   "path": "settings:/simpleSoundServer/audioDeviceOut",
+   "title": "Simple Sound Server output device",
+   "type": "value",
+   "defaultValue": {
+    "audioDevice": {
+     "device": "default",
+     "bufferTime": 80,
+     "sampleRate": 48000,
+     "periodTime": 10,
+     "channels": 2
+    },
+    "type": "audioDevice"
+   },
+   "valueType": "audioDevice"
+  },
+  {
+   "path": "settings:/sirius",
+   "title": "sirius",
+   "type": "container",
+   "childCount": 9
+  },
+  {
+   "path": "settings:/sirius/audioBitrate",
+   "title": "Sirius audio bitrate, not user modifiable",
+   "type": "value",
+   "valueType": "siriusAudioBitrate",
+   "redacted": true
+  },
+  {
+   "path": "settings:/sirius/configUrl",
+   "title": "configUrl",
+   "type": "value",
+   "defaultValue": {
+    "string_": "https://mobileeverest1.mountain.siriusxm.com",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/sirius/deviceMake",
+   "title": "deviceMake",
+   "type": "value",
+   "defaultValue": {
+    "string_": "streamunlimited",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/sirius/deviceModel",
+   "title": "deviceModel",
+   "type": "value",
+   "defaultValue": {
+    "string_": "streamsdk",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/sirius/fullFeatured",
+   "title": "Sirius Full Feature switch",
+   "type": "value",
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/sirius/streamerBufferingConfig",
+   "title": "Streamer buffering config for sirius",
+   "type": "value",
+   "defaultValue": {
+    "variant": {
+     "bufferLevelReportsEnabled": true,
+     "estimationDuration": 13000,
+     "lowThreshold": 30000,
+     "highThreshold": 230000,
+     "maxSize": 3145728
+    },
+    "type": "variant"
+   },
+   "valueType": "variant"
+  },
+  {
+   "path": "settings:/sirius/tuneStart",
+   "title": "Enable TuneStart",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/spotify",
+   "title": "spotify",
+   "type": "container",
+   "childCount": 6,
+   "redacted": true
+  },
+  {
+   "path": "settings:/spotify/presets",
+   "title": "presets",
+   "type": "value",
+   "modifiable": true,
+   "redacted": true
+  },
+  {
+   "path": "settings:/spotify/productId",
+   "title": "product_id",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "i32_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/spotify/spDeviceType",
+   "title": "spDeviceType",
+   "type": "value",
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/spotify/username",
+   "title": "User",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/system",
+   "title": "system",
+   "type": "container",
+   "childCount": 27
+  },
+  {
+   "path": "settings:/system/activeAssistant",
+   "title": "Currently selected Voice Assistant",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "string_": "Alexa Voice Service",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/system/audioClockSameAsSysclock",
+   "title": "Audio clock is driven by the same crystal as the system clock",
+   "type": "value",
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/system/audioOutputDelay",
+   "title": "Audio output delay in microseconds",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "i64_": 0,
+    "type": "i64_"
+   },
+   "valueType": "i64_"
+  },
+  {
+   "path": "settings:/system/boardName",
+   "title": "Board Name",
+   "type": "value",
+   "defaultValue": {
+    "string_": "Stream800_demo_client",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/system/bonjourCertificationMode",
+   "title": "Bonjour certification mode",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "bool_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/system/displayFadeTime",
+   "title": "Display fade time in milliseconds",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 500
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/system/logFilesSizeConf",
+   "title": "Size of StreamSDK log files",
+   "type": "value",
+   "defaultValue": {
+    "systemLogsSize": {
+     "bluez": "128k",
+     "default": "128k",
+     "cast_shell": "128k",
+     "wpasupplicant": "128k",
+     "scwd": "128k",
+     "nSDK": "128k",
+     "nymead": "128k"
+    },
+    "type": "systemLogsSize"
+   },
+   "valueType": "systemLogsSize"
+  },
+  {
+   "path": "settings:/system/logReportConfig",
+   "title": "System log report configuration",
+   "type": "value",
+   "defaultValue": {
+    "systemLogReportConfig": {
+     "files": [
+      "/tmp/log/nSDK",
+      "/tmp/log/nSDK.0",
+      "/tmp/log/scwd",
+      "/tmp/log/scwd.0",
+      "/tmp/log/bluez",
+      "/tmp/log/bluez.0",
+      "/tmp/log/system",
+      "/tmp/log/system.load",
+      "/tmp/log/host_update",
+      "/tmp/log/cast_shell",
+      "/tmp/log/cast_shell.0",
+      "/tmp/log/update_engine",
+      "/tmp/log/update_engine.0",
+      "/tmp/log/process_manager",
+      "/tmp/log/process_manager.0",
+      "/tmp/log/iot_audio_capture",
+      "/tmp/log/iot_audio_capture.0",
+      "/tmp/log/wpasupplicant",
+      "/tmp/log/wpasupplicant.0",
+      "/tmp/log/nymead",
+      "/tmp/log/nymead.0",
+      "/tmp/log/journal",
+      "/tmp/log/logcat",
+      "/tmp/log-pulseaudio",
+      "/tmp/bwfe-logs",
+      "/data/misc/bluetooth/btsnoop_hci.log",
+      "/tmp/log/imx8af",
+      "/tmp/log/imx8af.0",
+      "/var/log/messages",
+      "/var/log/messages.0",
+      "/media/settings/settings"
+     ],
+     "outputDir": "/tmp/report"
+    },
+    "type": "systemLogReportConfig"
+   },
+   "valueType": "systemLogReportConfig"
+  },
+  {
+   "path": "settings:/system/manufacturer",
+   "title": "Device Manufacturer",
+   "type": "value",
+   "defaultValue": {
+    "string_": "Bowers & Wilkins",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/system/manufacturerUrl",
+   "title": "Device Manufacturer URL",
+   "type": "value",
+   "defaultValue": {
+    "string_": "https://www.bowerswilkins.com/",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/system/maxIdlePlayTime",
+   "title": "Max idle play time in seconds",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/system/maxIdlePlayTimeValues",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/system/maxIdlePlayTimeValues",
+   "title": "maxIdlePlayTimeValues",
+   "type": "container",
+   "childCount": 4
+  },
+  {
+   "path": "settings:/system/maxIdlePlayTimeValues/01-off",
+   "title": "Off",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/system/maxIdlePlayTimeValues/02-1hour",
+   "title": "1 hour",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 3600
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/system/maxIdlePlayTimeValues/03-8hours",
+   "title": "8 hours",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 28800
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/system/maxIdlePlayTimeValues/04-24hours",
+   "title": "24 hours",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 86400
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/system/maxIdleTime",
+   "title": "Max idle time in seconds",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/system/maxIdleTimeValues",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 1200
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/system/maxIdleTimeValues",
+   "title": "maxIdleTimeValues",
+   "type": "container",
+   "childCount": 5
+  },
+  {
+   "path": "settings:/system/maxIdleTimeValues/01-off",
+   "title": "Off",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/system/maxIdleTimeValues/02-5min",
+   "title": "5 minutes",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 300
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/system/maxIdleTimeValues/03-10min",
+   "title": "10 minutes",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 600
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/system/maxIdleTimeValues/04-15min",
+   "title": "15 minutes",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 900
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/system/maxIdleTimeValues/05-30min",
+   "title": "30 minutes",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 1800
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/system/memberId",
+   "title": "Member ID",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "string_": "",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/system/modelDescription",
+   "title": "Model Description",
+   "type": "value",
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/system/modelName",
+   "title": "Model Name",
+   "type": "value",
+   "defaultValue": {
+    "string_": "Zeppelin",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/system/modelNumber",
+   "title": "Model Number",
+   "type": "value",
+   "defaultValue": {
+    "string_": "",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/system/modelUrl",
+   "title": "Model URL",
+   "type": "value",
+   "defaultValue": {
+    "string_": "https://www.bowerswilkins.com/",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/system/persistentLogs",
+   "title": "Flag if the logs are stored in permanent storage",
+   "type": "value",
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/system/presentationUrl",
+   "title": "Presentation URL",
+   "type": "value",
+   "defaultValue": {
+    "string_": "%1",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/system/primaryMacAddress",
+   "title": "Primary system MAC address",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/system/productName",
+   "title": "Product Name",
+   "type": "value",
+   "defaultValue": {
+    "string_": "Zeppelin",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/system/serialNumber",
+   "title": "System serial number",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/system/settings",
+   "title": "Configurable settings of System manager",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "systemManagerSettings": {
+     "bluetooth": true,
+     "wifi": true,
+     "networkStandby": true,
+     "wakeUp": true
+    },
+    "type": "systemManagerSettings"
+   },
+   "valueType": "systemManagerSettings"
+  },
+  {
+   "path": "settings:/test",
+   "title": "test",
+   "type": "container",
+   "childCount": 3
+  },
+  {
+   "path": "settings:/test/testValue",
+   "title": "Test Setting Value",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "string_": "",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/test/testValueStringModifiable",
+   "title": "Modifiable string value",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "string_": "StreamSDK test modifiable string",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/test/testValueStringNonModifiable",
+   "title": "Non-modifiable string value",
+   "type": "value",
+   "defaultValue": {
+    "string_": "StreamSDK test non-modifiable string",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/tidal",
+   "title": "tidal",
+   "type": "container",
+   "childCount": 10,
+   "redacted": true
+  },
+  {
+   "path": "settings:/tidal/soundQuality",
+   "title": "soundQuality",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "tidalSoundQuality",
+   "redacted": true
+  },
+  {
+   "path": "settings:/tidal/usePostPaywall",
+   "title": "Use playback post paywall",
+   "type": "value",
+   "valueType": "bool_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/timeManager",
+   "title": "timeManager",
+   "type": "container",
+   "childCount": 4
+  },
+  {
+   "path": "settings:/timeManager/ntp",
+   "title": "ntp",
+   "type": "container",
+   "childCount": 3
+  },
+  {
+   "path": "settings:/timeManager/ntp/ntpd",
+   "title": "Ntpd start command",
+   "type": "value",
+   "defaultValue": {
+    "stringList": [
+     "ntpd",
+     "-D4",
+     "-g"
+    ],
+    "type": "stringList"
+   },
+   "valueType": "stringList"
+  },
+  {
+   "path": "settings:/timeManager/ntp/ntpservers",
+   "title": "Ntp servers list",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "stringList": [
+     "pool.ntp.org"
+    ],
+    "type": "stringList"
+   },
+   "valueType": "stringList"
+  },
+  {
+   "path": "settings:/timeManager/ntp/sntp",
+   "title": "Sntp start command",
+   "type": "value",
+   "defaultValue": {
+    "stringList": [
+     "sntp",
+     "-S"
+    ],
+    "type": "stringList"
+   },
+   "valueType": "stringList"
+  },
+  {
+   "path": "settings:/timeManager/timeFormat24",
+   "title": "24-hour time",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "type": "bool_"
+   },
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/timeManager/timeProviders",
+   "title": "Time provider paths",
+   "type": "value",
+   "defaultValue": {
+    "stringList": [
+     "timemanager:/sntpTimeProvider",
+     "googlecast:timeProvider"
+    ],
+    "type": "stringList"
+   },
+   "valueType": "stringList"
+  },
+  {
+   "path": "settings:/timeManager/timezoneAreas",
+   "title": "timezoneAreas",
+   "type": "value",
+   "defaultValue": {
+    "timezoneAreas": {
+     "areas": [
+      {
+       "region": "Europe/Andorra",
+       "countryCode": "AD",
+       "country": "Andorra",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Asia/Dubai",
+       "countryCode": "AE",
+       "country": "United Arab Emirates",
+       "timezoneString": "Asia/Dubai"
+      },
+      {
+       "region": "Asia/Kabul",
+       "countryCode": "AF",
+       "country": "Afghanistan",
+       "timezoneString": "Asia/Kabul"
+      },
+      {
+       "region": "America/Antigua",
+       "countryCode": "AG",
+       "country": "Antigua & Barbuda",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "America/Anguilla",
+       "countryCode": "AI",
+       "country": "Anguilla",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "Europe/Tirane",
+       "countryCode": "AL",
+       "country": "Albania",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Asia/Yerevan",
+       "countryCode": "AM",
+       "country": "Armenia",
+       "timezoneString": "Asia/Dubai"
+      },
+      {
+       "region": "Africa/Luanda",
+       "countryCode": "AO",
+       "country": "Angola",
+       "timezoneString": "Etc/GMT-1"
+      },
+      {
+       "region": "Antarctica/Troll",
+       "countryCode": "AQ",
+       "country": "Antarctica",
+       "timezoneString": "Antarctica/Troll"
+      },
+      {
+       "region": "Antarctica/Vostok",
+       "countryCode": "AQ",
+       "country": "Antarctica",
+       "timezoneString": "Asia/Dhaka"
+      },
+      {
+       "region": "Antarctica/Casey",
+       "countryCode": "AQ",
+       "country": "Antarctica",
+       "timezoneString": "Asia/Hong_Kong"
+      },
+      {
+       "region": "Antarctica/Mawson",
+       "countryCode": "AQ",
+       "country": "Antarctica",
+       "timezoneString": "Asia/Karachi"
+      },
+      {
+       "region": "Antarctica/DumontDUrville",
+       "countryCode": "AQ",
+       "country": "Antarctica",
+       "timezoneString": "Australia/Brisbane"
+      },
+      {
+       "region": "Antarctica/Palmer",
+       "countryCode": "AQ",
+       "country": "Antarctica",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "Antarctica/Rothera",
+       "countryCode": "AQ",
+       "country": "Antarctica",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "Antarctica/Davis",
+       "countryCode": "AQ",
+       "country": "Antarctica",
+       "timezoneString": "Etc/GMT-7"
+      },
+      {
+       "region": "Antarctica/Syowa",
+       "countryCode": "AQ",
+       "country": "Antarctica",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Antarctica/McMurdo",
+       "countryCode": "AQ",
+       "country": "Antarctica",
+       "timezoneString": "NZ"
+      },
+      {
+       "region": "America/Argentina/Buenos_Aires",
+       "countryCode": "AR",
+       "country": "Argentina",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "America/Argentina/Catamarca",
+       "countryCode": "AR",
+       "country": "Argentina",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "America/Argentina/Cordoba",
+       "countryCode": "AR",
+       "country": "Argentina",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "America/Argentina/Jujuy",
+       "countryCode": "AR",
+       "country": "Argentina",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "America/Argentina/La_Rioja",
+       "countryCode": "AR",
+       "country": "Argentina",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "America/Argentina/Mendoza",
+       "countryCode": "AR",
+       "country": "Argentina",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "America/Argentina/Rio_Gallegos",
+       "countryCode": "AR",
+       "country": "Argentina",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "America/Argentina/Salta",
+       "countryCode": "AR",
+       "country": "Argentina",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "America/Argentina/San_Juan",
+       "countryCode": "AR",
+       "country": "Argentina",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "America/Argentina/San_Luis",
+       "countryCode": "AR",
+       "country": "Argentina",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "America/Argentina/Tucuman",
+       "countryCode": "AR",
+       "country": "Argentina",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "America/Argentina/Ushuaia",
+       "countryCode": "AR",
+       "country": "Argentina",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "Pacific/Pago_Pago",
+       "countryCode": "AS",
+       "country": "Samoa (American)",
+       "timezoneString": "Etc/GMT+11"
+      },
+      {
+       "region": "Europe/Vienna",
+       "countryCode": "AT",
+       "country": "Austria",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Australia/Perth",
+       "countryCode": "AU",
+       "country": "Australia",
+       "timezoneString": "Asia/Hong_Kong"
+      },
+      {
+       "region": "Australia/Adelaide",
+       "countryCode": "AU",
+       "country": "Australia",
+       "timezoneString": "Australia/Adelaide"
+      },
+      {
+       "region": "Australia/Broken_Hill",
+       "countryCode": "AU",
+       "country": "Australia",
+       "timezoneString": "Australia/Adelaide"
+      },
+      {
+       "region": "Australia/Brisbane",
+       "countryCode": "AU",
+       "country": "Australia",
+       "timezoneString": "Australia/Brisbane"
+      },
+      {
+       "region": "Australia/Lindeman",
+       "countryCode": "AU",
+       "country": "Australia",
+       "timezoneString": "Australia/Brisbane"
+      },
+      {
+       "region": "Australia/Darwin",
+       "countryCode": "AU",
+       "country": "Australia",
+       "timezoneString": "Australia/Darwin"
+      },
+      {
+       "region": "Australia/Eucla",
+       "countryCode": "AU",
+       "country": "Australia",
+       "timezoneString": "Australia/Eucla"
+      },
+      {
+       "region": "Australia/Lord_Howe",
+       "countryCode": "AU",
+       "country": "Australia",
+       "timezoneString": "Australia/Lord_Howe"
+      },
+      {
+       "region": "Australia/Currie",
+       "countryCode": "AU",
+       "country": "Australia",
+       "timezoneString": "Australia/Sydney"
+      },
+      {
+       "region": "Australia/Hobart",
+       "countryCode": "AU",
+       "country": "Australia",
+       "timezoneString": "Australia/Sydney"
+      },
+      {
+       "region": "Australia/Melbourne",
+       "countryCode": "AU",
+       "country": "Australia",
+       "timezoneString": "Australia/Sydney"
+      },
+      {
+       "region": "Australia/Sydney",
+       "countryCode": "AU",
+       "country": "Australia",
+       "timezoneString": "Australia/Sydney"
+      },
+      {
+       "region": "Antarctica/Macquarie",
+       "countryCode": "AU",
+       "country": "Australia",
+       "timezoneString": "Pacific/Noumea"
+      },
+      {
+       "region": "America/Aruba",
+       "countryCode": "AW",
+       "country": "Aruba",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "Europe/Mariehamn",
+       "countryCode": "AX",
+       "country": "Åland Islands",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "Asia/Baku",
+       "countryCode": "AZ",
+       "country": "Azerbaijan",
+       "timezoneString": "Asia/Baku"
+      },
+      {
+       "region": "Europe/Sarajevo",
+       "countryCode": "BA",
+       "country": "Bosnia & Herzegovina",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "America/Barbados",
+       "countryCode": "BB",
+       "country": "Barbados",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "Asia/Dhaka",
+       "countryCode": "BD",
+       "country": "Bangladesh",
+       "timezoneString": "Asia/Dhaka"
+      },
+      {
+       "region": "Europe/Brussels",
+       "countryCode": "BE",
+       "country": "Belgium",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Africa/Ouagadougou",
+       "countryCode": "BF",
+       "country": "Burkina Faso",
+       "timezoneString": "Etc/Greenwich"
+      },
+      {
+       "region": "Europe/Sofia",
+       "countryCode": "BG",
+       "country": "Bulgaria",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "Asia/Bahrain",
+       "countryCode": "BH",
+       "country": "Bahrain",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Africa/Bujumbura",
+       "countryCode": "BI",
+       "country": "Burundi",
+       "timezoneString": "Africa/Cairo"
+      },
+      {
+       "region": "Africa/Porto-Novo",
+       "countryCode": "BJ",
+       "country": "Benin",
+       "timezoneString": "Etc/GMT-1"
+      },
+      {
+       "region": "America/St_Barthelemy",
+       "countryCode": "BL",
+       "country": "St Barthelemy",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "Atlantic/Bermuda",
+       "countryCode": "BM",
+       "country": "Bermuda",
+       "timezoneString": "Atlantic/Bermuda"
+      },
+      {
+       "region": "Asia/Brunei",
+       "countryCode": "BN",
+       "country": "Brunei",
+       "timezoneString": "Asia/Hong_Kong"
+      },
+      {
+       "region": "America/La_Paz",
+       "countryCode": "BO",
+       "country": "Bolivia",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "America/Kralendijk",
+       "countryCode": "BQ",
+       "country": "Caribbean Netherlands",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "America/Sao_Paulo",
+       "countryCode": "BR",
+       "country": "Brazil",
+       "timezoneString": "America/Sao_Paulo"
+      },
+      {
+       "region": "America/Campo_Grande",
+       "countryCode": "BR",
+       "country": "Brazil",
+       "timezoneString": "Atlantic/Bermuda"
+      },
+      {
+       "region": "America/Cuiaba",
+       "countryCode": "BR",
+       "country": "Brazil",
+       "timezoneString": "Atlantic/Bermuda"
+      },
+      {
+       "region": "America/Noronha",
+       "countryCode": "BR",
+       "country": "Brazil",
+       "timezoneString": "Etc/GMT+2"
+      },
+      {
+       "region": "America/Araguaina",
+       "countryCode": "BR",
+       "country": "Brazil",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "America/Bahia",
+       "countryCode": "BR",
+       "country": "Brazil",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "America/Belem",
+       "countryCode": "BR",
+       "country": "Brazil",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "America/Fortaleza",
+       "countryCode": "BR",
+       "country": "Brazil",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "America/Maceio",
+       "countryCode": "BR",
+       "country": "Brazil",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "America/Recife",
+       "countryCode": "BR",
+       "country": "Brazil",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "America/Santarem",
+       "countryCode": "BR",
+       "country": "Brazil",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "America/Boa_Vista",
+       "countryCode": "BR",
+       "country": "Brazil",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "America/Manaus",
+       "countryCode": "BR",
+       "country": "Brazil",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "America/Porto_Velho",
+       "countryCode": "BR",
+       "country": "Brazil",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "America/Eirunepe",
+       "countryCode": "BR",
+       "country": "Brazil",
+       "timezoneString": "Etc/GMT+5"
+      },
+      {
+       "region": "America/Rio_Branco",
+       "countryCode": "BR",
+       "country": "Brazil",
+       "timezoneString": "Etc/GMT+5"
+      },
+      {
+       "region": "America/Nassau",
+       "countryCode": "BS",
+       "country": "Bahamas",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "Asia/Thimphu",
+       "countryCode": "BT",
+       "country": "Bhutan",
+       "timezoneString": "Asia/Dhaka"
+      },
+      {
+       "region": "Africa/Gaborone",
+       "countryCode": "BW",
+       "country": "Botswana",
+       "timezoneString": "Africa/Cairo"
+      },
+      {
+       "region": "Europe/Minsk",
+       "countryCode": "BY",
+       "country": "Belarus",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "America/Belize",
+       "countryCode": "BZ",
+       "country": "Belize",
+       "timezoneString": "Etc/GMT+6"
+      },
+      {
+       "region": "America/Rainy_River",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "America/Chicago"
+      },
+      {
+       "region": "America/Rankin_Inlet",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "America/Chicago"
+      },
+      {
+       "region": "America/Resolute",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "America/Chicago"
+      },
+      {
+       "region": "America/Winnipeg",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "America/Chicago"
+      },
+      {
+       "region": "America/Cambridge_Bay",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "America/Denver"
+      },
+      {
+       "region": "America/Edmonton",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "America/Denver"
+      },
+      {
+       "region": "America/Inuvik",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "America/Denver"
+      },
+      {
+       "region": "America/Yellowknife",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "America/Denver"
+      },
+      {
+       "region": "America/Dawson",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "America/Los_Angeles"
+      },
+      {
+       "region": "America/Vancouver",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "America/Los_Angeles"
+      },
+      {
+       "region": "America/Whitehorse",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "America/Los_Angeles"
+      },
+      {
+       "region": "America/Iqaluit",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "America/Nipigon",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "America/Pangnirtung",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "America/Thunder_Bay",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "America/Toronto",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "America/St_Johns",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "America/St_Johns"
+      },
+      {
+       "region": "America/Glace_Bay",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "Atlantic/Bermuda"
+      },
+      {
+       "region": "America/Goose_Bay",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "Atlantic/Bermuda"
+      },
+      {
+       "region": "America/Halifax",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "Atlantic/Bermuda"
+      },
+      {
+       "region": "America/Moncton",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "Atlantic/Bermuda"
+      },
+      {
+       "region": "America/Blanc-Sablon",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "America/Atikokan",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "Etc/GMT+5"
+      },
+      {
+       "region": "America/Regina",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "Etc/GMT+6"
+      },
+      {
+       "region": "America/Swift_Current",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "Etc/GMT+6"
+      },
+      {
+       "region": "America/Creston",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "Etc/GMT+7"
+      },
+      {
+       "region": "America/Dawson_Creek",
+       "countryCode": "CA",
+       "country": "Canada",
+       "timezoneString": "Etc/GMT+7"
+      },
+      {
+       "region": "Indian/Cocos",
+       "countryCode": "CC",
+       "country": "Cocos (Keeling) Islands",
+       "timezoneString": "Indian/Cocos"
+      },
+      {
+       "region": "Africa/Lubumbashi",
+       "countryCode": "CD",
+       "country": "Congo (Dem. Rep.)",
+       "timezoneString": "Africa/Cairo"
+      },
+      {
+       "region": "Africa/Kinshasa",
+       "countryCode": "CD",
+       "country": "Congo (Dem. Rep.)",
+       "timezoneString": "Etc/GMT-1"
+      },
+      {
+       "region": "Africa/Bangui",
+       "countryCode": "CF",
+       "country": "Central African Rep.",
+       "timezoneString": "Etc/GMT-1"
+      },
+      {
+       "region": "Africa/Brazzaville",
+       "countryCode": "CG",
+       "country": "Congo (Rep.)",
+       "timezoneString": "Etc/GMT-1"
+      },
+      {
+       "region": "Europe/Zurich",
+       "countryCode": "CH",
+       "country": "Switzerland",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Africa/Abidjan",
+       "countryCode": "CI",
+       "country": "Côte d'Ivoire",
+       "timezoneString": "Etc/Greenwich"
+      },
+      {
+       "region": "Pacific/Rarotonga",
+       "countryCode": "CK",
+       "country": "Cook Islands",
+       "timezoneString": "Pacific/Honolulu"
+      },
+      {
+       "region": "America/Santiago",
+       "countryCode": "CL",
+       "country": "Chile",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "Pacific/Easter",
+       "countryCode": "CL",
+       "country": "Chile",
+       "timezoneString": "Etc/GMT+5"
+      },
+      {
+       "region": "Africa/Douala",
+       "countryCode": "CM",
+       "country": "Cameroon",
+       "timezoneString": "Etc/GMT-1"
+      },
+      {
+       "region": "Asia/Urumqi",
+       "countryCode": "CN",
+       "country": "China",
+       "timezoneString": "Asia/Dhaka"
+      },
+      {
+       "region": "Asia/Shanghai",
+       "countryCode": "CN",
+       "country": "China",
+       "timezoneString": "Asia/Hong_Kong"
+      },
+      {
+       "region": "America/Bogota",
+       "countryCode": "CO",
+       "country": "Colombia",
+       "timezoneString": "Etc/GMT+5"
+      },
+      {
+       "region": "America/Costa_Rica",
+       "countryCode": "CR",
+       "country": "Costa Rica",
+       "timezoneString": "Etc/GMT+6"
+      },
+      {
+       "region": "America/Havana",
+       "countryCode": "CU",
+       "country": "Cuba",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "Atlantic/Cape_Verde",
+       "countryCode": "CV",
+       "country": "Cape Verde",
+       "timezoneString": "Etc/GMT+1"
+      },
+      {
+       "region": "America/Curacao",
+       "countryCode": "CW",
+       "country": "Curacao",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "Indian/Christmas",
+       "countryCode": "CX",
+       "country": "Christmas Island",
+       "timezoneString": "Etc/GMT-7"
+      },
+      {
+       "region": "Asia/Nicosia",
+       "countryCode": "CY",
+       "country": "Cyprus",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "Europe/Prague",
+       "countryCode": "CZ",
+       "country": "Czech Republic",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Europe/Berlin",
+       "countryCode": "DE",
+       "country": "Germany",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Europe/Busingen",
+       "countryCode": "DE",
+       "country": "Germany",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Africa/Djibouti",
+       "countryCode": "DJ",
+       "country": "Djibouti",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Europe/Copenhagen",
+       "countryCode": "DK",
+       "country": "Denmark",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "America/Dominica",
+       "countryCode": "DM",
+       "country": "Dominica",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "America/Santo_Domingo",
+       "countryCode": "DO",
+       "country": "Dominican Republic",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "Africa/Algiers",
+       "countryCode": "DZ",
+       "country": "Algeria",
+       "timezoneString": "Etc/GMT-1"
+      },
+      {
+       "region": "America/Guayaquil",
+       "countryCode": "EC",
+       "country": "Ecuador",
+       "timezoneString": "Etc/GMT+5"
+      },
+      {
+       "region": "Pacific/Galapagos",
+       "countryCode": "EC",
+       "country": "Ecuador",
+       "timezoneString": "Etc/GMT+6"
+      },
+      {
+       "region": "Europe/Tallinn",
+       "countryCode": "EE",
+       "country": "Estonia",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "Africa/Cairo",
+       "countryCode": "EG",
+       "country": "Egypt",
+       "timezoneString": "Africa/Cairo"
+      },
+      {
+       "region": "Africa/El_Aaiun",
+       "countryCode": "EH",
+       "country": "Western Sahara",
+       "timezoneString": "Europe/London"
+      },
+      {
+       "region": "Africa/Asmara",
+       "countryCode": "ER",
+       "country": "Eritrea",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Atlantic/Canary",
+       "countryCode": "ES",
+       "country": "Spain",
+       "timezoneString": "Europe/London"
+      },
+      {
+       "region": "Africa/Ceuta",
+       "countryCode": "ES",
+       "country": "Spain",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Europe/Madrid",
+       "countryCode": "ES",
+       "country": "Spain",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Africa/Addis_Ababa",
+       "countryCode": "ET",
+       "country": "Ethiopia",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Europe/Helsinki",
+       "countryCode": "FI",
+       "country": "Finland",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "Pacific/Fiji",
+       "countryCode": "FJ",
+       "country": "Fiji",
+       "timezoneString": "NZ"
+      },
+      {
+       "region": "Atlantic/Stanley",
+       "countryCode": "FK",
+       "country": "Falkland Islands",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "Pacific/Chuuk",
+       "countryCode": "FM",
+       "country": "Micronesia",
+       "timezoneString": "Australia/Brisbane"
+      },
+      {
+       "region": "Pacific/Kosrae",
+       "countryCode": "FM",
+       "country": "Micronesia",
+       "timezoneString": "Pacific/Noumea"
+      },
+      {
+       "region": "Pacific/Pohnpei",
+       "countryCode": "FM",
+       "country": "Micronesia",
+       "timezoneString": "Pacific/Noumea"
+      },
+      {
+       "region": "Atlantic/Faroe",
+       "countryCode": "FO",
+       "country": "Faroe Islands",
+       "timezoneString": "Europe/London"
+      },
+      {
+       "region": "Europe/Paris",
+       "countryCode": "FR",
+       "country": "France",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Africa/Libreville",
+       "countryCode": "GA",
+       "country": "Gabon",
+       "timezoneString": "Etc/GMT-1"
+      },
+      {
+       "region": "Europe/London",
+       "countryCode": "GB",
+       "country": "Britain (UK)",
+       "timezoneString": "Europe/London"
+      },
+      {
+       "region": "America/Grenada",
+       "countryCode": "GD",
+       "country": "Grenada",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "Asia/Tbilisi",
+       "countryCode": "GE",
+       "country": "Georgia",
+       "timezoneString": "Asia/Dubai"
+      },
+      {
+       "region": "America/Cayenne",
+       "countryCode": "GF",
+       "country": "French Guiana",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "Europe/Guernsey",
+       "countryCode": "GG",
+       "country": "Guernsey",
+       "timezoneString": "Europe/London"
+      },
+      {
+       "region": "Africa/Accra",
+       "countryCode": "GH",
+       "country": "Ghana",
+       "timezoneString": "Etc/Greenwich"
+      },
+      {
+       "region": "Europe/Gibraltar",
+       "countryCode": "GI",
+       "country": "Gibraltar",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "America/Godthab",
+       "countryCode": "GL",
+       "country": "Greenland",
+       "timezoneString": "America/Sao_Paulo"
+      },
+      {
+       "region": "America/Scoresbysund",
+       "countryCode": "GL",
+       "country": "Greenland",
+       "timezoneString": "America/Scoresbysund"
+      },
+      {
+       "region": "America/Thule",
+       "countryCode": "GL",
+       "country": "Greenland",
+       "timezoneString": "Atlantic/Bermuda"
+      },
+      {
+       "region": "America/Danmarkshavn",
+       "countryCode": "GL",
+       "country": "Greenland",
+       "timezoneString": "Etc/Greenwich"
+      },
+      {
+       "region": "Africa/Banjul",
+       "countryCode": "GM",
+       "country": "Gambia",
+       "timezoneString": "Etc/Greenwich"
+      },
+      {
+       "region": "Africa/Conakry",
+       "countryCode": "GN",
+       "country": "Guinea",
+       "timezoneString": "Etc/Greenwich"
+      },
+      {
+       "region": "America/Guadeloupe",
+       "countryCode": "GP",
+       "country": "Guadeloupe",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "Africa/Malabo",
+       "countryCode": "GQ",
+       "country": "Equatorial Guinea",
+       "timezoneString": "Etc/GMT-1"
+      },
+      {
+       "region": "Europe/Athens",
+       "countryCode": "GR",
+       "country": "Greece",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "Atlantic/South_Georgia",
+       "countryCode": "GS",
+       "country": "South Georgia & the South Sandwich Islands",
+       "timezoneString": "Etc/GMT+2"
+      },
+      {
+       "region": "America/Guatemala",
+       "countryCode": "GT",
+       "country": "Guatemala",
+       "timezoneString": "Etc/GMT+6"
+      },
+      {
+       "region": "Pacific/Guam",
+       "countryCode": "GU",
+       "country": "Guam",
+       "timezoneString": "Australia/Brisbane"
+      },
+      {
+       "region": "Africa/Bissau",
+       "countryCode": "GW",
+       "country": "Guinea-Bissau",
+       "timezoneString": "Etc/Greenwich"
+      },
+      {
+       "region": "America/Guyana",
+       "countryCode": "GY",
+       "country": "Guyana",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "Asia/Hong_Kong",
+       "countryCode": "HK",
+       "country": "Hong Kong",
+       "timezoneString": "Asia/Hong_Kong"
+      },
+      {
+       "region": "America/Tegucigalpa",
+       "countryCode": "HN",
+       "country": "Honduras",
+       "timezoneString": "Etc/GMT+6"
+      },
+      {
+       "region": "Europe/Zagreb",
+       "countryCode": "HR",
+       "country": "Croatia",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "America/Port-au-Prince",
+       "countryCode": "HT",
+       "country": "Haiti",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "Europe/Budapest",
+       "countryCode": "HU",
+       "country": "Hungary",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Asia/Makassar",
+       "countryCode": "ID",
+       "country": "Indonesia",
+       "timezoneString": "Asia/Hong_Kong"
+      },
+      {
+       "region": "Asia/Jayapura",
+       "countryCode": "ID",
+       "country": "Indonesia",
+       "timezoneString": "Asia/Tokyo"
+      },
+      {
+       "region": "Asia/Jakarta",
+       "countryCode": "ID",
+       "country": "Indonesia",
+       "timezoneString": "Etc/GMT-7"
+      },
+      {
+       "region": "Asia/Pontianak",
+       "countryCode": "ID",
+       "country": "Indonesia",
+       "timezoneString": "Etc/GMT-7"
+      },
+      {
+       "region": "Europe/Dublin",
+       "countryCode": "IE",
+       "country": "Ireland",
+       "timezoneString": "Europe/London"
+      },
+      {
+       "region": "Asia/Jerusalem",
+       "countryCode": "IL",
+       "country": "Israel",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "Europe/Isle_of_Man",
+       "countryCode": "IM",
+       "country": "Isle of Man",
+       "timezoneString": "Europe/London"
+      },
+      {
+       "region": "Asia/Kolkata",
+       "countryCode": "IN",
+       "country": "India",
+       "timezoneString": "Asia/Kolkata"
+      },
+      {
+       "region": "Indian/Chagos",
+       "countryCode": "IO",
+       "country": "British Indian Ocean Territory",
+       "timezoneString": "Asia/Dhaka"
+      },
+      {
+       "region": "Asia/Baghdad",
+       "countryCode": "IQ",
+       "country": "Iraq",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Asia/Tehran",
+       "countryCode": "IR",
+       "country": "Iran",
+       "timezoneString": "Asia/Tehran"
+      },
+      {
+       "region": "Atlantic/Reykjavik",
+       "countryCode": "IS",
+       "country": "Iceland",
+       "timezoneString": "Etc/Greenwich"
+      },
+      {
+       "region": "Europe/Rome",
+       "countryCode": "IT",
+       "country": "Italy",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Europe/Jersey",
+       "countryCode": "JE",
+       "country": "Jersey",
+       "timezoneString": "Europe/London"
+      },
+      {
+       "region": "America/Jamaica",
+       "countryCode": "JM",
+       "country": "Jamaica",
+       "timezoneString": "Etc/GMT+5"
+      },
+      {
+       "region": "Asia/Amman",
+       "countryCode": "JO",
+       "country": "Jordan",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "Asia/Tokyo",
+       "countryCode": "JP",
+       "country": "Japan",
+       "timezoneString": "Asia/Tokyo"
+      },
+      {
+       "region": "Africa/Nairobi",
+       "countryCode": "KE",
+       "country": "Kenya",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Asia/Bishkek",
+       "countryCode": "KG",
+       "country": "Kyrgyzstan",
+       "timezoneString": "Asia/Dhaka"
+      },
+      {
+       "region": "Asia/Phnom_Penh",
+       "countryCode": "KH",
+       "country": "Cambodia",
+       "timezoneString": "Etc/GMT-7"
+      },
+      {
+       "region": "Pacific/Tarawa",
+       "countryCode": "KI",
+       "country": "Kiribati",
+       "timezoneString": "Etc/GMT-12"
+      },
+      {
+       "region": "Pacific/Enderbury",
+       "countryCode": "KI",
+       "country": "Kiribati",
+       "timezoneString": "Etc/GMT-13"
+      },
+      {
+       "region": "Pacific/Kiritimati",
+       "countryCode": "KI",
+       "country": "Kiribati",
+       "timezoneString": "Etc/GMT-14"
+      },
+      {
+       "region": "Indian/Comoro",
+       "countryCode": "KM",
+       "country": "Comoros",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "America/St_Kitts",
+       "countryCode": "KN",
+       "country": "St Kitts & Nevis",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "Asia/Pyongyang",
+       "countryCode": "KP",
+       "country": "Korea (North)",
+       "timezoneString": "Asia/Pyongyang"
+      },
+      {
+       "region": "Asia/Seoul",
+       "countryCode": "KR",
+       "country": "Korea (South)",
+       "timezoneString": "Asia/Tokyo"
+      },
+      {
+       "region": "Asia/Kuwait",
+       "countryCode": "KW",
+       "country": "Kuwait",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "America/Cayman",
+       "countryCode": "KY",
+       "country": "Cayman Islands",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "Asia/Almaty",
+       "countryCode": "KZ",
+       "country": "Kazakhstan",
+       "timezoneString": "Asia/Dhaka"
+      },
+      {
+       "region": "Asia/Qyzylorda",
+       "countryCode": "KZ",
+       "country": "Kazakhstan",
+       "timezoneString": "Asia/Dhaka"
+      },
+      {
+       "region": "Asia/Aqtau",
+       "countryCode": "KZ",
+       "country": "Kazakhstan",
+       "timezoneString": "Asia/Karachi"
+      },
+      {
+       "region": "Asia/Aqtobe",
+       "countryCode": "KZ",
+       "country": "Kazakhstan",
+       "timezoneString": "Asia/Karachi"
+      },
+      {
+       "region": "Asia/Oral",
+       "countryCode": "KZ",
+       "country": "Kazakhstan",
+       "timezoneString": "Asia/Karachi"
+      },
+      {
+       "region": "Asia/Vientiane",
+       "countryCode": "LA",
+       "country": "Laos",
+       "timezoneString": "Etc/GMT-7"
+      },
+      {
+       "region": "Asia/Beirut",
+       "countryCode": "LB",
+       "country": "Lebanon",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "America/St_Lucia",
+       "countryCode": "LC",
+       "country": "St Lucia",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "Europe/Vaduz",
+       "countryCode": "LI",
+       "country": "Liechtenstein",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Asia/Colombo",
+       "countryCode": "LK",
+       "country": "Sri Lanka",
+       "timezoneString": "Asia/Kolkata"
+      },
+      {
+       "region": "Africa/Monrovia",
+       "countryCode": "LR",
+       "country": "Liberia",
+       "timezoneString": "Etc/Greenwich"
+      },
+      {
+       "region": "Africa/Maseru",
+       "countryCode": "LS",
+       "country": "Lesotho",
+       "timezoneString": "Africa/Cairo"
+      },
+      {
+       "region": "Europe/Vilnius",
+       "countryCode": "LT",
+       "country": "Lithuania",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "Europe/Luxembourg",
+       "countryCode": "LU",
+       "country": "Luxembourg",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Europe/Riga",
+       "countryCode": "LV",
+       "country": "Latvia",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "Africa/Tripoli",
+       "countryCode": "LY",
+       "country": "Libya",
+       "timezoneString": "Africa/Cairo"
+      },
+      {
+       "region": "Africa/Casablanca",
+       "countryCode": "MA",
+       "country": "Morocco",
+       "timezoneString": "Europe/London"
+      },
+      {
+       "region": "Europe/Monaco",
+       "countryCode": "MC",
+       "country": "Monaco",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Europe/Chisinau",
+       "countryCode": "MD",
+       "country": "Moldova",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "Europe/Podgorica",
+       "countryCode": "ME",
+       "country": "Montenegro",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "America/Marigot",
+       "countryCode": "MF",
+       "country": "St Martin (French part)",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "Indian/Antananarivo",
+       "countryCode": "MG",
+       "country": "Madagascar",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Pacific/Kwajalein",
+       "countryCode": "MH",
+       "country": "Marshall Islands",
+       "timezoneString": "Etc/GMT-12"
+      },
+      {
+       "region": "Pacific/Majuro",
+       "countryCode": "MH",
+       "country": "Marshall Islands",
+       "timezoneString": "Etc/GMT-12"
+      },
+      {
+       "region": "Europe/Skopje",
+       "countryCode": "MK",
+       "country": "Macedonia",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Africa/Bamako",
+       "countryCode": "ML",
+       "country": "Mali",
+       "timezoneString": "Etc/Greenwich"
+      },
+      {
+       "region": "Asia/Rangoon",
+       "countryCode": "MM",
+       "country": "Myanmar (Burma)",
+       "timezoneString": "Indian/Cocos"
+      },
+      {
+       "region": "Asia/Hovd",
+       "countryCode": "MN",
+       "country": "Mongolia",
+       "timezoneString": "Asia/Hovd"
+      },
+      {
+       "region": "Asia/Choibalsan",
+       "countryCode": "MN",
+       "country": "Mongolia",
+       "timezoneString": "Asia/Ulaanbaatar"
+      },
+      {
+       "region": "Asia/Ulaanbaatar",
+       "countryCode": "MN",
+       "country": "Mongolia",
+       "timezoneString": "Asia/Ulaanbaatar"
+      },
+      {
+       "region": "Asia/Macau",
+       "countryCode": "MO",
+       "country": "Macau",
+       "timezoneString": "Asia/Hong_Kong"
+      },
+      {
+       "region": "Pacific/Saipan",
+       "countryCode": "MP",
+       "country": "Northern Mariana Islands",
+       "timezoneString": "Australia/Brisbane"
+      },
+      {
+       "region": "America/Martinique",
+       "countryCode": "MQ",
+       "country": "Martinique",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "Africa/Nouakchott",
+       "countryCode": "MR",
+       "country": "Mauritania",
+       "timezoneString": "Etc/Greenwich"
+      },
+      {
+       "region": "America/Montserrat",
+       "countryCode": "MS",
+       "country": "Montserrat",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "Europe/Malta",
+       "countryCode": "MT",
+       "country": "Malta",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Indian/Mauritius",
+       "countryCode": "MU",
+       "country": "Mauritius",
+       "timezoneString": "Asia/Dubai"
+      },
+      {
+       "region": "Indian/Maldives",
+       "countryCode": "MV",
+       "country": "Maldives",
+       "timezoneString": "Asia/Karachi"
+      },
+      {
+       "region": "Africa/Blantyre",
+       "countryCode": "MW",
+       "country": "Malawi",
+       "timezoneString": "Africa/Cairo"
+      },
+      {
+       "region": "America/Bahia_Banderas",
+       "countryCode": "MX",
+       "country": "Mexico",
+       "timezoneString": "America/Chicago"
+      },
+      {
+       "region": "America/Matamoros",
+       "countryCode": "MX",
+       "country": "Mexico",
+       "timezoneString": "America/Chicago"
+      },
+      {
+       "region": "America/Merida",
+       "countryCode": "MX",
+       "country": "Mexico",
+       "timezoneString": "America/Chicago"
+      },
+      {
+       "region": "America/Mexico_City",
+       "countryCode": "MX",
+       "country": "Mexico",
+       "timezoneString": "America/Chicago"
+      },
+      {
+       "region": "America/Monterrey",
+       "countryCode": "MX",
+       "country": "Mexico",
+       "timezoneString": "America/Chicago"
+      },
+      {
+       "region": "America/Chihuahua",
+       "countryCode": "MX",
+       "country": "Mexico",
+       "timezoneString": "America/Denver"
+      },
+      {
+       "region": "America/Mazatlan",
+       "countryCode": "MX",
+       "country": "Mexico",
+       "timezoneString": "America/Denver"
+      },
+      {
+       "region": "America/Ojinaga",
+       "countryCode": "MX",
+       "country": "Mexico",
+       "timezoneString": "America/Denver"
+      },
+      {
+       "region": "America/Santa_Isabel",
+       "countryCode": "MX",
+       "country": "Mexico",
+       "timezoneString": "America/Los_Angeles"
+      },
+      {
+       "region": "America/Tijuana",
+       "countryCode": "MX",
+       "country": "Mexico",
+       "timezoneString": "America/Los_Angeles"
+      },
+      {
+       "region": "America/Cancun",
+       "countryCode": "MX",
+       "country": "Mexico",
+       "timezoneString": "Etc/GMT+5"
+      },
+      {
+       "region": "America/Hermosillo",
+       "countryCode": "MX",
+       "country": "Mexico",
+       "timezoneString": "Etc/GMT+7"
+      },
+      {
+       "region": "Asia/Kuala_Lumpur",
+       "countryCode": "MY",
+       "country": "Malaysia",
+       "timezoneString": "Asia/Hong_Kong"
+      },
+      {
+       "region": "Asia/Kuching",
+       "countryCode": "MY",
+       "country": "Malaysia",
+       "timezoneString": "Asia/Hong_Kong"
+      },
+      {
+       "region": "Africa/Maputo",
+       "countryCode": "MZ",
+       "country": "Mozambique",
+       "timezoneString": "Africa/Cairo"
+      },
+      {
+       "region": "Africa/Windhoek",
+       "countryCode": "NA",
+       "country": "Namibia",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Pacific/Noumea",
+       "countryCode": "NC",
+       "country": "New Caledonia",
+       "timezoneString": "Pacific/Noumea"
+      },
+      {
+       "region": "Africa/Niamey",
+       "countryCode": "NE",
+       "country": "Niger",
+       "timezoneString": "Etc/GMT-1"
+      },
+      {
+       "region": "Pacific/Norfolk",
+       "countryCode": "NF",
+       "country": "Norfolk Island",
+       "timezoneString": "Pacific/Norfolk"
+      },
+      {
+       "region": "Africa/Lagos",
+       "countryCode": "NG",
+       "country": "Nigeria",
+       "timezoneString": "Etc/GMT-1"
+      },
+      {
+       "region": "America/Managua",
+       "countryCode": "NI",
+       "country": "Nicaragua",
+       "timezoneString": "Etc/GMT+6"
+      },
+      {
+       "region": "Europe/Amsterdam",
+       "countryCode": "NL",
+       "country": "Netherlands",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Europe/Oslo",
+       "countryCode": "NO",
+       "country": "Norway",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Asia/Kathmandu",
+       "countryCode": "NP",
+       "country": "Nepal",
+       "timezoneString": "Asia/Kathmandu"
+      },
+      {
+       "region": "Pacific/Nauru",
+       "countryCode": "NR",
+       "country": "Nauru",
+       "timezoneString": "Etc/GMT-12"
+      },
+      {
+       "region": "Pacific/Niue",
+       "countryCode": "NU",
+       "country": "Niue",
+       "timezoneString": "Etc/GMT+11"
+      },
+      {
+       "region": "Pacific/Chatham",
+       "countryCode": "NZ",
+       "country": "New Zealand",
+       "timezoneString": "NZ-CHAT"
+      },
+      {
+       "region": "Pacific/Auckland",
+       "countryCode": "NZ",
+       "country": "New Zealand",
+       "timezoneString": "NZ"
+      },
+      {
+       "region": "Asia/Muscat",
+       "countryCode": "OM",
+       "country": "Oman",
+       "timezoneString": "Asia/Dubai"
+      },
+      {
+       "region": "America/Panama",
+       "countryCode": "PA",
+       "country": "Panama",
+       "timezoneString": "Etc/GMT+5"
+      },
+      {
+       "region": "America/Lima",
+       "countryCode": "PE",
+       "country": "Peru",
+       "timezoneString": "Etc/GMT+5"
+      },
+      {
+       "region": "Pacific/Gambier",
+       "countryCode": "PF",
+       "country": "French Polynesia",
+       "timezoneString": "Etc/GMT+9"
+      },
+      {
+       "region": "Pacific/Tahiti",
+       "countryCode": "PF",
+       "country": "French Polynesia",
+       "timezoneString": "Pacific/Honolulu"
+      },
+      {
+       "region": "Pacific/Marquesas",
+       "countryCode": "PF",
+       "country": "French Polynesia",
+       "timezoneString": "Pacific/Marquesas"
+      },
+      {
+       "region": "Pacific/Port_Moresby",
+       "countryCode": "PG",
+       "country": "Papua New Guinea",
+       "timezoneString": "Australia/Brisbane"
+      },
+      {
+       "region": "Pacific/Bougainville",
+       "countryCode": "PG",
+       "country": "Papua New Guinea",
+       "timezoneString": "Pacific/Noumea"
+      },
+      {
+       "region": "Asia/Manila",
+       "countryCode": "PH",
+       "country": "Philippines",
+       "timezoneString": "Asia/Hong_Kong"
+      },
+      {
+       "region": "Asia/Karachi",
+       "countryCode": "PK",
+       "country": "Pakistan",
+       "timezoneString": "Asia/Karachi"
+      },
+      {
+       "region": "Europe/Warsaw",
+       "countryCode": "PL",
+       "country": "Poland",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "America/Miquelon",
+       "countryCode": "PM",
+       "country": "St Pierre & Miquelon",
+       "timezoneString": "America/Sao_Paulo"
+      },
+      {
+       "region": "Pacific/Pitcairn",
+       "countryCode": "PN",
+       "country": "Pitcairn",
+       "timezoneString": "Etc/GMT+8"
+      },
+      {
+       "region": "America/Puerto_Rico",
+       "countryCode": "PR",
+       "country": "Puerto Rico",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "Asia/Gaza",
+       "countryCode": "PS",
+       "country": "Palestine",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "Asia/Hebron",
+       "countryCode": "PS",
+       "country": "Palestine",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "Atlantic/Azores",
+       "countryCode": "PT",
+       "country": "Portugal",
+       "timezoneString": "America/Scoresbysund"
+      },
+      {
+       "region": "Atlantic/Madeira",
+       "countryCode": "PT",
+       "country": "Portugal",
+       "timezoneString": "Europe/London"
+      },
+      {
+       "region": "Europe/Lisbon",
+       "countryCode": "PT",
+       "country": "Portugal",
+       "timezoneString": "Europe/London"
+      },
+      {
+       "region": "Pacific/Palau",
+       "countryCode": "PW",
+       "country": "Palau",
+       "timezoneString": "Asia/Tokyo"
+      },
+      {
+       "region": "America/Asuncion",
+       "countryCode": "PY",
+       "country": "Paraguay",
+       "timezoneString": "Atlantic/Bermuda"
+      },
+      {
+       "region": "Asia/Qatar",
+       "countryCode": "QA",
+       "country": "Qatar",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Indian/Reunion",
+       "countryCode": "RE",
+       "country": "Réunion",
+       "timezoneString": "Asia/Dubai"
+      },
+      {
+       "region": "Europe/Bucharest",
+       "countryCode": "RO",
+       "country": "Romania",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "Europe/Belgrade",
+       "countryCode": "RS",
+       "country": "Serbia",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Europe/Kaliningrad",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Africa/Cairo"
+      },
+      {
+       "region": "Asia/Novosibirsk",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Asia/Dhaka"
+      },
+      {
+       "region": "Asia/Omsk",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Asia/Dhaka"
+      },
+      {
+       "region": "Europe/Samara",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Asia/Dubai"
+      },
+      {
+       "region": "Asia/Chita",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Asia/Hong_Kong"
+      },
+      {
+       "region": "Asia/Irkutsk",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Asia/Hong_Kong"
+      },
+      {
+       "region": "Asia/Yekaterinburg",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Asia/Karachi"
+      },
+      {
+       "region": "Asia/Khandyga",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Asia/Tokyo"
+      },
+      {
+       "region": "Asia/Yakutsk",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Asia/Tokyo"
+      },
+      {
+       "region": "Asia/Magadan",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Australia/Brisbane"
+      },
+      {
+       "region": "Asia/Sakhalin",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Australia/Brisbane"
+      },
+      {
+       "region": "Asia/Ust-Nera",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Australia/Brisbane"
+      },
+      {
+       "region": "Asia/Vladivostok",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Australia/Brisbane"
+      },
+      {
+       "region": "Asia/Anadyr",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Etc/GMT-12"
+      },
+      {
+       "region": "Asia/Kamchatka",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Etc/GMT-12"
+      },
+      {
+       "region": "Asia/Krasnoyarsk",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Etc/GMT-7"
+      },
+      {
+       "region": "Asia/Novokuznetsk",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Etc/GMT-7"
+      },
+      {
+       "region": "Europe/Moscow",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Europe/Simferopol",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Europe/Volgograd",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Asia/Srednekolymsk",
+       "countryCode": "RU",
+       "country": "Russia",
+       "timezoneString": "Pacific/Noumea"
+      },
+      {
+       "region": "Africa/Kigali",
+       "countryCode": "RW",
+       "country": "Rwanda",
+       "timezoneString": "Africa/Cairo"
+      },
+      {
+       "region": "Asia/Riyadh",
+       "countryCode": "SA",
+       "country": "Saudi Arabia",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Pacific/Guadalcanal",
+       "countryCode": "SB",
+       "country": "Solomon Islands",
+       "timezoneString": "Pacific/Noumea"
+      },
+      {
+       "region": "Indian/Mahe",
+       "countryCode": "SC",
+       "country": "Seychelles",
+       "timezoneString": "Asia/Dubai"
+      },
+      {
+       "region": "Africa/Khartoum",
+       "countryCode": "SD",
+       "country": "Sudan",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Europe/Stockholm",
+       "countryCode": "SE",
+       "country": "Sweden",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Asia/Singapore",
+       "countryCode": "SG",
+       "country": "Singapore",
+       "timezoneString": "Asia/Hong_Kong"
+      },
+      {
+       "region": "Atlantic/St_Helena",
+       "countryCode": "SH",
+       "country": "St Helena",
+       "timezoneString": "Etc/Greenwich"
+      },
+      {
+       "region": "Europe/Ljubljana",
+       "countryCode": "SI",
+       "country": "Slovenia",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Arctic/Longyearbyen",
+       "countryCode": "SJ",
+       "country": "Svalbard & Jan Mayen",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Europe/Bratislava",
+       "countryCode": "SK",
+       "country": "Slovakia",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Africa/Freetown",
+       "countryCode": "SL",
+       "country": "Sierra Leone",
+       "timezoneString": "Etc/Greenwich"
+      },
+      {
+       "region": "Europe/San_Marino",
+       "countryCode": "SM",
+       "country": "San Marino",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "Africa/Dakar",
+       "countryCode": "SN",
+       "country": "Senegal",
+       "timezoneString": "Etc/Greenwich"
+      },
+      {
+       "region": "Africa/Mogadishu",
+       "countryCode": "SO",
+       "country": "Somalia",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "America/Paramaribo",
+       "countryCode": "SR",
+       "country": "Suriname",
+       "timezoneString": "Etc/GMT+3"
+      },
+      {
+       "region": "Africa/Juba",
+       "countryCode": "SS",
+       "country": "South Sudan",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Africa/Sao_Tome",
+       "countryCode": "ST",
+       "country": "Sao Tome & Principe",
+       "timezoneString": "Etc/Greenwich"
+      },
+      {
+       "region": "America/El_Salvador",
+       "countryCode": "SV",
+       "country": "El Salvador",
+       "timezoneString": "Etc/GMT+6"
+      },
+      {
+       "region": "America/Lower_Princes",
+       "countryCode": "SX",
+       "country": "St Maarten (Dutch part)",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "Asia/Damascus",
+       "countryCode": "SY",
+       "country": "Syria",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "Africa/Mbabane",
+       "countryCode": "SZ",
+       "country": "Swaziland",
+       "timezoneString": "Africa/Cairo"
+      },
+      {
+       "region": "America/Grand_Turk",
+       "countryCode": "TC",
+       "country": "Turks & Caicos Is",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "Africa/Ndjamena",
+       "countryCode": "TD",
+       "country": "Chad",
+       "timezoneString": "Etc/GMT-1"
+      },
+      {
+       "region": "Indian/Kerguelen",
+       "countryCode": "TF",
+       "country": "French Southern & Antarctic Lands",
+       "timezoneString": "Asia/Karachi"
+      },
+      {
+       "region": "Africa/Lome",
+       "countryCode": "TG",
+       "country": "Togo",
+       "timezoneString": "Etc/Greenwich"
+      },
+      {
+       "region": "Asia/Bangkok",
+       "countryCode": "TH",
+       "country": "Thailand",
+       "timezoneString": "Etc/GMT-7"
+      },
+      {
+       "region": "Asia/Dushanbe",
+       "countryCode": "TJ",
+       "country": "Tajikistan",
+       "timezoneString": "Asia/Karachi"
+      },
+      {
+       "region": "Pacific/Fakaofo",
+       "countryCode": "TK",
+       "country": "Tokelau",
+       "timezoneString": "Etc/GMT-13"
+      },
+      {
+       "region": "Asia/Dili",
+       "countryCode": "TL",
+       "country": "East Timor",
+       "timezoneString": "Asia/Tokyo"
+      },
+      {
+       "region": "Asia/Ashgabat",
+       "countryCode": "TM",
+       "country": "Turkmenistan",
+       "timezoneString": "Asia/Karachi"
+      },
+      {
+       "region": "Africa/Tunis",
+       "countryCode": "TN",
+       "country": "Tunisia",
+       "timezoneString": "Etc/GMT-1"
+      },
+      {
+       "region": "Pacific/Tongatapu",
+       "countryCode": "TO",
+       "country": "Tonga",
+       "timezoneString": "Etc/GMT-13"
+      },
+      {
+       "region": "Europe/Istanbul",
+       "countryCode": "TR",
+       "country": "Turkey",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "America/Port_of_Spain",
+       "countryCode": "TT",
+       "country": "Trinidad & Tobago",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "Pacific/Funafuti",
+       "countryCode": "TV",
+       "country": "Tuvalu",
+       "timezoneString": "Etc/GMT-12"
+      },
+      {
+       "region": "Asia/Taipei",
+       "countryCode": "TW",
+       "country": "Taiwan",
+       "timezoneString": "Asia/Hong_Kong"
+      },
+      {
+       "region": "Africa/Dar_es_Salaam",
+       "countryCode": "TZ",
+       "country": "Tanzania",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Europe/Kiev",
+       "countryCode": "UA",
+       "country": "Ukraine",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "Europe/Uzhgorod",
+       "countryCode": "UA",
+       "country": "Ukraine",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "Europe/Zaporozhye",
+       "countryCode": "UA",
+       "country": "Ukraine",
+       "timezoneString": "EET"
+      },
+      {
+       "region": "Africa/Kampala",
+       "countryCode": "UG",
+       "country": "Uganda",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Pacific/Midway",
+       "countryCode": "UM",
+       "country": "US minor outlying islands",
+       "timezoneString": "Etc/GMT+11"
+      },
+      {
+       "region": "Pacific/Wake",
+       "countryCode": "UM",
+       "country": "US minor outlying islands",
+       "timezoneString": "Etc/GMT-12"
+      },
+      {
+       "region": "Pacific/Johnston",
+       "countryCode": "UM",
+       "country": "US minor outlying islands",
+       "timezoneString": "Pacific/Honolulu"
+      },
+      {
+       "region": "America/Adak",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/Adak"
+      },
+      {
+       "region": "America/Anchorage",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/Anchorage"
+      },
+      {
+       "region": "America/Juneau",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/Anchorage"
+      },
+      {
+       "region": "America/Nome",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/Anchorage"
+      },
+      {
+       "region": "America/Sitka",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/Anchorage"
+      },
+      {
+       "region": "America/Yakutat",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/Anchorage"
+      },
+      {
+       "region": "America/Chicago",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/Chicago"
+      },
+      {
+       "region": "America/Indiana/Knox",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/Chicago"
+      },
+      {
+       "region": "America/Indiana/Tell_City",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/Chicago"
+      },
+      {
+       "region": "America/Menominee",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/Chicago"
+      },
+      {
+       "region": "America/North_Dakota/Beulah",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/Chicago"
+      },
+      {
+       "region": "America/North_Dakota/Center",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/Chicago"
+      },
+      {
+       "region": "America/North_Dakota/New_Salem",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/Chicago"
+      },
+      {
+       "region": "America/Boise",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/Denver"
+      },
+      {
+       "region": "America/Denver",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/Denver"
+      },
+      {
+       "region": "America/Los_Angeles",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/Los_Angeles"
+      },
+      {
+       "region": "America/Detroit",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "America/Indiana/Indianapolis",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "America/Indiana/Marengo",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "America/Indiana/Petersburg",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "America/Indiana/Vevay",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "America/Indiana/Vincennes",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "America/Indiana/Winamac",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "America/Kentucky/Louisville",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "America/Kentucky/Monticello",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "America/New_York",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "America/New_York"
+      },
+      {
+       "region": "America/Phoenix",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "Etc/GMT+7"
+      },
+      {
+       "region": "America/Metlakatla",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "Etc/GMT+8"
+      },
+      {
+       "region": "Pacific/Honolulu",
+       "countryCode": "US",
+       "country": "United States",
+       "timezoneString": "Pacific/Honolulu"
+      },
+      {
+       "region": "America/Montevideo",
+       "countryCode": "UY",
+       "country": "Uruguay",
+       "timezoneString": "America/Sao_Paulo"
+      },
+      {
+       "region": "Asia/Samarkand",
+       "countryCode": "UZ",
+       "country": "Uzbekistan",
+       "timezoneString": "Asia/Karachi"
+      },
+      {
+       "region": "Asia/Tashkent",
+       "countryCode": "UZ",
+       "country": "Uzbekistan",
+       "timezoneString": "Asia/Karachi"
+      },
+      {
+       "region": "Europe/Vatican",
+       "countryCode": "VA",
+       "country": "Vatican City",
+       "timezoneString": "Europe/Paris"
+      },
+      {
+       "region": "America/St_Vincent",
+       "countryCode": "VC",
+       "country": "St Vincent",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "America/Caracas",
+       "countryCode": "VE",
+       "country": "Venezuela",
+       "timezoneString": "America/Caracas"
+      },
+      {
+       "region": "America/Tortola",
+       "countryCode": "VG",
+       "country": "Virgin Islands (UK)",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "America/St_Thomas",
+       "countryCode": "VI",
+       "country": "Virgin Islands (US)",
+       "timezoneString": "Etc/GMT+4"
+      },
+      {
+       "region": "Asia/Ho_Chi_Minh",
+       "countryCode": "VN",
+       "country": "Vietnam",
+       "timezoneString": "Etc/GMT-7"
+      },
+      {
+       "region": "Pacific/Efate",
+       "countryCode": "VU",
+       "country": "Vanuatu",
+       "timezoneString": "Pacific/Noumea"
+      },
+      {
+       "region": "Pacific/Wallis",
+       "countryCode": "WF",
+       "country": "Wallis & Futuna",
+       "timezoneString": "Etc/GMT-12"
+      },
+      {
+       "region": "Pacific/Apia",
+       "countryCode": "WS",
+       "country": "Samoa (western)",
+       "timezoneString": "Pacific/Apia"
+      },
+      {
+       "region": "Asia/Aden",
+       "countryCode": "YE",
+       "country": "Yemen",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Indian/Mayotte",
+       "countryCode": "YT",
+       "country": "Mayotte",
+       "timezoneString": "Europe/Moscow"
+      },
+      {
+       "region": "Africa/Johannesburg",
+       "countryCode": "ZA",
+       "country": "South Africa",
+       "timezoneString": "Africa/Cairo"
+      },
+      {
+       "region": "Africa/Lusaka",
+       "countryCode": "ZM",
+       "country": "Zambia",
+       "timezoneString": "Africa/Cairo"
+      },
+      {
+       "region": "Africa/Harare",
+       "countryCode": "ZW",
+       "country": "Zimbabwe",
+       "timezoneString": "Africa/Cairo"
+      }
+     ]
+    },
+    "type": "timezoneAreas"
+   },
+   "valueType": "timezoneAreas"
+  },
+  {
+   "path": "settings:/timezone",
+   "title": "Current timezone",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "string_": "",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/tunein",
+   "title": "tunein",
+   "type": "container",
+   "childCount": 5
+  },
+  {
+   "path": "settings:/tunein/browseIndexUrl",
+   "title": "browseIndexUrl",
+   "type": "value",
+   "defaultValue": {
+    "string_": "http://opml.radiotime.com/Browse.ashx",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/tunein/childElementsInSingleList",
+   "title": "Child elements in single list",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/tunein/enabledFixItWizard",
+   "title": "Fix-it wizard enabled",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/tunein/supportedStreams",
+   "title": "supportedStreams",
+   "type": "value",
+   "defaultValue": {
+    "string_": "mp3,aac",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui",
+   "title": "ui",
+   "type": "container",
+   "childCount": 20
+  },
+  {
+   "path": "settings:/ui/ambientLightBrightness",
+   "title": "Ambient Light Brightness",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 100
+   },
+   "valueType": "i32_",
+   "currentValue": {
+    "type": "i32_",
+    "i32_": 100
+   }
+  },
+  {
+   "path": "settings:/ui/ambientLightEnabled",
+   "title": "Ambient Light State",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_",
+   "currentValue": {
+    "bool_": true,
+    "type": "bool_"
+   }
+  },
+  {
+   "path": "settings:/ui/ambientLightRgb",
+   "title": "Ambient Light RGB",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "formationDownlightRgb": {},
+    "type": "formationDownlightRgb"
+   },
+   "valueType": "formationDownlightRgb",
+   "currentValue": {
+    "formationDownlightRgb": {
+     "green": 80,
+     "red": 255,
+     "blue": 0
+    },
+    "type": "formationDownlightRgb"
+   }
+  },
+  {
+   "path": "settings:/ui/deviceSetupStatus",
+   "title": "deviceSetupStatus",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/ui/disabledEvents",
+   "title": "List of disabled input events",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "i32List": [],
+    "type": "i32List"
+   },
+   "valueType": "i32List"
+  },
+  {
+   "path": "settings:/ui/disabledFactoryReset",
+   "title": "Disabled state of FDR button (disabledFactoryReset).",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/ui/disabledPatternEvents",
+   "title": "List of disabled LED pattern events",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "i32List": [],
+    "type": "i32List"
+   },
+   "valueType": "i32List"
+  },
+  {
+   "path": "settings:/ui/disabledReboot",
+   "title": "Disabled state of Device reboot button (disabledReboot).",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/ui/displayBrightness",
+   "title": "Display Intensity",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/ui/displayBrightnessValues",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 100
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/ui/displayBrightnessValues",
+   "title": "displayBrightnessValues",
+   "type": "container",
+   "childCount": 4
+  },
+  {
+   "path": "settings:/ui/displayBrightnessValues/01-off",
+   "title": "Off",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/ui/displayBrightnessValues/02-low",
+   "title": "Low",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 25
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/ui/displayBrightnessValues/03-medium",
+   "title": "Medium",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 50
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/ui/displayBrightnessValues/04-high",
+   "title": "High",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 100
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/ui/enableDebugMenu",
+   "title": "Enable Debug Menu",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "type": "bool_"
+   },
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/ui/language",
+   "title": "Language",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/ui/languages",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "string_": "en_US",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/languages",
+   "title": "languages",
+   "type": "container",
+   "childCount": 15
+  },
+  {
+   "path": "settings:/ui/languages/01-en_US",
+   "title": "English (US)",
+   "type": "value",
+   "defaultValue": {
+    "string_": "en_US",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/languages/02-de_DE",
+   "title": "Deutsch",
+   "type": "value",
+   "defaultValue": {
+    "string_": "de_DE",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/languages/03-en_AU",
+   "title": "English (Australia)",
+   "type": "value",
+   "defaultValue": {
+    "string_": "en_AU",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/languages/04-en_CA",
+   "title": "English (Canada)",
+   "type": "value",
+   "defaultValue": {
+    "string_": "en_CA",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/languages/05-en_GB",
+   "title": "English (GB)",
+   "type": "value",
+   "defaultValue": {
+    "string_": "en_GB",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/languages/06-en_IN",
+   "title": "English (India)",
+   "type": "value",
+   "defaultValue": {
+    "string_": "en_IN",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/languages/07-es_ES",
+   "title": "Spanish",
+   "type": "value",
+   "defaultValue": {
+    "string_": "es_ES",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/languages/08-es_MX",
+   "title": "Spanish (Mexico)",
+   "type": "value",
+   "defaultValue": {
+    "string_": "es_MX",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/languages/09-es_US",
+   "title": "Spanish (US)",
+   "type": "value",
+   "defaultValue": {
+    "string_": "es_US",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/languages/10-fr_CA",
+   "title": "French (Canada)",
+   "type": "value",
+   "defaultValue": {
+    "string_": "fr_CA",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/languages/11-fr_FR",
+   "title": "French",
+   "type": "value",
+   "defaultValue": {
+    "string_": "fr_FR",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/languages/12-hi_IN",
+   "title": "Hindi",
+   "type": "value",
+   "defaultValue": {
+    "string_": "hi_IN",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/languages/13-it_IT",
+   "title": "Italian",
+   "type": "value",
+   "defaultValue": {
+    "string_": "it_IT",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/languages/14-ja_JP",
+   "title": "Japanese",
+   "type": "value",
+   "defaultValue": {
+    "string_": "ja_JP",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/languages/15-pt_BR",
+   "title": "Portuguese",
+   "type": "value",
+   "defaultValue": {
+    "string_": "pt_BR",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/noPlayerOnBackgroundPlay",
+   "title": "Do not open player on backgroung play",
+   "type": "value",
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/ui/oobeLedEnabled",
+   "title": "oobeLedEnabled",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/ui/playScreenReturnTimer",
+   "title": "Return to Play-screen time",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/ui/playScreenReturnTimerValues",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 10
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/ui/playScreenReturnTimerValues",
+   "title": "playScreenReturnTimerValues",
+   "type": "container",
+   "childCount": 4
+  },
+  {
+   "path": "settings:/ui/playScreenReturnTimerValues/01-off",
+   "title": "Turn off",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/ui/playScreenReturnTimerValues/02-10s",
+   "title": "10 seconds",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 10
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/ui/playScreenReturnTimerValues/03-30s",
+   "title": "30 seconds",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 30
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/ui/playScreenReturnTimerValues/04-60s",
+   "title": "60 seconds",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 60
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/ui/skin",
+   "title": "Skin",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/ui/skins",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "string_": "Default",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/skinSettings",
+   "title": "UI Skin settings",
+   "type": "value",
+   "defaultValue": {
+    "uiSkinSettingsList": [
+     {
+      "width": 320,
+      "defaultSkin": "skins/skin-streamsdk/320x240-processed.xml",
+      "height": 240,
+      "alternativeSkin": "skins/skin-alt-a/320x240-processed.xml"
+     },
+     {
+      "width": 480,
+      "defaultSkin": "skins/skin-streamsdk/480x272-processed.xml",
+      "height": 272,
+      "alternativeSkin": "skins/skin-alt-a/480x272-processed.xml"
+     },
+     {
+      "width": 800,
+      "defaultSkin": "skins/skin-streamsdk/800x480-5lines-processed.xml",
+      "height": 480,
+      "alternativeSkin": "skins/skin-streamsdk/800x480-10lines-processed.xml"
+     },
+     {
+      "width": 800,
+      "defaultSkin": "skins/skin-streamsdk/800x480-5lines-processed.xml",
+      "height": 600,
+      "alternativeSkin": "skins/skin-streamsdk/800x480-10lines-processed.xml"
+     }
+    ],
+    "type": "uiSkinSettingsList"
+   },
+   "valueType": "uiSkinSettingsList"
+  },
+  {
+   "path": "settings:/ui/skins",
+   "title": "skins",
+   "type": "container",
+   "childCount": 2
+  },
+  {
+   "path": "settings:/ui/skins/01-default",
+   "title": "Default",
+   "type": "value",
+   "defaultValue": {
+    "string_": "Default",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/skins/02-alta",
+   "title": "Alternative A",
+   "type": "value",
+   "defaultValue": {
+    "string_": "AltA",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/upnpRenderer",
+   "title": "upnpRenderer",
+   "type": "container",
+   "childCount": 4
+  },
+  {
+   "path": "settings:/upnpRenderer/Qplay",
+   "title": "Qplay",
+   "type": "container",
+   "childCount": 3
+  },
+  {
+   "path": "settings:/upnpRenderer/disconnectOnSourceChange",
+   "title": "Disconnect DLNA controller when changed source",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/upnpRenderer/supported_formats",
+   "title": "UPnP supported formats",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "upnpSupportedFormats": {
+     "formats": [
+      {
+       "mimetype": "audio/mpeg",
+       "profile": "MP3"
+      },
+      {
+       "mimetype": "audio/wav",
+       "profile": ""
+      },
+      {
+       "mimetype": "audio/wave",
+       "profile": ""
+      },
+      {
+       "mimetype": "audio/x-wav",
+       "profile": ""
+      },
+      {
+       "mimetype": "audio/x-flac",
+       "profile": ""
+      },
+      {
+       "mimetype": "audio/flac",
+       "profile": ""
+      },
+      {
+       "mimetype": "audio/l16;rate=44100;channels=2",
+       "profile": "LPCM"
+      },
+      {
+       "mimetype": "audio/l16;rate=44100;channels=1",
+       "profile": "LPCM"
+      },
+      {
+       "mimetype": "audio/l16;rate=48000;channels=2",
+       "profile": "LPCM"
+      },
+      {
+       "mimetype": "audio/l16;rate=48000;channels=1",
+       "profile": "LPCM"
+      },
+      {
+       "mimetype": "audio/mp4",
+       "profile": "HEAACv2_L2_320"
+      },
+      {
+       "mimetype": "audio/m4a",
+       "profile": ""
+      },
+      {
+       "mimetype": "audio/aac",
+       "profile": ""
+      },
+      {
+       "mimetype": "audio/x-aac",
+       "profile": ""
+      },
+      {
+       "mimetype": "audio/x-m4a",
+       "profile": ""
+      },
+      {
+       "mimetype": "audio/3gpp",
+       "profile": "HEAACv2_L2_320"
+      },
+      {
+       "mimetype": "audio/x-ms-wma",
+       "profile": "WMABASE"
+      },
+      {
+       "mimetype": "audio/x-ms-wma",
+       "profile": "WMAFULL"
+      },
+      {
+       "mimetype": "audio/vnd.dlna.adts",
+       "profile": "HEAACv2_L2_320"
+      },
+      {
+       "mimetype": "audio/x-aiff",
+       "profile": ""
+      },
+      {
+       "mimetype": "audio/aiff",
+       "profile": ""
+      },
+      {
+       "mimetype": "audio/ogg",
+       "profile": ""
+      },
+      {
+       "mimetype": "audio/vorbis",
+       "profile": ""
+      },
+      {
+       "mimetype": "application/ogg",
+       "profile": ""
+      },
+      {
+       "mimetype": "text/xml",
+       "profile": "DIDL_S"
+      }
+     ]
+    },
+    "type": "upnpSupportedFormats"
+   },
+   "valueType": "upnpSupportedFormats"
+  },
+  {
+   "path": "settings:/upnpRenderer/udn",
+   "title": "Meta data UDN record",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "string_": "",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/version",
+   "title": "Version",
+   "type": "value",
+   "defaultValue": {
+    "string_": "1.12.1.1",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/versionLastBooted",
+   "title": "Last booted version",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "string_": "",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/versionSDK",
+   "title": "SDK version",
+   "type": "value",
+   "defaultValue": {
+    "string_": "1.12.1.1",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/vtuner",
+   "title": "vtuner",
+   "type": "container",
+   "childCount": 5
+  },
+  {
+   "path": "settings:/vtuner/append_fver",
+   "title": "append_fver",
+   "type": "value",
+   "defaultValue": {
+    "string_": "0101",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/vtuner/login_url",
+   "title": "login_url",
+   "type": "value",
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/vtuner/login_url_backup",
+   "title": "login_url_backup",
+   "type": "value",
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/wac",
+   "title": "wac",
+   "type": "container",
+   "childCount": 5
+  },
+  {
+   "path": "settings:/wac/firmwareRevision",
+   "title": "Firmware Revision",
+   "type": "value",
+   "defaultValue": {
+    "string_": "1.0",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/wac/hardwareRevision",
+   "title": "Hardware Revision",
+   "type": "value",
+   "defaultValue": {
+    "string_": "L2",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/wac/serialNumber",
+   "title": "Serial number",
+   "type": "value",
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/wac/supports5GHzWiFi",
+   "title": "supports5GHzWiFi",
+   "type": "value",
+   "valueType": "bool_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/wac/supportsWakeOnWireless",
+   "title": "supportsWakeOnWireless",
+   "type": "value",
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/watchdog",
+   "title": "watchdog",
+   "type": "container",
+   "childCount": 5
+  },
+  {
+   "path": "settings:/watchdog/automaticReports",
+   "title": "automaticReports",
+   "type": "value",
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/watchdog/automaticReportsConfig",
+   "title": "automaticReportsConfig",
+   "type": "value",
+   "defaultValue": {
+    "type": "watchdogReportsConfig",
+    "watchdogReportsConfig": {
+     "uploadFilePrefix": "watchdogReport",
+     "uploadPath": "/tmp/watchdog"
+    }
+   },
+   "valueType": "watchdogReportsConfig"
+  },
+  {
+   "path": "settings:/watchdog/memoryReports",
+   "title": "memoryReports",
+   "type": "value",
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/watchdog/processList",
+   "title": "processList",
+   "type": "value",
+   "defaultValue": {
+    "watchdogWatchProcesses": [
+     {
+      "maxLoad": 30,
+      "threadInfo": true,
+      "name": "nSDK",
+      "arguments": [
+       "wg_nsdkstreamer"
+      ],
+      "period": 5,
+      "maxReports": 1
+     }
+    ],
+    "type": "watchdogWatchProcesses"
+   },
+   "valueType": "watchdogWatchProcesses"
+  },
+  {
+   "path": "settings:/watchdog/processedReports",
+   "title": "List of already processed (published) crash reports",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "stringList": [
+     ""
+    ],
+    "type": "stringList"
+   },
+   "valueType": "stringList"
+  },
+  {
+   "path": "settings:/webserver",
+   "title": "webserver",
+   "type": "container",
+   "childCount": 6
+  },
+  {
+   "path": "settings:/webserver/documentRoot",
+   "title": "Webserver document root",
+   "type": "value",
+   "defaultValue": {
+    "string_": "/www/pages",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/webserver/port",
+   "title": "Webserver port",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 80
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/webserver/protocol",
+   "title": "Webserver protocol",
+   "type": "value",
+   "defaultValue": {
+    "string_": "https://",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/webserver/securedPort",
+   "title": "Webserver secured port",
+   "type": "value",
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 443
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/webserver/strict",
+   "title": "Strict mode",
+   "type": "value",
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/webserver/webInterfaceEnabled",
+   "title": "Webserver web interface enabled state",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/www",
+   "title": "www",
+   "type": "container",
+   "childCount": 4
+  },
+  {
+   "path": "settings:/www/ftsComplete",
+   "title": "First time setup complete",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/www/ftsGoogleCast",
+   "title": "Google cast configured",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "bool_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/www/ftsNetwork",
+   "title": "Network configured",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "bool_",
+   "redacted": true
+  },
+  {
+   "path": "settings:/www/ftsTimeZone",
+   "title": "Timezone configured",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  }
+ ]
+}

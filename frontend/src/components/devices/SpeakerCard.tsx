@@ -1,23 +1,26 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Lightbulb, LightbulbOff, Minus, Palette, Plus, RefreshCw, Speaker, Sun, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react'
+import { AudioLines, Lightbulb, LightbulbOff, Minus, Palette, Plus, RefreshCw, Speaker, Sun, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react'
 import { Card, Key } from '../ui/Primitives'
 import { useApp } from '../../app/store'
 import { useBackend } from '../../hooks/useDevices'
 import { ApiError, api } from '../../services/api'
-import { BASS, BRIGHTNESS, TREBLE, VOLUME, changeToSend, clamp, hexToRgb, rgbToHex, trebleLabel, type Rgb } from '../../services/speaker'
-import type { SpeakerState } from '../../types'
+import { BASS, BRIGHTNESS, TREBLE, VOLUME, changeToSend, hexToRgb, rgbToHex, snapToStep, trebleLabel, type Rgb } from '../../services/speaker'
+import type { CycleState, SpeakerState } from '../../types'
 import { ColourCycle } from './ColourCycle'
+import { SpeakerBluetooth } from './SpeakerBluetooth'
+import { SpeakerSources } from './SpeakerSources'
+import { SpeakerStandby } from './SpeakerStandby'
 
 type Num = 'volume' | 'treble' | 'bass' | 'brightness'
-type Field = Num | 'light' | 'rgb' | 'mute'
+type Field = Num | 'light' | 'rgb' | 'mute' | 'loudness'
 
 /** Every numeric control: its range, its +/- step, how it is sent and how a confirmed value is announced. */
 const NUM: Record<Num, {
   label: string; range: { min: number; max: number; step: number; button: number }
   send: (token: string, v: number) => Promise<SpeakerState>; show: (v: number) => string
 }> = {
-  volume: { label: 'עוצמה', range: VOLUME, send: api.speakerVolume, show: String },
+  volume: { label: 'עוצמה', range: VOLUME, send: api.speakerVolume, show: String }, // the speaker's own 0..50
   treble: { label: 'גבוהים', range: TREBLE, send: api.speakerTreble, show: trebleLabel },
   bass: { label: 'באס', range: BASS, send: api.speakerBass, show: trebleLabel },
   brightness: { label: 'בהירות', range: BRIGHTNESS, send: api.speakerBrightness, show: String },
@@ -30,7 +33,7 @@ export function useSpeaker() {
     queryKey: ['speaker', token],
     queryFn: () => api.speaker(token), // read only
     enabled: mode === 'live' && online,
-    refetchInterval: 15_000,
+    refetchInterval: 5_000, // changes made on another phone/computer show up within a few seconds
     retry: false,
   })
 }
@@ -43,6 +46,10 @@ export function SpeakerCard() {
   const qc = useQueryClient()
   const q = useSpeaker()
   const s = q.data
+  // While cycling, show the colour the server last wrote (polled by the cycle card). Read here, never copied into the
+  // speaker data: writing into it every second kept resetting that query's polling timer, so nothing else refreshed.
+  const cycle = useQuery<CycleState>({ queryKey: ['speaker-cycle', token], enabled: false }).data
+  const cycleColour = cycle?.status?.running ? cycle.status.last_colour : null
   const [draft, setDraft] = useState<Partial<Record<Num, number>>>({})
   const [busy, setBusy] = useState<Partial<Record<Field, boolean>>>({})
   // Controls stay enabled while a change is on its way (disabling them made the cursor flash "not allowed").
@@ -59,16 +66,18 @@ export function SpeakerCard() {
     if (running.current[field]) return // the loop below picks the newest target up
     mark(field, true)
     let last = qc.getQueryData<SpeakerState>(['speaker', token])
-    let sent: number | null = null
+    let sent = false
     try {
       for (;;) {
         const value = changeToSend(target.current[field], last?.[field])
         if (value === null) break
         last = await NUM[field].send(token, value) // resolves only when the server read the value back from the speaker
         qc.setQueryData(['speaker', token], last)
-        sent = value
+        sent = true
       }
-      if (sent !== null) toast('success', `${NUM[field].label}: ${NUM[field].show(sent)}`)
+      const confirmed = last?.[field]
+      // announce what the speaker reported after the write, not what was sent
+      if (sent && typeof confirmed === 'number') toast('success', `${NUM[field].label}: ${NUM[field].show(confirmed)}`)
     } catch (e) {
       fail(e)
     } finally {
@@ -80,7 +89,7 @@ export function SpeakerCard() {
 
   const want = (field: Num, v: number) => {
     const r = NUM[field].range
-    const value = clamp(Math.round(v), r.min, r.max)
+    const value = snapToStep(v, r.min, r.max, r.step)
     target.current[field] = value
     setDraft((d) => ({ ...d, [field]: value }))
     void flush(field)
@@ -99,6 +108,16 @@ export function SpeakerCard() {
       void qc.invalidateQueries({ queryKey: ['speaker-cycle'] })
       toast('success', enabled ? 'התאורה הודלקה' : 'התאורה כובתה')
     } catch (e) { fail(e) } finally { mark('light', false) }
+  }
+  /** Loudness: disabled while its request is on its way; a failure shows the error and re-reads the speaker. */
+  const toggleLoudness = async () => {
+    if (s?.loudness == null || running.current.loudness) return
+    const enabled = !s.loudness
+    mark('loudness', true)
+    try {
+      qc.setQueryData(['speaker', token], await api.speakerLoudness(token, enabled)) // server read it back and compared
+      toast('success', enabled ? 'Loudness הופעל' : 'Loudness כובה')
+    } catch (e) { fail(e) } finally { mark('loudness', false) }
   }
   /** Mute: disabled while its request is on its way; a failure shows the error and re-reads the speaker. */
   const toggleMute = async () => {
@@ -175,9 +194,21 @@ export function SpeakerCard() {
               onToggle={() => void toggleMute()} />
           </div>
 
+          <Section title="מקור שמע">
+            <SpeakerSources enabled={live && !!s.reachable} />
+          </Section>
+
           <Section title="טון">
             <ProSlider {...ctl('bass')} bipolar unit="dB" />
             <ProSlider {...ctl('treble')} bipolar unit="dB" />
+            <div className="flex items-center gap-3 border-t border-white/5 pt-4">
+              <AudioLines size={16} className="text-muted shrink-0" aria-hidden />
+              <span className="flex-1 text-sm font-semibold"><bdi>Loudness</bdi></span>
+              <Switch on={s.loudness} busy={!!busy.loudness} disabled={disabled(s.loudness) || !!busy.loudness} error={s.errors.loudness}
+                label={s.loudness ? 'כבה Loudness' : 'הפעל Loudness'} onText="פועל" offText="כבוי"
+                iconOn={<AudioLines size={14} className="m-1 text-bg" aria-hidden />} iconOff={<AudioLines size={14} className="m-1 text-bg/60" aria-hidden />}
+                onToggle={() => void toggleLoudness()} />
+            </div>
           </Section>
 
           <Section title="תאורה" aside={
@@ -185,8 +216,16 @@ export function SpeakerCard() {
               label={s.light ? 'כבה את תאורת הרמקול' : 'הדלק את תאורת הרמקול'} onToggle={() => void toggleLight()} />
           }>
             <ProSlider {...ctl('brightness')} unit="%" icon={<Sun size={16} aria-hidden />} />
-            <ColourField value={s.rgb} error={s.errors.rgb} busy={!!busy.rgb} disabled={disabled(s.rgb)} onCommit={(c) => void setColour(c)} />
+            <ColourField value={cycleColour ?? s.rgb} error={s.errors.rgb} busy={!!busy.rgb} disabled={disabled(s.rgb)} onCommit={(c) => void setColour(c)} />
             <ColourCycle lightOn={s.light} disabled={disabled(s.rgb)} Switch={(p) => <Switch {...p} />} />
+          </Section>
+
+          <Section title="Bluetooth">
+            <SpeakerBluetooth enabled={live && !!s.reachable} />
+          </Section>
+
+          <Section title="חשמל">
+            <SpeakerStandby enabled={live && !!s.reachable} />
           </Section>
         </>
       )}
@@ -245,7 +284,7 @@ function VolumeDial(p: CtlProps) {
   const onMove = (e: ReactPointerEvent<SVGSVGElement>) => {
     const d = dragRef.current
     if (!d) return
-    const next = clamp(Math.round(d.v + (d.y - e.clientY) / 3), min, max) // 3px per step
+    const next = snapToStep(d.v + ((d.y - e.clientY) * (max - min)) / 300, min, max, p.range.step) // 300px = full range
     if (next !== d.v || d.moved) { d.moved = true; p.onDraft(next) }
   }
   const onUp = () => {
@@ -261,7 +300,7 @@ function VolumeDial(p: CtlProps) {
       <StepKey dir={-1} label={p.label} disabled={p.disabled || p.value == null || p.value <= min} onStep={p.onStep} />
       <div className="relative">
         <input type="range" aria-label={p.label} className="peer sr-only" dir="rtl" min={min} max={max} step={p.range.step}
-          value={v} disabled={p.disabled} onChange={(e) => p.onDraft(Number(e.currentTarget.value))}
+          value={v} aria-valuetext={p.show(v)} disabled={p.disabled} onChange={(e) => p.onDraft(Number(e.currentTarget.value))}
           onKeyUp={commit} onBlur={commit} />
         <svg viewBox="0 0 220 200" className={`w-52 h-auto touch-none select-none rounded-full peer-focus-visible:ring-2 peer-focus-visible:ring-secondary ${p.disabled ? 'opacity-40' : 'cursor-ns-resize'}`}
           onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} aria-hidden>

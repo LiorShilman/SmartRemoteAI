@@ -79,7 +79,7 @@ def change_everything(fake):
     fake.values["settings:/mediaPlayer/loudness"]["bool_"] = True
     fake.values["settings:/ui/ambientLightBrightness"]["i32_"] = 20
     fake.values["settings:/ui/ambientLightRgb"]["formationDownlightRgb"] = {"red": 1, "green": 2, "blue": 3}
-    fake.values["player:volume"]["i32_"] = 60
+    fake.values["player:volume"]["i32_"] = 40
 
 
 def test_save_reads_fresh_values_and_writes_nothing(client, fake):
@@ -135,7 +135,7 @@ def test_full_load_writes_every_setting_reads_back_and_offers_undo(client, fake)
     assert [s["step"] for s in r["steps"]] == ["cycle_stop", "eq", "bass", "treble", "loudness", "brightness", "rgb", "cycle_config"]
     assert [b["value"] for b in fake.values[EQ]["eqBandList"]] == [0, 0, 0, 0, 0]
     assert val(fake, "settings:/mediaPlayer/bass") == -1.0 and val(fake, "settings:/ui/ambientLightBrightness") == 100
-    assert val(fake, "player:volume") == 60  # profile without volume: volume untouched
+    assert val(fake, "player:volume") == 40  # profile without volume: volume untouched
     assert not (NEVER & set(set_paths(fake))) and "player:volume" not in set_paths(fake)
     assert r["loaded_id"] == p["id"] and r["undo"] is not None
 
@@ -145,6 +145,18 @@ def test_load_with_volume(client, fake):
     change_everything(fake)
     r = client.post(f"/api/speaker/profiles/{p['id']}/load", headers=H).json()
     assert r["status"] == "full" and val(fake, "player:volume") == 23
+
+
+def test_wide_tone_range_saves_and_loads(client, fake):
+    """Bass/treble beyond the old -6..+6 (the nodes declare -10..+10 step 0.5) round-trip through a profile."""
+    fake.values["settings:/mediaPlayer/treble"]["double_"] = 8.0
+    fake.values["settings:/mediaPlayer/bass"]["double_"] = -9.5
+    p = save(client)
+    assert p["data"]["treble"] == 8.0 and p["data"]["bass"] == -9.5
+    change_everything(fake)
+    r = client.post(f"/api/speaker/profiles/{p['id']}/load", headers=H).json()
+    assert r["status"] == "full"
+    assert val(fake, "settings:/mediaPlayer/treble") == 8.0 and val(fake, "settings:/mediaPlayer/bass") == -9.5
 
 
 def test_partial_load_is_reported_as_partial(client, fake):
@@ -257,3 +269,40 @@ def test_unreadable_value_refuses_to_save(client, fake):
     r = client.post("/api/speaker/profiles", json={"name": "חלקי"}, headers=H)
     assert r.status_code == 502 and "Loudness" in r.json()["detail"]["message"]
     assert client.get("/api/speaker/profiles", headers=H).json()["profiles"] == []
+
+
+def test_update_overwrites_with_current_values_and_writes_nothing(client, fake):
+    p = save(client, "ערב")
+    other = save(client, "בוקר", include_volume=True)
+    change_everything(fake)
+    r = client.post(f"/api/speaker/profiles/{p['id']}/update", headers=H)
+    assert r.status_code == 200, r.text
+    body = r.json()
+    u = body["updated"]
+    assert u["id"] == p["id"] and u["name"] == "ערב" and u["include_volume"] is False
+    d = u["data"]
+    assert d["eq"] == {"60": 3, "250": 3, "1000": 3, "3500": 3, "12000": 3}
+    assert d["bass"] == 5.0 and d["treble"] == -4.0 and d["loudness"] is True and d["brightness"] == 20
+    assert d["rgb"] == {"red": 1, "green": 2, "blue": 3} and "volume" not in d  # volume stays out
+    assert body["loaded_id"] == p["id"]
+    assert [x["name"] for x in body["profiles"]] == ["ערב", "בוקר"]  # order and the other profile unchanged
+    assert next(x for x in body["profiles"] if x["id"] == other["id"])["data"]["bass"] == -1.0
+    # a profile that includes volume keeps including it
+    assert client.post(f"/api/speaker/profiles/{other['id']}/update", headers=H).json()["updated"]["data"]["volume"] == 40
+    assert client.post("/api/speaker/profiles/nope/update", headers=H).status_code == 404
+    assert fake.sets() == []
+
+
+def test_update_refuses_partial_capture_and_kids(client, fake):
+    p = save(client)
+    fake.values["settings:/mediaPlayer/loudness"] = {"type": "string_", "string_": "?"}
+    fake.values["settings:/mediaPlayer/bass"]["double_"] = 5.0
+    assert client.post(f"/api/speaker/profiles/{p['id']}/update", headers=H).status_code == 502
+    assert client.get("/api/speaker/profiles", headers=H).json()["profiles"][0]["data"]["bass"] == -1.0  # unchanged
+    policy = {"start": "00:00", "end": "23:59", "apps": [], "daily_limit_min": None, "can_power_off": False, "can_schedule": False}
+    t = client.post("/api/tokens", json={"name": "ילד", "policy": policy}, headers=H).json()["token"]
+    assert client.post(f"/api/speaker/profiles/{p['id']}/update", headers={"Authorization": f"Bearer {t}"}).status_code == 403
+    client.app.state.profiles.busy = True
+    assert client.post(f"/api/speaker/profiles/{p['id']}/update", headers=H).status_code == 409
+    client.app.state.profiles.busy = False
+    assert fake.sets() == []

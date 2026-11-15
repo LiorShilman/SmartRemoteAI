@@ -18,6 +18,13 @@ let cycle = { config: { interval_s: 10, mode: 'palette', palette: [{ red: 255, g
 const cyclePosts = []
 let writeDelayMs = 0 // a slow speaker: the write + read-back takes this long
 
+const STANDBY_OPTS = [[0, 'Off'], [300, '5 minutes'], [600, '10 minutes'], [900, '15 minutes'], [1800, '30 minutes']].map(([seconds, title]) => ({ seconds, title }))
+let standby = { seconds: 1200, options: STANDBY_OPTS }
+const sources = { sources: [
+  { id: 'spdif', title: 'SPDIF', active: false, plugged: false, available: false },
+  { id: 'airplay', title: 'AirPlay', active: true, plugged: true, available: true },
+  { id: 'bluetooth', title: 'Bluetooth', active: false, plugged: false, available: false }] }
+let bt = { name: 'Living Room', discoverable: false, pairable: false, connected_device: 'POCO X7 Pro', paired: ['POCO X7 Pro', 'POCO X7 Pro', 'DESKTOP-TM1E1QQ'], sent: null }
 await page.route('**/api/**', async (route) => {
   const req = route.request()
   const path = new URL(req.url()).pathname.replace(/^.*\/api/, '/api')
@@ -38,6 +45,21 @@ await page.route('**/api/**', async (route) => {
       return json(cycle)
     }
     if (path.endsWith('/stop')) { cycle = { ...cycle, status: { ...cycle.status, running: false, state: 'stopped' } }; return json(cycle) }
+  }
+  if (path === '/api/speaker/sources') return json(sources)
+  if (path === '/api/speaker/standby' && req.method() === 'GET') return json(standby)
+  if (path === '/api/speaker/standby') {
+    const body = JSON.parse(req.postData() || '{}')
+    writes.push({ path, body })
+    standby = { ...standby, seconds: body.seconds }
+    return json(standby)
+  }
+  if (path === '/api/speaker/bluetooth') return json(bt)
+  if (path === '/api/speaker/bluetooth/pairing') {
+    writes.push({ path, body: null })
+    if (bt.discoverable) return json({ ...bt, sent: false })
+    bt = { ...bt, discoverable: true, pairable: true }
+    return json({ ...bt, sent: true })
   }
   if (path === '/api/speaker/eq' && req.method() === 'GET') return json({ bands: ['60', '250', '1000', '3500', '12000'].map((band) => ({ min: -6, max: 6, band, step: 0.5, value: 0 })), enabled: true, errors: {} })
   if (path === '/api/speaker/lab' && req.method() === 'GET') return json({ host: speaker.host, snapshot: null, current: { bass: 0, brightness: 40, rgb: { red: 255, green: 6, blue: 126 } }, errors: {}, last: {}, observations: [] })
@@ -71,6 +93,15 @@ await page.locator('section', { hasText: 'Bowers & Wilkins Zeppelin' }).getByTex
 await page.waitForTimeout(2500)
 if (writes.length) fail(`writes on load: ${JSON.stringify(writes)}`)
 if ((await page.getByRole('slider', { name: 'עוצמה' }).inputValue()) !== '23') fail('volume not shown from the speaker state')
+// shown in the speaker's own 0..50 (no conversion)
+if (!(await page.getByText('23', { exact: true }).count())) fail('volume not shown as the speaker number 23')
+if ((await page.getByRole('slider', { name: 'עוצמה' }).getAttribute('max')) !== '50') fail('volume slider max is not the speaker max 50')
+// bass and treble: the declared -10..+10 in half steps
+for (const n of ['באס', 'גבוהים']) {
+  const sl = page.getByRole('slider', { name: n })
+  const got = [await sl.getAttribute('min'), await sl.getAttribute('max'), await sl.getAttribute('step')].join(' ')
+  if (got !== '-10 10 0.5') fail(`slider ${n}: min/max/step ${got}, expected -10 10 0.5`)
+}
 
 // dial: - on the left (minimum end of the clockwise arc), + on the right
 const minus = await page.getByRole('button', { name: 'הנמך עוצמה' }).boundingBox(), plus0 = await page.getByRole('button', { name: 'הגבר עוצמה' }).boundingBox()
@@ -117,15 +148,15 @@ for (let i = 0; i < 3; i++) {
 }
 await page.waitForTimeout(2500)
 writeDelayMs = 0
-if (speaker.volume !== startVol + 6) fail(`quick presses lost: volume ${speaker.volume}, expected ${startVol + 6} (writes: ${JSON.stringify(writes)})`)
+if (speaker.volume !== startVol + 3) fail(`quick presses lost: volume ${speaker.volume}, expected ${startVol + 3} (writes: ${JSON.stringify(writes)})`)
 if (writes.length > 3) fail(`too many writes for 3 presses: ${writes.length}`)
-if ((await page.getByRole('slider', { name: 'עוצמה' }).inputValue()) !== String(startVol + 6)) fail('slider does not show the confirmed value')
+if ((await page.getByRole('slider', { name: 'עוצמה' }).inputValue()) !== String(startVol + 3)) fail('slider does not show the confirmed value')
 
 // 4c. Bass, brightness and colour: each sends its own control, once.
 writes.length = 0
 await page.getByRole('button', { name: 'הגבר באס' }).click()
-await page.getByText('באס: 0').waitFor({ timeout: 5000 }).catch(() => fail('bass success toast missing'))
-if (writes.length !== 1 || writes[0].path !== '/api/speaker/bass' || writes[0].body.value !== 0) fail(`bass write: ${JSON.stringify(writes)}`)
+await page.getByText('באס: -0.5').waitFor({ timeout: 5000 }).catch(() => fail('bass success toast missing (half step from -1)'))
+if (writes.length !== 1 || writes[0].path !== '/api/speaker/bass' || writes[0].body.value !== -0.5) fail(`bass write: ${JSON.stringify(writes)}`)
 writes.length = 0
 await page.getByRole('button', { name: 'הנמך בהירות' }).click()
 await page.waitForTimeout(800)
@@ -147,9 +178,39 @@ await page.waitForTimeout(900)
 writeDelayMs = 0
 if (writes.length !== 1 || writes[0].path !== '/api/speaker/mute' || writes[0].body.enabled !== true) fail(`mute write: ${JSON.stringify(writes)}`)
 if ((await page.getByRole('switch', { name: /השתק/ }).getAttribute('aria-checked')) !== 'true') fail('mute not shown on after confirm')
-// Loudness and balance are hidden from the main card for now (no audible effect found); they stay in the lab.
-for (const x of [page.getByRole('switch', { name: /Loudness/ }), page.getByRole('slider', { name: 'איזון' }), page.getByText('ניסיוני')])
-  if (await x.count()) fail('loudness/balance/"experimental" shown on the main card')
+// Loudness is back on the main card (effect heard over Wi-Fi, after a few seconds); balance stays only in the lab.
+for (const x of [page.getByRole('slider', { name: 'איזון' }), page.getByText('ניסיוני')])
+  if (await x.count()) fail('balance/"experimental" shown on the main card')
+writes.length = 0
+await page.getByRole('switch', { name: 'הפעל Loudness' }).click({ timeout: 3000 }).catch(() => fail('Loudness switch missing'))
+await page.getByRole('switch', { name: 'כבה Loudness' }).waitFor({ timeout: 3000 }).catch(() => fail('Loudness not shown as on after the speaker confirmed'))
+if (writes.length !== 1 || !writes[0].path.endsWith('/loudness') || writes[0].body.enabled !== true) fail(`loudness write: ${JSON.stringify(writes)}`)
+await page.getByRole('switch', { name: 'כבה Loudness' }).click()
+await page.getByRole('switch', { name: 'הפעל Loudness' }).waitFor({ timeout: 3000 }).catch(() => fail('Loudness not turned off'))
+writes.length = 0
+
+// Audio source: read only, from the speaker's own list; no switching offered.
+await page.getByText('מנגן עכשיו מ-AirPlay').waitFor({ timeout: 3000 }).catch(() => fail('active source not shown'))
+// Standby: the unlisted current value (20 min) is shown, nothing written on load; one write on a choice.
+const sb = page.getByRole('combobox', { name: 'כיבוי אוטומטי אחרי זמן ללא השמעה' })
+if ((await sb.inputValue().catch(() => '')) !== '1200') fail('standby: current 1200 not selected')
+if (writes.length) fail(`writes before choosing standby: ${JSON.stringify(writes)}`)
+// readable: the options list uses the dark drop-down style (not white with light text)
+const optBg = await sb.locator('option').nth(1).evaluate((o) => getComputedStyle(o).backgroundColor)
+if (optBg !== 'rgb(17, 24, 43)') fail(`standby options background is ${optBg}, expected the dark #11182b`)
+await sb.selectOption('1800')
+await page.getByText('כיבוי אוטומטי: 30 דקות').waitFor({ timeout: 3000 }).catch(() => fail('standby toast missing'))
+if (writes.length !== 1 || writes[0].path !== '/api/speaker/standby' || writes[0].body.seconds !== 1800) fail(`standby writes: ${JSON.stringify(writes)}`)
+writes.length = 0
+
+// Bluetooth pairing: shown from what the speaker reports, sent only on a press, then no button while visible.
+await page.getByText('מחובר עכשיו: POCO X7 Pro').waitFor({ timeout: 3000 }).catch(() => fail('bluetooth state not shown'))
+await page.getByRole('button', { name: 'פתח מצב צימוד Bluetooth' }).click({ timeout: 3000 }).catch(() => fail('pairing button missing'))
+await page.getByText('גלוי לצימוד בשם').waitFor({ timeout: 3000 }).catch(() => fail('visible state not shown after the speaker confirmed'))
+if (writes.length !== 1 || writes[0].path !== '/api/speaker/bluetooth/pairing') fail(`pairing writes: ${JSON.stringify(writes)}`)
+if (await page.getByRole('button', { name: 'פתח מצב צימוד Bluetooth' }).count()) fail('pairing button still offered while visible')
+bt = { ...bt, discoverable: false, pairable: false }
+writes.length = 0
 
 // 4f. Automatic colour cycling: settings saved on the server, explicit start/stop, refused with the light off,
 // and a manual colour stops it. Brightness is never written by any of this.
@@ -194,7 +255,7 @@ failNext = { status: 502, code: 'DENIED', message: 'הרמקול החזיר שג
 await page.getByRole('button', { name: 'הגבר גבוהים' }).click()
 await page.getByText('הרמקול החזיר שגיאה: Invalid value').waitFor({ timeout: 5000 }).catch(() => fail('speaker error not shown'))
 if (await page.getByText(/^גבוהים: /).count()) fail('success shown for a failed write')
-if (writes.length !== 1 || writes[0].body.value !== 6) fail(`treble write: ${JSON.stringify(writes)}`)
+if (writes.length !== 1 || writes[0].body.value !== 5.5) fail(`treble write: ${JSON.stringify(writes)}`)
 
 // 6. Speaker unreachable: clear message, controls hidden, nothing written.
 writes.length = 0

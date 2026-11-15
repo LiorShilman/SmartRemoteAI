@@ -1,0 +1,2160 @@
+{
+ "host": "192.168.1.52",
+ "root": "ui:",
+ "crawledAt": "2026-11-16 00:16:18",
+ "nodeCount": 176,
+ "rootsSeen": [
+  "airplay:",
+  "alerts:",
+  "bluetooth:",
+  "bw:",
+  "firmwareupdate:",
+  "networkwizard:",
+  "presets:",
+  "services:",
+  "settings:",
+  "ui:"
+ ],
+ "skippedBranches": [
+  "ui:/airable",
+  "ui:/airableamazon",
+  "ui:/airabledeezer",
+  "ui:/airablehighresaudio",
+  "ui:/airablenapster",
+  "ui:/airablepodcasts",
+  "ui:/airableqobuz",
+  "ui:/airableradios",
+  "ui:/airabletidal",
+  "ui:/amazonmusic",
+  "ui:/audiogum",
+  "ui:/favorites",
+  "ui:/files",
+  "ui:/pandora",
+  "ui:/playHistory",
+  "ui:/playlists",
+  "ui:/qobuz",
+  "ui:/sirius",
+  "ui:/spotify",
+  "ui:/storage",
+  "ui:/tidal",
+  "ui:/tunein",
+  "ui:/upnp",
+  "ui:/vtuner"
+ ],
+ "stats": {
+  "getRows": 42,
+  "getData": 143,
+  "errors": 14
+ },
+ "errors": [
+  {
+   "path": "ui:/auxaux_plug",
+   "op": "getData",
+   "error": "http 500"
+  },
+  {
+   "path": "presets:0",
+   "op": "getData",
+   "error": "http 500"
+  },
+  {
+   "path": "presets:1",
+   "op": "getData",
+   "error": "http 500"
+  },
+  {
+   "path": "presets:2",
+   "op": "getData",
+   "error": "http 500"
+  },
+  {
+   "path": "presets:3",
+   "op": "getData",
+   "error": "http 500"
+  },
+  {
+   "path": "presets:4",
+   "op": "getData",
+   "error": "http 500"
+  },
+  {
+   "path": "presets:5",
+   "op": "getData",
+   "error": "http 500"
+  },
+  {
+   "path": "presets:6",
+   "op": "getData",
+   "error": "http 500"
+  },
+  {
+   "path": "presets:7",
+   "op": "getData",
+   "error": "http 500"
+  },
+  {
+   "path": "presets:8",
+   "op": "getData",
+   "error": "http 500"
+  },
+  {
+   "path": "presets:9",
+   "op": "getData",
+   "error": "http 500"
+  },
+  {
+   "path": "bluetooth:deviceList/section1",
+   "op": "getData",
+   "error": "http 500"
+  },
+  {
+   "path": "bluetooth:deviceList/section2",
+   "op": "getData",
+   "error": "http 500"
+  },
+  {
+   "path": "ui:/settings/version/hostlink_version",
+   "op": "getData",
+   "error": "http 500"
+  }
+ ],
+ "candidateCurrentValues": {
+  "settings:/mediaPlayer/maxVolume": {
+   "value": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "title": "Max allowed volume [steps]",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "valueType": "i32_"
+  },
+  "settings:/mediaPlayer/defaultVolume": {
+   "value": null,
+   "title": "Volume",
+   "type": "value",
+   "modifiable": true
+  },
+  "settings:/mediaPlayer/defaultVolumeTimeout": {
+   "value": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "title": "Path to the value item with timeout [sec] to set default volume. Default is 0",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "valueType": "i32_"
+  },
+  "settings:/mediaPlayer/muteTimeout": {
+   "value": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "title": "Path to the value item with timeout [sec] to set mute. Default is 0",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "valueType": "i32_"
+  },
+  "settings:/mediaPlayer/cuesFixedAttenuation": {
+   "value": {
+    "double_": -50,
+    "type": "double_"
+   },
+   "title": "Cues Fixed Attenuation",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "double_": -50,
+    "type": "double_"
+   },
+   "valueType": "double_"
+  },
+  "settings:/mediaPlayer/duckingAttenuation": {
+   "value": {
+    "double_": -26,
+    "type": "double_"
+   },
+   "title": "Ducking Attenuation",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "double_": -26,
+    "type": "double_"
+   },
+   "valueType": "double_"
+  },
+  "settings:/mediaPlayer/attenuation": {
+   "value": {
+    "double_": -39,
+    "type": "double_"
+   },
+   "title": "Attenuation",
+   "type": "value",
+   "modifiable": true,
+   "valueUnit": {
+    "string_": "dB",
+    "type": "string_"
+   },
+   "edit": {
+    "min": "-120",
+    "max": "0",
+    "type": "slider"
+   },
+   "defaultValue": {
+    "double_": -40,
+    "type": "double_"
+   },
+   "valueType": "double_"
+  },
+  "settings:/mediaPlayer/playMode": {
+   "value": {
+    "playerPlayMode": "normal",
+    "type": "playerPlayMode"
+   },
+   "title": "Play Mode",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/mediaPlayer/playModes",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "playerPlayMode": "normal",
+    "type": "playerPlayMode"
+   },
+   "valueType": "playerPlayMode"
+  },
+  "settings:/mediaPlayer/postprocessing": {
+   "value": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "title": "Postprocessing",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  "settings:/system/maxIdleTime": {
+   "value": {
+    "type": "i32_",
+    "i32_": 1200
+   },
+   "title": "Max idle time in seconds",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/system/maxIdleTimeValues",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 1200
+   },
+   "valueType": "i32_"
+  },
+  "settings:/system/maxIdlePlayTime": {
+   "value": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "title": "Max idle play time in seconds",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/system/maxIdlePlayTimeValues",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "valueType": "i32_"
+  },
+  "settings:/system/settings": {
+   "value": {
+    "systemManagerSettings": {
+     "bluetooth": true,
+     "wifi": true,
+     "networkStandby": true,
+     "wakeUp": true
+    },
+    "type": "systemManagerSettings"
+   },
+   "title": "Configurable settings of System manager",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "systemManagerSettings": {
+     "bluetooth": true,
+     "wifi": true,
+     "networkStandby": true,
+     "wakeUp": true
+    },
+    "type": "systemManagerSettings"
+   },
+   "valueType": "systemManagerSettings"
+  },
+  "settings:/system/audioOutputDelay": {
+   "value": {
+    "i64_": 0,
+    "type": "i64_"
+   },
+   "title": "Audio output delay in microseconds",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "i64_": 0,
+    "type": "i64_"
+   },
+   "valueType": "i64_"
+  },
+  "settings:/imx8AudioFramework/lipSyncConf": {
+   "value": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "title": "Lip sync delay in ms",
+   "type": "value",
+   "edit": {
+    "step": "1",
+    "min": "0",
+    "max": "500",
+    "type": "slider"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "valueType": "i32_"
+  },
+  "settings:/bluetooth/autoPlayMode": {
+   "value": {
+    "string_": "playbackOnEveryPlaying",
+    "type": "string_"
+   },
+   "title": "Bluetooth Auto Play Mode",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/bluetooth/autoPlayModes",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "string_": "playbackOnEveryPlaying",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  "settings:/bluetooth/autoConnectMode": {
+   "value": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "title": "Auto-connect to last known A2DP source on startup",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  "settings:/bluetooth/aptxEnabled": {
+   "value": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "title": "Enable AptX codec",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  "settings:/bluetooth/bluetoothPairingTimeout": {
+   "value": {
+    "type": "i32_",
+    "i32_": 300
+   },
+   "title": "bluetoothPairingTimeout- timeout to leave Bluetooth pairing mode. In seconds",
+   "type": "value",
+   "modifiable": true,
+   "valueUnit": {
+    "string_": "s",
+    "type": "string_"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 300
+   },
+   "valueType": "i32_"
+  },
+  "settings:/bluetooth/disablePairingOncePaired": {
+   "value": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "title": "Disable pairing mode after device is paired",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  "settings:/alerts/minimumVolume": {
+   "value": {
+    "type": "i32_",
+    "i32_": 20
+   },
+   "title": "Minimum system volume when alert fires",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 20
+   },
+   "valueType": "i32_"
+  },
+  "settings:/alerts/snoozeTime": {
+   "value": {
+    "type": "i32_",
+    "i32_": 10
+   },
+   "title": "Snooze time:",
+   "type": "value",
+   "modifiable": true,
+   "valueUnit": {
+    "string_": "minutes",
+    "type": "string_"
+   },
+   "edit": {
+    "step": "1",
+    "min": "1",
+    "max": "30",
+    "type": "slider"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 10
+   },
+   "valueType": "i32_"
+  },
+  "settings:/ui/displayBrightness": {
+   "value": {
+    "type": "i32_",
+    "i32_": 100
+   },
+   "title": "Display Intensity",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/ui/displayBrightnessValues",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 100
+   },
+   "valueType": "i32_"
+  },
+  "settings:/ui/oobeLedEnabled": {
+   "value": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "title": "oobeLedEnabled",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  "settings:/ui/disabledPatternEvents": {
+   "value": {
+    "i32List": [],
+    "type": "i32List"
+   },
+   "title": "List of disabled LED pattern events",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "i32List": [],
+    "type": "i32List"
+   },
+   "valueType": "i32List"
+  },
+  "settings:/ui/disabledEvents": {
+   "value": {
+    "i32List": [],
+    "type": "i32List"
+   },
+   "title": "List of disabled input events",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "i32List": [],
+    "type": "i32List"
+   },
+   "valueType": "i32List"
+  },
+  "settings:/bw/zeppSpdifConnected": {
+   "value": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "title": "Enable Zeppelin SPDIF source",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  "settings:/version": {
+   "value": {
+    "string_": "1.12.1.1",
+    "type": "string_"
+   },
+   "title": "Version",
+   "type": "value",
+   "defaultValue": {
+    "string_": "1.12.1.1",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  "settings:/timezone": {
+   "value": {
+    "string_": "",
+    "type": "string_"
+   },
+   "title": "Current timezone",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "string_": "",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  "settings:/deviceName": {
+   "value": {
+    "string_": "Living Room",
+    "type": "string_"
+   },
+   "title": "Device Name",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "string_": "",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  "settings:/fwupdate/enablePeriodicChecks": {
+   "value": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "title": "Enable periodic checks",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  "settings:/avs/enableAudioCues": {
+   "value": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "title": "enableAudioCues",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  "settings:/mediaPlayer/micMute": {
+   "value": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "title": "Microphone Mute",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  }
+ },
+ "nodes": [
+  {
+   "path": "airplay:resumePlayback",
+   "parent": "ui:/airplay",
+   "title": "No active session",
+   "type": "action",
+   "disabled": true
+  },
+  {
+   "path": "alerts:/ui/browse",
+   "parent": "ui:/alerts",
+   "title": "Alert List",
+   "type": "container",
+   "containerType": "none",
+   "icon": "alerts"
+  },
+  {
+   "path": "alerts:alarmView",
+   "parent": "ui:/alerts",
+   "title": "Create Alarm",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "alerts:timerView",
+   "parent": "ui:/alerts",
+   "title": "Create Timer",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "bluetooth:deviceList/discoverable",
+   "parent": "ui:/bluetooth",
+   "title": "Not visible to other devices",
+   "type": "action"
+  },
+  {
+   "path": "bluetooth:deviceList/discovery",
+   "parent": "ui:/bluetooth",
+   "title": "Scan for other Bluetooth devices",
+   "type": "action"
+  },
+  {
+   "path": "bluetooth:deviceList/section1",
+   "parent": "ui:/bluetooth",
+   "title": "Inputs",
+   "type": "header"
+  },
+  {
+   "path": "bluetooth:deviceList/section2",
+   "parent": "ui:/bluetooth",
+   "title": "Speakers",
+   "type": "header"
+  },
+  {
+   "path": "bluetooth:devices/<mac>/disconnect",
+   "parent": "bluetooth:devices/<mac>/section1",
+   "title": "<device>",
+   "type": "action",
+   "disabled": true,
+   "redacted": true
+  },
+  {
+   "path": "bluetooth:devices/<mac>/play",
+   "parent": "bluetooth:devices/<mac>/section1",
+   "title": "<device>",
+   "type": "action",
+   "redacted": true
+  },
+  {
+   "path": "bluetooth:devices/<mac>/section1",
+   "parent": "ui:/bluetooth",
+   "title": "<device>",
+   "type": "container",
+   "containerType": "none",
+   "redacted": true
+  },
+  {
+   "path": "bluetooth:devices/<mac>/unpair",
+   "parent": "bluetooth:devices/<mac>/section1",
+   "title": "<device>",
+   "type": "action",
+   "redacted": true
+  },
+  {
+   "path": "bluetooth:devices/<mac>/connect",
+   "parent": "bluetooth:devices/<mac>/section2",
+   "title": "<device>",
+   "type": "action",
+   "redacted": true
+  },
+  {
+   "path": "bluetooth:devices/<mac>/disconnect",
+   "parent": "bluetooth:devices/<mac>/section1",
+   "title": "<device>",
+   "type": "action",
+   "disabled": true,
+   "redacted": true
+  },
+  {
+   "path": "bluetooth:devices/<mac>/play",
+   "parent": "bluetooth:devices/<mac>/section1",
+   "title": "<device>",
+   "type": "action",
+   "redacted": true
+  },
+  {
+   "path": "bluetooth:devices/<mac>/section1",
+   "parent": "ui:/bluetooth",
+   "title": "<device>",
+   "type": "container",
+   "containerType": "none",
+   "redacted": true
+  },
+  {
+   "path": "bluetooth:devices/<mac>/section2",
+   "parent": "ui:/bluetooth",
+   "title": "<device>",
+   "type": "container",
+   "disabled": true,
+   "containerType": "none",
+   "redacted": true
+  },
+  {
+   "path": "bluetooth:devices/<mac>/unpair",
+   "parent": "bluetooth:devices/<mac>/section1",
+   "title": "<device>",
+   "type": "action",
+   "redacted": true
+  },
+  {
+   "path": "bluetooth:devices/<mac>/disconnect",
+   "parent": "bluetooth:devices/<mac>/section1",
+   "title": "<device>",
+   "type": "action",
+   "disabled": true,
+   "redacted": true
+  },
+  {
+   "path": "bluetooth:devices/<mac>/play",
+   "parent": "bluetooth:devices/<mac>/section1",
+   "title": "<device>",
+   "type": "action",
+   "redacted": true
+  },
+  {
+   "path": "bluetooth:devices/<mac>/section1",
+   "parent": "ui:/bluetooth",
+   "title": "<device>",
+   "type": "container",
+   "containerType": "none",
+   "redacted": true
+  },
+  {
+   "path": "bluetooth:devices/<mac>/unpair",
+   "parent": "bluetooth:devices/<mac>/section1",
+   "title": "<device>",
+   "type": "action",
+   "redacted": true
+  },
+  {
+   "path": "bw:Multiroom",
+   "parent": "ui:/bw",
+   "title": "Multiroom",
+   "type": "action",
+   "disabled": true,
+   "valueType": "bwAudioInput",
+   "icon": "skin:iconMultiroom"
+  },
+  {
+   "path": "bw:airplay",
+   "parent": "ui:/bw",
+   "title": "AirPlay",
+   "type": "action",
+   "valueType": "bwAudioInput",
+   "icon": "skin:iconAirPlay"
+  },
+  {
+   "path": "bw:audiogum",
+   "parent": "ui:/bw",
+   "title": "Audiogum",
+   "type": "action",
+   "disabled": true,
+   "valueType": "bwAudioInput",
+   "icon": "skin:iconAudiogum"
+  },
+  {
+   "path": "bw:avs",
+   "parent": "ui:/bw",
+   "title": "Alexa",
+   "type": "action",
+   "disabled": true,
+   "valueType": "bwAudioInput",
+   "icon": "skin:iconAvs"
+  },
+  {
+   "path": "bw:bluetooth",
+   "parent": "ui:/bw",
+   "title": "Bluetooth",
+   "type": "action",
+   "disabled": true,
+   "valueType": "bwAudioInput",
+   "icon": "skin:iconBluetooth"
+  },
+  {
+   "path": "bw:qplay",
+   "parent": "ui:/bw",
+   "title": "QPlay",
+   "type": "action",
+   "disabled": true,
+   "valueType": "bwAudioInput",
+   "icon": "skin:iconMediaLibrary"
+  },
+  {
+   "path": "bw:spdif",
+   "parent": "ui:/bw",
+   "title": "SPDIF",
+   "type": "action",
+   "disabled": true,
+   "valueType": "bwAudioInput",
+   "icon": "skin:iconOptics"
+  },
+  {
+   "path": "bw:spotify",
+   "parent": "ui:/bw",
+   "title": "Spotify",
+   "type": "action",
+   "disabled": true,
+   "valueType": "bwAudioInput",
+   "icon": "skin:iconSpotify"
+  },
+  {
+   "path": "bw:upnp",
+   "parent": "ui:/bw",
+   "title": "UPnP",
+   "type": "action",
+   "disabled": true,
+   "valueType": "bwAudioInput",
+   "icon": "skin:iconMediaLibrary"
+  },
+  {
+   "path": "firmwareupdate:uiStartUpdate",
+   "parent": "ui:/settings/update",
+   "title": "Check for update",
+   "type": "action"
+  },
+  {
+   "path": "firmwareupdate:uiUSB",
+   "parent": "ui:/settings/update",
+   "title": "USB Update",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "firmwareupdate:uiUSB/msg",
+   "parent": "firmwareupdate:uiUSB",
+   "title": "Plug in USB stick and reboot while pressing the update button."
+  },
+  {
+   "path": "networkwizard:info/Type",
+   "parent": "ui:/settings/networkInfo",
+   "title": "Type",
+   "type": "value",
+   "valueType": "string_"
+  },
+  {
+   "path": "networkwizard:info/WirelessEncryption",
+   "parent": "ui:/settings/networkInfo",
+   "title": "Encryption",
+   "type": "value",
+   "valueType": "string_"
+  },
+  {
+   "path": "networkwizard:info/WirelessSSID",
+   "parent": "ui:/settings/networkInfo",
+   "title": "SSID",
+   "type": "value",
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "networkwizard:info/ipv4_AutoConfigured_0_",
+   "parent": "ui:/settings/networkInfo",
+   "title": "Auto-configured",
+   "type": "value",
+   "valueType": "bool_"
+  },
+  {
+   "path": "networkwizard:info/ipv4_DNS_0_",
+   "parent": "ui:/settings/networkInfo",
+   "title": "IPv4",
+   "type": "value",
+   "valueType": "string_"
+  },
+  {
+   "path": "networkwizard:info/ipv4_DNS_1_",
+   "parent": "ui:/settings/networkInfo",
+   "title": "IPv4",
+   "type": "value",
+   "valueType": "string_"
+  },
+  {
+   "path": "networkwizard:info/ipv4_Gateway_0_",
+   "parent": "ui:/settings/networkInfo",
+   "title": "IPv4",
+   "type": "value",
+   "valueType": "string_"
+  },
+  {
+   "path": "networkwizard:info/ipv4_IP_0_",
+   "parent": "ui:/settings/networkInfo",
+   "title": "IP",
+   "type": "value",
+   "valueType": "string_"
+  },
+  {
+   "path": "networkwizard:info/ipv4_Mask_0_",
+   "parent": "ui:/settings/networkInfo",
+   "title": "Mask",
+   "type": "value",
+   "valueType": "string_"
+  },
+  {
+   "path": "networkwizard:info/ipv6_AutoConfigured_1_",
+   "parent": "ui:/settings/networkInfo",
+   "title": "Auto-configured",
+   "type": "value",
+   "valueType": "bool_"
+  },
+  {
+   "path": "networkwizard:info/ipv6_DNS_2_",
+   "parent": "ui:/settings/networkInfo",
+   "title": "IPv6",
+   "type": "value",
+   "valueType": "string_"
+  },
+  {
+   "path": "networkwizard:info/ipv6_Gateway_1_",
+   "parent": "ui:/settings/networkInfo",
+   "title": "IPv6",
+   "type": "value",
+   "valueType": "string_"
+  },
+  {
+   "path": "networkwizard:info/ipv6_IPWithPrefix_1_",
+   "parent": "ui:/settings/networkInfo",
+   "title": "IP",
+   "type": "value",
+   "valueType": "string_"
+  },
+  {
+   "path": "networkwizard:networkType",
+   "parent": "ui:/settings/networkWizard",
+   "title": "Network Type",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "networkwizard:networkType/select/Automatic",
+   "parent": "networkwizard:networkType",
+   "title": "Automatic",
+   "type": "action"
+  },
+  {
+   "path": "networkwizard:networkType/select/Hybrid",
+   "parent": "networkwizard:networkType",
+   "title": "Hybrid",
+   "type": "action"
+  },
+  {
+   "path": "networkwizard:networkType/select/Wired",
+   "parent": "networkwizard:networkType",
+   "title": "Wired",
+   "type": "action"
+  },
+  {
+   "path": "networkwizard:networkType/select/Wireless",
+   "parent": "networkwizard:networkType",
+   "title": "Wireless",
+   "type": "action"
+  },
+  {
+   "path": "networkwizard:wired",
+   "parent": "ui:/settings/networkWizard",
+   "title": "Configure Wired",
+   "type": "container",
+   "containerType": "form"
+  },
+  {
+   "path": "networkwizard:wired/manual",
+   "parent": "networkwizard:wired",
+   "title": "Manual",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "networkwizard:wired/manual/dns",
+   "parent": "networkwizard:wired/manual",
+   "title": "DNS",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_"
+  },
+  {
+   "path": "networkwizard:wired/manual/gateway",
+   "parent": "networkwizard:wired/manual",
+   "title": "Gateway",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_"
+  },
+  {
+   "path": "networkwizard:wired/manual/ip",
+   "parent": "networkwizard:wired/manual",
+   "title": "IP",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_"
+  },
+  {
+   "path": "networkwizard:wired/manual/mask",
+   "parent": "networkwizard:wired/manual",
+   "title": "Mask",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_"
+  },
+  {
+   "path": "networkwizard:wireless",
+   "parent": "ui:/settings/networkWizard",
+   "title": "Configure Wireless",
+   "type": "container",
+   "containerType": "form"
+  },
+  {
+   "path": "networkwizard:wireless/manual",
+   "parent": "networkwizard:wireless",
+   "title": "Manual",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "networkwizard:wireless/manual/dhcp_activate",
+   "parent": "networkwizard:wireless/manual",
+   "title": "DHCP Connect",
+   "type": "action"
+  },
+  {
+   "path": "networkwizard:wireless/manual/dns",
+   "parent": "networkwizard:wireless/manual",
+   "title": "DNS",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_"
+  },
+  {
+   "path": "networkwizard:wireless/manual/encryption",
+   "parent": "networkwizard:wireless/manual",
+   "title": "Encryption",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/network/profileWirelessEncryptions",
+    "type": "enum_"
+   },
+   "valueType": "networkProfileWirelessEncryption"
+  },
+  {
+   "path": "networkwizard:wireless/manual/gateway",
+   "parent": "networkwizard:wireless/manual",
+   "title": "Gateway",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_"
+  },
+  {
+   "path": "networkwizard:wireless/manual/ip",
+   "parent": "networkwizard:wireless/manual",
+   "title": "IP",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_"
+  },
+  {
+   "path": "networkwizard:wireless/manual/key",
+   "parent": "networkwizard:wireless/manual",
+   "title": "Key",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "placeholder": "",
+    "type": "none",
+    "password": true
+   },
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "networkwizard:wireless/manual/mask",
+   "parent": "networkwizard:wireless/manual",
+   "title": "Mask",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_"
+  },
+  {
+   "path": "networkwizard:wireless/manual/ssid",
+   "parent": "networkwizard:wireless/manual",
+   "title": "SSID",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "networkwizard:wireless/scan_activate",
+   "parent": "networkwizard:wireless",
+   "title": "Scan",
+   "type": "action"
+  },
+  {
+   "path": "networkwizard:wireless/wps_pbc_activate",
+   "parent": "networkwizard:wireless",
+   "title": "WPS PBC",
+   "type": "action"
+  },
+  {
+   "path": "networkwizard:wireless/wps_pin_activate",
+   "parent": "networkwizard:wireless",
+   "title": "WPS PIN",
+   "type": "action"
+  },
+  {
+   "path": "presets:0",
+   "parent": "ui:/presets",
+   "title": "Empty 1",
+   "type": "text"
+  },
+  {
+   "path": "presets:1",
+   "parent": "ui:/presets",
+   "title": "Empty 2",
+   "type": "text"
+  },
+  {
+   "path": "presets:2",
+   "parent": "ui:/presets",
+   "title": "Empty 3",
+   "type": "text"
+  },
+  {
+   "path": "presets:3",
+   "parent": "ui:/presets",
+   "title": "Empty 4",
+   "type": "text"
+  },
+  {
+   "path": "presets:4",
+   "parent": "ui:/presets",
+   "title": "Empty 5",
+   "type": "text"
+  },
+  {
+   "path": "presets:5",
+   "parent": "ui:/presets",
+   "title": "Empty 6",
+   "type": "text"
+  },
+  {
+   "path": "presets:6",
+   "parent": "ui:/presets",
+   "title": "Empty 7",
+   "type": "text"
+  },
+  {
+   "path": "presets:7",
+   "parent": "ui:/presets",
+   "title": "Empty 8",
+   "type": "text"
+  },
+  {
+   "path": "presets:8",
+   "parent": "ui:/presets",
+   "title": "Empty 9",
+   "type": "text"
+  },
+  {
+   "path": "presets:9",
+   "parent": "ui:/presets",
+   "title": "Empty 10",
+   "type": "text"
+  },
+  {
+   "path": "services:/qobuz",
+   "parent": "ui:/settings/services",
+   "title": "Qobuz",
+   "type": "container",
+   "containerType": "form"
+  },
+  {
+   "path": "services:/qobuz/passwdNode",
+   "parent": "services:/qobuz",
+   "title": "Password",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "password": true
+   },
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "services:/qobuz/remove",
+   "parent": "services:/qobuz",
+   "title": "Remove",
+   "type": "action"
+  },
+  {
+   "path": "services:/qobuz/userNode",
+   "parent": "services:/qobuz",
+   "title": "Username",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_"
+  },
+  {
+   "path": "services:/sirius",
+   "parent": "ui:/settings/services",
+   "title": "Sirius",
+   "type": "container",
+   "containerType": "form"
+  },
+  {
+   "path": "services:/sirius/passwdNode",
+   "parent": "services:/sirius",
+   "title": "Password",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "password": true
+   },
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "services:/sirius/remove",
+   "parent": "services:/sirius",
+   "title": "Remove",
+   "type": "action"
+  },
+  {
+   "path": "services:/sirius/userNode",
+   "parent": "services:/sirius",
+   "title": "Username",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_"
+  },
+  {
+   "path": "services:/tunein",
+   "parent": "ui:/settings/services",
+   "title": "TuneIn",
+   "type": "container",
+   "containerType": "form"
+  },
+  {
+   "path": "services:/tunein/passwdNode",
+   "parent": "services:/tunein",
+   "title": "Password",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "password": true
+   },
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "services:/tunein/remove",
+   "parent": "services:/tunein",
+   "title": "Remove",
+   "type": "action"
+  },
+  {
+   "path": "services:/tunein/userNode",
+   "parent": "services:/tunein",
+   "title": "Username",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/airable/bitrate",
+   "parent": "ui:/settings/airable",
+   "title": "Airable stream audio bitrate",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/airable/bitrateValues",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "airableStreamBitrate": "unlimited",
+    "type": "airableStreamBitrate"
+   },
+   "valueType": "airableStreamBitrate"
+  },
+  {
+   "path": "settings:/locationCountry",
+   "parent": "ui:/settings/clock/timezone",
+   "title": "Country",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "timemanager:/uiAvailableCountries",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "string_": "",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/locationRegion",
+   "parent": "ui:/settings/clock/timezone",
+   "title": "Region",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "timemanager:/uiAvailableRegions",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "string_": "",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/mediaPlayer/balance",
+   "parent": "ui:/settings/audio/tone",
+   "title": "Balance",
+   "type": "value",
+   "modifiable": true,
+   "valueUnit": {
+    "string_": "dB",
+    "type": "string_"
+   },
+   "edit": {
+    "step": "0.5",
+    "min": "-10",
+    "max": "10",
+    "type": "slider"
+   },
+   "defaultValue": {
+    "double_": 0,
+    "type": "double_"
+   },
+   "valueType": "double_"
+  },
+  {
+   "path": "settings:/mediaPlayer/bass",
+   "parent": "ui:/settings/audio/tone",
+   "title": "Bass",
+   "type": "value",
+   "modifiable": true,
+   "valueUnit": {
+    "string_": "dB",
+    "type": "string_"
+   },
+   "edit": {
+    "step": "0.5",
+    "min": "-10",
+    "max": "10",
+    "type": "slider"
+   },
+   "defaultValue": {
+    "double_": 0,
+    "type": "double_"
+   },
+   "valueType": "double_"
+  },
+  {
+   "path": "settings:/mediaPlayer/equalizerOnOff",
+   "parent": "ui:/settings/audio/eq",
+   "title": "Equalizer On/Off",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/mediaPlayer/loudness",
+   "parent": "ui:/settings/audio/tone",
+   "title": "Loudness",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/mediaPlayer/postprocessing",
+   "parent": "ui:/settings/audio/tone",
+   "title": "Postprocessing",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/mediaPlayer/treble",
+   "parent": "ui:/settings/audio/tone",
+   "title": "Treble",
+   "type": "value",
+   "modifiable": true,
+   "valueUnit": {
+    "string_": "dB",
+    "type": "string_"
+   },
+   "edit": {
+    "step": "0.5",
+    "min": "-10",
+    "max": "10",
+    "type": "slider"
+   },
+   "defaultValue": {
+    "double_": 0,
+    "type": "double_"
+   },
+   "valueType": "double_"
+  },
+  {
+   "path": "settings:/pandora/collectionSortBy",
+   "parent": "ui:/settings/pandora",
+   "title": "Sort By",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/pandora/collectionSortByValues",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "pandoraCollectionSortBy": "name",
+    "type": "pandoraCollectionSortBy"
+   },
+   "valueType": "pandoraCollectionSortBy"
+  },
+  {
+   "path": "settings:/pandora/collectionSortOrder",
+   "parent": "ui:/settings/pandora",
+   "title": "Sort Ordering",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/pandora/collectionSortOrderValues",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "pandoraCollectionSortOrder": "asc",
+    "type": "pandoraCollectionSortOrder"
+   },
+   "valueType": "pandoraCollectionSortOrder"
+  },
+  {
+   "path": "settings:/qobuz/soundQuality",
+   "parent": "ui:/settings/qobuz",
+   "title": "Sound Quality",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/qobuz/soundQualities",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "qobuzSoundQuality": "veryHires",
+    "type": "qobuzSoundQuality"
+   },
+   "valueType": "qobuzSoundQuality"
+  },
+  {
+   "path": "settings:/sirius/tuneStart",
+   "parent": "ui:/settings/sirius",
+   "title": "Enable TuneStart",
+   "type": "value",
+   "modifiable": true,
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/timeManager/timeFormat24",
+   "parent": "ui:/settings/clock",
+   "title": "24-hour time",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "type": "bool_"
+   },
+   "defaultValue": {
+    "bool_": true,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/ui/displayBrightness",
+   "parent": "ui:/settings/powerManagement",
+   "title": "Display Intensity",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/ui/displayBrightnessValues",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 100
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/ui/enableDebugMenu",
+   "parent": "ui:/settings",
+   "title": "Enable Debug Menu",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "type": "bool_"
+   },
+   "defaultValue": {
+    "bool_": false,
+    "type": "bool_"
+   },
+   "valueType": "bool_"
+  },
+  {
+   "path": "settings:/ui/language",
+   "parent": "ui:/settings",
+   "title": "Language",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/ui/languages",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "string_": "en_US",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "settings:/ui/playScreenReturnTimer",
+   "parent": "ui:/settings",
+   "title": "Return to Play-screen time",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/ui/playScreenReturnTimerValues",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 10
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "settings:/ui/skin",
+   "parent": "ui:/settings",
+   "title": "Skin",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/ui/skins",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "string_": "Default",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "ui:/airable",
+   "parent": "ui:",
+   "title": "Airable",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconAirable"
+  },
+  {
+   "path": "ui:/airableamazon",
+   "parent": "ui:",
+   "title": "Airable Amazon Music",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconAmazonMusic"
+  },
+  {
+   "path": "ui:/airabledeezer",
+   "parent": "ui:",
+   "title": "Airable Deezer",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconDeezer"
+  },
+  {
+   "path": "ui:/airablehighresaudio",
+   "parent": "ui:",
+   "title": "Airable HIGHRESAUDIO",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconHighresAudio"
+  },
+  {
+   "path": "ui:/airablenapster",
+   "parent": "ui:",
+   "title": "Airable Napster",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconNapster"
+  },
+  {
+   "path": "ui:/airablepodcasts",
+   "parent": "ui:",
+   "title": "Airable Podcasts",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconAirable"
+  },
+  {
+   "path": "ui:/airableqobuz",
+   "parent": "ui:",
+   "title": "Airable Qobuz",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconQobuz"
+  },
+  {
+   "path": "ui:/airableradios",
+   "parent": "ui:",
+   "title": "Airable Radio",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconAirable"
+  },
+  {
+   "path": "ui:/airabletidal",
+   "parent": "ui:",
+   "title": "Airable TIDAL",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconTidal"
+  },
+  {
+   "path": "ui:/airplay",
+   "parent": "ui:",
+   "title": "AirPlay",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconAirPlay"
+  },
+  {
+   "path": "ui:/alerts",
+   "parent": "ui:",
+   "title": "Alerts",
+   "type": "container",
+   "containerType": "none",
+   "icon": "alerts"
+  },
+  {
+   "path": "ui:/amazonmusic",
+   "parent": "ui:",
+   "title": "Amazon Music",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconAmazonMusic"
+  },
+  {
+   "path": "ui:/audiogum",
+   "parent": "ui:",
+   "title": "Audiogum",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconAudiogum"
+  },
+  {
+   "path": "ui:/auxaux_plug",
+   "parent": "ui:",
+   "title": "Line in (AUX)",
+   "type": "audio",
+   "icon": "skin:iconAUX"
+  },
+  {
+   "path": "ui:/bluetooth",
+   "parent": "ui:",
+   "title": "Bluetooth",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconBluetooth"
+  },
+  {
+   "path": "ui:/bw",
+   "parent": "ui:",
+   "title": "B&W Audio Sources",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconOptics"
+  },
+  {
+   "path": "ui:/favorites",
+   "parent": "ui:",
+   "title": "Favorites",
+   "type": "container",
+   "disabled": true,
+   "containerType": "none",
+   "icon": "skin:iconFavorites"
+  },
+  {
+   "path": "ui:/files",
+   "parent": "ui:",
+   "title": "File system",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconFiles"
+  },
+  {
+   "path": "ui:/pandora",
+   "parent": "ui:",
+   "title": "Pandora",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconPandora"
+  },
+  {
+   "path": "ui:/playHistory",
+   "parent": "ui:",
+   "title": "Recently Played",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconRecentlyPlayed"
+  },
+  {
+   "path": "ui:/playlists",
+   "parent": "ui:",
+   "title": "Playlists",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconPlaylists"
+  },
+  {
+   "path": "ui:/presets",
+   "parent": "ui:",
+   "title": "Presets",
+   "type": "container",
+   "containerType": "none",
+   "icon": "presets"
+  },
+  {
+   "path": "ui:/qobuz",
+   "parent": "ui:",
+   "title": "Qobuz",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconQobuz"
+  },
+  {
+   "path": "ui:/settings",
+   "parent": "ui:",
+   "title": "Settings",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconSettings"
+  },
+  {
+   "path": "ui:/settings/airable",
+   "parent": "ui:/settings",
+   "title": "airable",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "ui:/settings/airplay",
+   "parent": "ui:/settings",
+   "title": "AirPlay",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "ui:/settings/airplay/password",
+   "parent": "ui:/settings/airplay",
+   "title": "Password",
+   "type": "value",
+   "modifiable": true,
+   "valueType": "string_",
+   "redacted": true
+  },
+  {
+   "path": "ui:/settings/audio",
+   "parent": "ui:/settings",
+   "title": "Audio Processing",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconSettings"
+  },
+  {
+   "path": "ui:/settings/audio/eq",
+   "parent": "ui:/settings/audio",
+   "title": "Equalizer",
+   "type": "container",
+   "disabled": true,
+   "containerType": "none",
+   "icon": "skin:iconMusic"
+  },
+  {
+   "path": "ui:/settings/audio/eq/0",
+   "parent": "ui:/settings/audio/eq",
+   "title": "60 Hz",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "step": "0.5",
+    "min": "-6",
+    "max": "6",
+    "type": "slider"
+   },
+   "valueType": "double_"
+  },
+  {
+   "path": "ui:/settings/audio/eq/1",
+   "parent": "ui:/settings/audio/eq",
+   "title": "250 Hz",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "step": "0.5",
+    "min": "-6",
+    "max": "6",
+    "type": "slider"
+   },
+   "valueType": "double_"
+  },
+  {
+   "path": "ui:/settings/audio/eq/2",
+   "parent": "ui:/settings/audio/eq",
+   "title": "1000 Hz",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "step": "0.5",
+    "min": "-6",
+    "max": "6",
+    "type": "slider"
+   },
+   "valueType": "double_"
+  },
+  {
+   "path": "ui:/settings/audio/eq/3",
+   "parent": "ui:/settings/audio/eq",
+   "title": "3500 Hz",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "step": "0.5",
+    "min": "-6",
+    "max": "6",
+    "type": "slider"
+   },
+   "valueType": "double_"
+  },
+  {
+   "path": "ui:/settings/audio/eq/4",
+   "parent": "ui:/settings/audio/eq",
+   "title": "12000 Hz",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "step": "0.5",
+    "min": "-6",
+    "max": "6",
+    "type": "slider"
+   },
+   "valueType": "double_"
+  },
+  {
+   "path": "ui:/settings/audio/tone",
+   "parent": "ui:/settings/audio",
+   "title": "Tone Control",
+   "type": "container",
+   "disabled": true,
+   "containerType": "none",
+   "icon": "skin:iconSettings"
+  },
+  {
+   "path": "ui:/settings/clock",
+   "parent": "ui:/settings",
+   "title": "Clock",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "ui:/settings/clock/timezone",
+   "parent": "ui:/settings/clock",
+   "title": "Timezone",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "ui:/settings/factoryReset",
+   "parent": "ui:/settings",
+   "title": "Factory reset",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "ui:/settings/factoryReset/confirm",
+   "parent": "ui:/settings/factoryReset",
+   "title": "Factory reset",
+   "type": "action"
+  },
+  {
+   "path": "ui:/settings/networkInfo",
+   "parent": "ui:/settings",
+   "title": "Network Info",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "ui:/settings/networkWizard",
+   "parent": "ui:/settings",
+   "title": "Network Wizard",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "ui:/settings/oauth",
+   "parent": "ui:/settings",
+   "title": "OAuth",
+   "type": "container",
+   "containerType": "none",
+   "redacted": true
+  },
+  {
+   "path": "ui:/settings/pandora",
+   "parent": "ui:/settings",
+   "title": "Pandora",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "ui:/settings/powerManagement",
+   "parent": "ui:/settings",
+   "title": "Power Management",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "ui:/settings/powerManagement/idlePlayTime",
+   "parent": "ui:/settings/powerManagement",
+   "title": "Max idle play time in seconds",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/system/maxIdlePlayTimeValues",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 0
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "ui:/settings/powerManagement/idleTime",
+   "parent": "ui:/settings/powerManagement",
+   "title": "Standby Timeout",
+   "type": "value",
+   "modifiable": true,
+   "edit": {
+    "enumPath": "settings:/system/maxIdleTimeValues",
+    "type": "enum_"
+   },
+   "defaultValue": {
+    "type": "i32_",
+    "i32_": 1200
+   },
+   "valueType": "i32_"
+  },
+  {
+   "path": "ui:/settings/qobuz",
+   "parent": "ui:/settings",
+   "title": "qobuz",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "ui:/settings/sddp",
+   "parent": "ui:/settings",
+   "title": "SDDP",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "ui:/settings/sddp/notifyIdentity",
+   "parent": "ui:/settings/sddp",
+   "title": "Notify identity",
+   "type": "action"
+  },
+  {
+   "path": "ui:/settings/services",
+   "parent": "ui:/settings",
+   "title": "Accounts",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "ui:/settings/sirius",
+   "parent": "ui:/settings",
+   "title": "Sirius",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "ui:/settings/update",
+   "parent": "ui:/settings",
+   "title": "Firmware Update",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "ui:/settings/version",
+   "parent": "ui:/settings",
+   "title": "Version",
+   "type": "container",
+   "containerType": "none"
+  },
+  {
+   "path": "ui:/settings/version/hostlink_version",
+   "parent": "ui:/settings/version",
+   "title": "Node at path 'hostlink:hostFirmwareVersion' does not exist"
+  },
+  {
+   "path": "ui:/settings/version/kernel_version",
+   "parent": "ui:/settings/version",
+   "title": "Kernel",
+   "type": "value",
+   "valueType": "string_"
+  },
+  {
+   "path": "ui:/settings/version/nsdk_releasetext",
+   "parent": "ui:/settings/version",
+   "title": "Release",
+   "type": "value",
+   "defaultValue": {
+    "string_": "not approved",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "ui:/settings/version/nsdk_version",
+   "parent": "ui:/settings/version",
+   "title": "StreamSDK",
+   "type": "value",
+   "defaultValue": {
+    "string_": "1.12.1.1",
+    "type": "string_"
+   },
+   "valueType": "string_"
+  },
+  {
+   "path": "ui:/sirius",
+   "parent": "ui:",
+   "title": "SiriusXM",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconSirius"
+  },
+  {
+   "path": "ui:/spotify",
+   "parent": "ui:",
+   "title": "Spotify",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconSpotify"
+  },
+  {
+   "path": "ui:/storage",
+   "parent": "ui:",
+   "title": "USB&SD",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconUsb"
+  },
+  {
+   "path": "ui:/tidal",
+   "parent": "ui:",
+   "title": "TIDAL",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconTidal"
+  },
+  {
+   "path": "ui:/tunein",
+   "parent": "ui:",
+   "title": "TuneIn",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconTuneIn"
+  },
+  {
+   "path": "ui:/upnp",
+   "parent": "ui:",
+   "title": "UPnP",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconMediaLibrary"
+  },
+  {
+   "path": "ui:/vtuner",
+   "parent": "ui:",
+   "title": "vTuner",
+   "type": "container",
+   "containerType": "none",
+   "icon": "skin:iconvTuner"
+  }
+ ]
+}

@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import VERSION, Settings
-from app.models.schemas import CycleConfig, ProfileCreate, ProfileName, EqBand, EqOut, EqWrite, LabBass, LabBool, LabBrightness, LabObservation, LabRgb, SpeakerBalance, SpeakerBass, SpeakerBrightness, SpeakerLoudness, SpeakerMute, SpeakerRgb, check_host
+from app.models.schemas import CycleConfig, ProfileCreate, ProfileName, EqBand, EqOut, EqWrite, LabBass, LabBool, LabBrightness, LabObservation, LabRgb, SpeakerBalance, SpeakerBass, SpeakerBluetooth, SpeakerSources, SpeakerStandby, SpeakerStandbySet, SpeakerBrightness, SpeakerLoudness, SpeakerMute, SpeakerRgb, check_host
 from app.models.schemas import (
     KEYS_BY_KIND, LG_APPS, Action, AuditOut, ChannelSet, CommandRequest, CommandResponse, DeviceOut, DeviceUpdate,
     ErrorCode, HealthOut, IntentOut, IntentParseRequest, MeOut, NewDevice, PairConfirm, PointerEvent, ScheduleClear,
@@ -478,6 +478,33 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         audit.add(ident.ip, ident.name, "speaker", "Loudness " + ("הופעל" if body.enabled else "כובה"))
         return SpeakerState(**await app.state.speaker.state())
 
+    @api.get("/speaker/bluetooth", response_model=SpeakerBluetooth)
+    async def speaker_bluetooth() -> SpeakerBluetooth:
+        return SpeakerBluetooth(**await app.state.speaker.bluetooth())  # read only
+
+    @api.post("/speaker/bluetooth/pairing", response_model=SpeakerBluetooth)
+    async def speaker_pairing(ident: Identity = Depends(speaker_writer)) -> SpeakerBluetooth:
+        """Open Bluetooth pairing (one fixed, verified action). Nothing is sent if the speaker is already visible."""
+        out = await app.state.speaker.open_pairing()  # success only when the speaker reports discoverable=true
+        if out["sent"]:
+            audit.add(ident.ip, ident.name, "speaker", "מצב צימוד Bluetooth נפתח")
+        return SpeakerBluetooth(**out)
+
+    @api.get("/speaker/standby", response_model=SpeakerStandby)
+    async def speaker_standby() -> SpeakerStandby:
+        return SpeakerStandby(**await app.state.speaker.standby())  # read only
+
+    @api.post("/speaker/standby", response_model=SpeakerStandby)
+    async def speaker_standby_set(body: SpeakerStandbySet, ident: Identity = Depends(speaker_writer)) -> SpeakerStandby:
+        out = await app.state.speaker.write_standby(body.seconds)  # only an option the speaker lists; read back
+        label = next((o["title"] for o in out["options"] if o["seconds"] == out["seconds"]), f"{out['seconds']} שניות")
+        audit.add(ident.ip, ident.name, "speaker", f"כיבוי אוטומטי: {label}")
+        return SpeakerStandby(**out)
+
+    @api.get("/speaker/sources", response_model=SpeakerSources)
+    async def speaker_sources() -> SpeakerSources:
+        return SpeakerSources(sources=await app.state.speaker.sources())  # read only: switching is not verified
+
     @api.post("/speaker/balance", response_model=SpeakerState)
     async def speaker_balance(body: SpeakerBalance, ident: Identity = Depends(speaker_writer)) -> SpeakerState:
         await app.state.speaker.write("balance", float(body.value))
@@ -576,6 +603,20 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.profiles.profiles.rename(pid, body.name, time.time())
         audit.add(ident.ip, ident.name, "speaker_profile", f"שם שונה: {old['name']} ← {body.name}")
         return profiles_out()
+
+    @api.post("/speaker/profiles/{pid}/update")
+    async def profile_update(pid: str, ident: Identity = Depends(speaker_writer)) -> dict:
+        """Overwrite a profile with the speaker's current values (read fresh; a partial capture is refused). Writes nothing
+        to the speaker. Volume is captured only if the profile already includes it."""
+        not_loading()
+        old = profile_exists(pid)
+        data = await app.state.profiles.capture(old["include_volume"])
+        p = app.state.profiles.profiles.replace_data(pid, data, time.time())
+        if p is None:  # deleted meanwhile
+            raise ManagerError(ErrorCode.INVALID_COMMAND, "הפרופיל לא נמצא.", 404)
+        store.set_state("speaker", "profile_loaded", pid)  # it matches the speaker right now
+        audit.add(ident.ip, ident.name, "speaker_profile", f"עודכן למצב הנוכחי: {p['name']}")
+        return {"updated": p, **profiles_out()}
 
     @api.delete("/speaker/profiles/{pid}")
     async def profile_delete(pid: str, ident: Identity = Depends(speaker_writer)) -> dict:
