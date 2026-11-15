@@ -1,6 +1,6 @@
 import { Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
-import { CircleHelp, Home, Mic, Satellite, Settings as Cog, Tv2, TriangleAlert } from 'lucide-react'
+import { CircleHelp, Home, Mic, Satellite, Settings as Cog, Speaker, Tv2, TriangleAlert } from 'lucide-react'
 import { Toasts } from '../components/ui/Primitives'
 import { KidsBanner } from '../components/KidsBanner'
 import { useMe } from '../pages/SecurityCards'
@@ -8,6 +8,7 @@ import { useBackend } from '../hooks/useDevices'
 import { useApp } from './store'
 import Dashboard from '../pages/Dashboard'
 import RemotePage from '../pages/RemotePage'
+import SpeakerPage from '../pages/SpeakerPage'
 import VoiceAssistant from '../pages/VoiceAssistant'
 import Settings from '../pages/Settings'
 import Help from '../pages/Help'
@@ -16,6 +17,7 @@ const NAV = [
   { to: '/', label: 'בית', Icon: Home },
   { to: '/tv', label: 'טלוויזיה', Icon: Tv2 },
   { to: '/box', label: 'ממיר', Icon: Satellite },
+  { to: '/speaker', label: 'רמקול', Icon: Speaker },
   { to: '/voice', label: 'קול', Icon: Mic },
   { to: '/settings', label: 'הגדרות', Icon: Cog },
 ]
@@ -88,6 +90,7 @@ export default function App() {
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/tv" element={<RemotePage role="tv" />} />
                 <Route path="/box" element={<RemotePage role="box" />} />
+                <Route path="/speaker" element={<SpeakerPage />} />
                 <Route path="/lg" element={<Navigate to="/tv" replace />} />
                 <Route path="/hot" element={<Navigate to="/box" replace />} />
                 <Route path="/voice" element={<VoiceAssistant />} />
@@ -101,7 +104,7 @@ export default function App() {
 
       {/* Mobile bottom navigation */}
       <nav aria-label="ניווט ראשי"
-        className="lg:hidden fixed bottom-0 inset-x-0 z-40 glass !rounded-b-none !rounded-t-3xl grid grid-cols-5 px-2"
+        className="lg:hidden fixed bottom-0 inset-x-0 z-40 glass !rounded-b-none !rounded-t-3xl grid grid-cols-6 px-1"
         style={{ height: 'calc(var(--nav-h) + var(--safe-b))', paddingBottom: 'var(--safe-b)' }}>
         {NAV.map(({ to, label, Icon }) => (
           <NavLink key={to} to={to} end={to === '/'}

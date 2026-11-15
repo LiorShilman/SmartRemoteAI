@@ -69,7 +69,7 @@ export function SpeakerProfiles() {
   const undo = () => call('undo', () => api.speakerProfileUndo(token), (r) => { setResult({ ...r, title: 'חזרה למצב הקודם' }); resync() })
 
   return (
-    <Card className="flex flex-col gap-3">
+    <Card className="flex flex-col gap-3 flex-1">
       <div className="flex items-center gap-3">
         <div className="grid place-items-center w-10 h-10 rounded-2xl bg-white/5 border border-white/10">
           <Bookmark size={20} className="text-secondary" aria-hidden />
