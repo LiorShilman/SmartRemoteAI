@@ -17,16 +17,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import VERSION, Settings
+from app.models.schemas import CycleConfig, ProfileCreate, ProfileName, EqBand, EqOut, EqWrite, LabBass, LabBool, LabBrightness, LabObservation, LabRgb, SpeakerBalance, SpeakerBass, SpeakerBrightness, SpeakerLoudness, SpeakerMute, SpeakerRgb, check_host
 from app.models.schemas import (
     KEYS_BY_KIND, LG_APPS, Action, AuditOut, ChannelSet, CommandRequest, CommandResponse, DeviceOut, DeviceUpdate,
     ErrorCode, HealthOut, IntentOut, IntentParseRequest, MeOut, NewDevice, PairConfirm, PointerEvent, ScheduleClear,
-    ScheduleCreate, ScheduleOut, TimeDecide, TimeRequestCreate, TimeRequestOut, TokenClear, TokenCreate, TokenCreated, TokenOut,
+    ScheduleCreate, ScheduleOut, SpeakerConfig, SpeakerLight, SpeakerState, SpeakerTreble, SpeakerVolume, TimeDecide, TimeRequestCreate, TimeRequestOut, TokenClear, TokenCreate, TokenCreated, TokenOut,
     TokenPolicy, UsageDay, UsageOut,
 )
 from app.services.intents import build_provider
 from app.services.policy import deny_reason, over_limit, remaining_min, schedule_denied, window_open
 from app.services.manager import DeviceManager, ManagerError
 from app.services.scheduler import Scheduler, ScheduleStore
+from app.services.colorcycle import ColorCycle
+from app.services.profiles import ProfileService, ProfileStore
+from app.services.zeppelin import LAB as LAB_CONTROLS, SpeakerError, ZeppelinClient
 from app.storage.db import Store
 from app.storage.security import AuditStore, TimeStore, TokenRow, TokenStore, UsageStore
 
@@ -62,6 +66,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     manager.usage = usage
     intents = build_provider(settings.llm_api_key, settings.llm_model)
     manager.notify = lambda event, detail: audit.add("server", "אוטומטי", event, detail)
+    speaker_host = store.get_state("speaker", "host") or check_host(settings.zeppelin_host)  # saved by the admin wins; a bad .env value fails at start
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
@@ -70,6 +75,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         yield
         await scheduler.stop()
         await manager.shutdown()
+        await app.state.cycle.shutdown()  # stop and clear the colour task before the speaker client closes
+        await app.state.speaker.aclose()
 
     app = FastAPI(title="Smart Remote AI", version=VERSION, docs_url=None, redoc_url=None, openapi_url=None,
                   lifespan=lifespan)
@@ -78,16 +85,25 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.tokens, app.state.audit = tokens, audit
     app.state.usage, app.state.times = usage, times
     app.state.clock = datetime.now  # tests replace it to control the time of day
+    app.state.speaker = ZeppelinClient(speaker_host)  # tests replace it with one on a mock transport
+    # One colour cycle per speaker. It is never started here: only an explicit request starts it.
+    app.state.cycle = ColorCycle(lambda: app.state.speaker, store, on_event=lambda msg: audit.add("server", "אוטומטי", "speaker_cycle", msg))
+    # Personal profiles: never loaded automatically. While one loads, every other speaker write is refused.
+    app.state.profiles = ProfileService(lambda: app.state.speaker, app.state.cycle, store, ProfileStore(*store.connection))
 
     if settings.allowed_origins:  # explicit origins only; never "*"
         app.add_middleware(CORSMiddleware, allow_origins=settings.allowed_origins,
-                           allow_methods=["GET", "POST", "PATCH", "DELETE"], allow_headers=["Authorization", "Content-Type"])
+                           allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"], allow_headers=["Authorization", "Content-Type"])
 
     def err(code: ErrorCode, message: str, http: int) -> JSONResponse:
         return JSONResponse({"detail": {"code": code.value, "message": message}}, status_code=http)
 
     @app.exception_handler(ManagerError)
     async def _manager_error(_: Request, e: ManagerError):
+        return err(e.code, e.message, e.http)
+
+    @app.exception_handler(SpeakerError)
+    async def _speaker_error(_: Request, e: SpeakerError):
         return err(e.code, e.message, e.http)
 
     @app.exception_handler(RequestValidationError)
@@ -368,7 +384,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def ask_for_time(body: TimeRequestCreate, ident: Identity = Depends(auth)) -> TimeRequestOut:
         if ident.kind != "device" or not ident.policy or not ident.token_id:
             raise ManagerError(ErrorCode.INVALID_COMMAND, "בקשת זמן רלוונטית רק לקוד במצב ילדים.", 422)
-        r = times.create(ident.token_id, ident.name, body.minutes, time.time())
+        # The app clock, like /me that compares this timestamp to "today" (the same as time.time() in production)
+        r = times.create(ident.token_id, ident.name, body.minutes, app.state.clock().timestamp())
         if r is None:
             raise ManagerError(ErrorCode.DENIED, "כבר יש כמה בקשות שממתינות לאישור.", 429)
         audit.add(ident.ip, ident.name, "time_requested", f"{body.minutes} דקות")
@@ -403,6 +420,327 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def capabilities() -> dict:
         return {"intent_provider": intents.name, "actions": [a.value for a in Action],
                 "keys": {k: sorted(v) for k, v in KEYS_BY_KIND.items()}, "lg_apps": sorted(LG_APPS)}
+
+    # ---- B&W Zeppelin speaker. Only the verified controls below exist; there is no generic read/write of a path.
+    def not_loading() -> None:
+        if app.state.profiles.busy:  # a profile is being applied: nothing may compete with its writes
+            raise ManagerError(ErrorCode.DENIED, "טעינת פרופיל בתהליך. נסה שוב בעוד רגע.", 409)
+
+    def speaker_writer(ident: Identity = Depends(auth)) -> Identity:
+        if ident.policy:  # kids-mode codes control the screens they were given, not the speaker
+            deny(ident, "אין הרשאה לשנות את הרמקול בקוד הזה.")
+        not_loading()
+        return ident
+
+    @api.get("/speaker", response_model=SpeakerState)
+    async def speaker_state() -> SpeakerState:
+        return SpeakerState(**await app.state.speaker.state())  # read only: never writes anything
+
+    @api.post("/speaker/volume", response_model=SpeakerState)
+    async def speaker_volume(body: SpeakerVolume, _: Identity = Depends(speaker_writer)) -> SpeakerState:
+        await app.state.speaker.write("volume", body.value)
+        return SpeakerState(**await app.state.speaker.state())
+
+    @api.post("/speaker/treble", response_model=SpeakerState)
+    async def speaker_treble(body: SpeakerTreble, ident: Identity = Depends(speaker_writer)) -> SpeakerState:
+        await app.state.speaker.write("treble", float(body.value))
+        audit.add(ident.ip, ident.name, "speaker", f"גבוהים {body.value:g}")
+        return SpeakerState(**await app.state.speaker.state())
+
+    @api.post("/speaker/light", response_model=SpeakerState)
+    async def speaker_light(body: SpeakerLight, ident: Identity = Depends(speaker_writer)) -> SpeakerState:
+        if not body.enabled:
+            await app.state.cycle.stop_if_running("התאורה כובתה")
+        await app.state.speaker.write("light", body.enabled)
+        audit.add(ident.ip, ident.name, "speaker", "תאורה " + ("הודלקה" if body.enabled else "כובתה"))
+        return SpeakerState(**await app.state.speaker.state())
+
+    @api.post("/speaker/bass", response_model=SpeakerState)
+    async def speaker_bass(body: SpeakerBass, ident: Identity = Depends(speaker_writer)) -> SpeakerState:
+        await app.state.speaker.write("bass", float(body.value))
+        audit.add(ident.ip, ident.name, "speaker", f"באס {body.value:g}")
+        return SpeakerState(**await app.state.speaker.state())
+
+    @api.post("/speaker/brightness", response_model=SpeakerState)
+    async def speaker_brightness(body: SpeakerBrightness, _: Identity = Depends(speaker_writer)) -> SpeakerState:
+        await app.state.speaker.write("brightness", body.value)  # not audited: a slider, like volume
+        return SpeakerState(**await app.state.speaker.state())
+
+    @api.post("/speaker/mute", response_model=SpeakerState)
+    async def speaker_mute(body: SpeakerMute, ident: Identity = Depends(speaker_writer)) -> SpeakerState:
+        await app.state.speaker.write("mute", body.enabled)  # read back and compared inside write()
+        audit.add(ident.ip, ident.name, "speaker", "השתקה " + ("הופעלה" if body.enabled else "בוטלה"))
+        return SpeakerState(**await app.state.speaker.state())
+
+    @api.post("/speaker/loudness", response_model=SpeakerState)
+    async def speaker_loudness(body: SpeakerLoudness, ident: Identity = Depends(speaker_writer)) -> SpeakerState:
+        await app.state.speaker.write("loudness", body.enabled)  # read back and compared inside write()
+        audit.add(ident.ip, ident.name, "speaker", "Loudness " + ("הופעל" if body.enabled else "כובה"))
+        return SpeakerState(**await app.state.speaker.state())
+
+    @api.post("/speaker/balance", response_model=SpeakerState)
+    async def speaker_balance(body: SpeakerBalance, ident: Identity = Depends(speaker_writer)) -> SpeakerState:
+        await app.state.speaker.write("balance", float(body.value))
+        audit.add(ident.ip, ident.name, "speaker", f"איזון {body.value:g}")
+        return SpeakerState(**await app.state.speaker.state())
+
+    @api.post("/speaker/rgb", response_model=SpeakerState)
+    async def speaker_rgb(body: SpeakerRgb, ident: Identity = Depends(speaker_writer)) -> SpeakerState:
+        await app.state.cycle.stop_if_running("נבחר צבע ידני")
+        await app.state.speaker.write("rgb", body.model_dump())
+        audit.add(ident.ip, ident.name, "speaker", f"צבע תאורה {body.red},{body.green},{body.blue}")
+        return SpeakerState(**await app.state.speaker.state())
+
+    async def eq_out() -> EqOut:
+        bands, enabled, errors = None, None, {}
+        try:
+            bands = [EqBand(**{k: b[k] for k in ("band", "min", "max", "step", "value")}) for b in await app.state.speaker.read_eq()]
+        except SpeakerError as e:
+            if e.code in (ErrorCode.NOT_CONNECTED, ErrorCode.TIMEOUT):
+                raise
+            errors["bands"] = e.message
+        try:
+            enabled = await app.state.speaker.read_eq_enabled()
+        except SpeakerError as e:
+            errors["enabled"] = e.message
+        return EqOut(bands=bands, enabled=enabled, errors=errors)
+
+    @api.get("/speaker/eq", response_model=EqOut)
+    async def speaker_eq() -> EqOut:
+        return await eq_out()  # read only
+
+    @api.post("/speaker/eq", response_model=EqOut)
+    async def speaker_eq_set(body: EqWrite, ident: Identity = Depends(speaker_writer)) -> EqOut:
+        values = {b.band: b.value for b in body.bands}
+        await app.state.speaker.write_eq(values)
+        audit.add(ident.ip, ident.name, "speaker", "אקולייזר " + " ".join(f"{k}:{v:g}" for k, v in values.items()))
+        return await eq_out()
+
+    # ---- automatic colour cycling
+    def cycle_out() -> dict:
+        return {"config": app.state.cycle.config(), "status": app.state.cycle.status()}
+
+    @api.get("/speaker/cycle")
+    async def cycle_get() -> dict:
+        return cycle_out()  # no speaker request at all
+
+    @api.put("/speaker/cycle/config")
+    async def cycle_config(body: CycleConfig, ident: Identity = Depends(speaker_writer)) -> dict:
+        app.state.cycle.save_config(body.model_dump())  # applies from the next step if running
+        audit.add(ident.ip, ident.name, "speaker_cycle", f"הגדרות: כל {body.interval_s} שנ׳, " + ("אקראי" if body.mode == "random" else f"פלטה של {len(body.palette)}"))
+        return cycle_out()
+
+    @api.post("/speaker/cycle/start")
+    async def cycle_start(ident: Identity = Depends(speaker_writer)) -> dict:
+        await app.state.cycle.start()
+        return cycle_out()
+
+    @api.post("/speaker/cycle/stop")
+    async def cycle_stop(ident: Identity = Depends(speaker_writer)) -> dict:
+        await app.state.cycle.stop()  # the last colour stays on the speaker
+        return cycle_out()
+
+    # ---- personal profiles
+    def profiles_out() -> dict:
+        ps = app.state.profiles
+        return {"profiles": ps.profiles.list(), "loaded_id": ps.loaded_id(), "undo": ps.undo_info(), "loading": ps.busy}
+
+    def profile_exists(pid: str) -> dict:
+        p = app.state.profiles.profiles.get(pid)
+        if p is None:
+            raise ManagerError(ErrorCode.INVALID_COMMAND, "הפרופיל לא נמצא.", 404)
+        return p
+
+    @api.get("/speaker/profiles")
+    async def profiles_list() -> dict:
+        return profiles_out()  # no speaker request
+
+    @api.post("/speaker/profiles", status_code=201)
+    async def profile_save(body: ProfileCreate, ident: Identity = Depends(speaker_writer)) -> dict:
+        ps = app.state.profiles
+        if ps.profiles.name_taken(body.name):
+            raise ManagerError(ErrorCode.INVALID_COMMAND, "כבר יש פרופיל בשם הזה.", 409)
+        data = await ps.capture(body.include_volume)  # fresh values from the speaker; refuses a partial capture
+        p = ps.profiles.add(body.name, body.include_volume, data, time.time())
+        if p is None:
+            raise ManagerError(ErrorCode.DENIED, "יש יותר מדי פרופילים. מחק חלק מהם.", 429)
+        store.set_state("speaker", "profile_loaded", p["id"])  # it matches the speaker right now
+        audit.add(ident.ip, ident.name, "speaker_profile", f"נשמר: {p['name']}" + (" (כולל עוצמה)" if body.include_volume else ""))
+        return {"created": p, **profiles_out()}
+
+    @api.patch("/speaker/profiles/{pid}")
+    async def profile_rename(pid: str, body: ProfileName, ident: Identity = Depends(speaker_writer)) -> dict:
+        old = profile_exists(pid)
+        if app.state.profiles.profiles.name_taken(body.name, except_id=pid):
+            raise ManagerError(ErrorCode.INVALID_COMMAND, "כבר יש פרופיל בשם הזה.", 409)
+        app.state.profiles.profiles.rename(pid, body.name, time.time())
+        audit.add(ident.ip, ident.name, "speaker_profile", f"שם שונה: {old['name']} ← {body.name}")
+        return profiles_out()
+
+    @api.delete("/speaker/profiles/{pid}")
+    async def profile_delete(pid: str, ident: Identity = Depends(speaker_writer)) -> dict:
+        old = profile_exists(pid)
+        app.state.profiles.profiles.delete(pid)
+        if store.get_state("speaker", "profile_loaded") == pid:
+            store.set_state("speaker", "profile_loaded", None)
+        audit.add(ident.ip, ident.name, "speaker_profile", f"נמחק: {old['name']}")
+        return profiles_out()
+
+    def load_audit(ident: Identity, what: str, out: dict) -> None:
+        word = {"full": "נטען במלואו", "partial": "נטען חלקית", "failed": "לא נטען"}[out["status"]]
+        failed = ", ".join(s["label"] for s in out["steps"] if not s["ok"])
+        audit.add(ident.ip, ident.name, "speaker_profile", f"{what}: {word}" + (f" (נכשל: {failed})" if failed else ""))
+
+    @api.post("/speaker/profiles/undo")
+    async def profile_undo(ident: Identity = Depends(speaker_writer)) -> dict:
+        out = await app.state.profiles.undo()
+        load_audit(ident, "חזרה למצב הקודם", out)
+        return {**out, **profiles_out()}
+
+    @api.post("/speaker/profiles/{pid}/load")
+    async def profile_load(pid: str, ident: Identity = Depends(speaker_writer)) -> dict:
+        p = profile_exists(pid)
+        out = await app.state.profiles.load(pid)
+        load_audit(ident, f"טעינת {p['name']}", out)
+        return {**out, **profiles_out()}
+
+    @api.put("/speaker/config", response_model=SpeakerState)
+    async def speaker_config(body: SpeakerConfig, ident: Identity = Depends(admin)) -> SpeakerState:
+        not_loading()
+        # Only the address changes; nothing is sent to the speaker except the read that follows.
+        await app.state.cycle.stop_if_running("כתובת הרמקול שונתה")
+        store.set_state("speaker", "host", body.host)
+        app.state.speaker.host = body.host
+        audit.add(ident.ip, ident.name, "speaker_host", body.host)
+        return SpeakerState(**await app.state.speaker.state())
+
+    # ---- Zeppelin test lab (admin only): bass, light brightness and colour, whose write effect is not verified yet.
+    # Rules, enforced here: originals are read and saved before any test; a saved snapshot is never overwritten; tests
+    # and restore go only to the speaker the snapshot was taken from; results are reported, never declared "working".
+    def lab_get(key: str, default):
+        v = store.get_state("speaker", key)
+        return json.loads(v) if v else default
+
+    def lab_set(key: str, value) -> None:
+        store.set_state("speaker", key, json.dumps(value, ensure_ascii=False) if value is not None else None)
+
+    def lab_snapshot_for_tests(name: str | None = None) -> dict:
+        snap = lab_get("lab_original", None)
+        if not snap:
+            raise ManagerError(ErrorCode.DENIED, "קודם שמור את הערכים המקוריים, ורק אחר כך בדוק.", 409)
+        if name is not None and name not in snap["values"]:  # a snapshot from before this control existed
+            raise ManagerError(ErrorCode.DENIED, "השמירה הקיימת לא כוללת את הפקד הזה. שחזר או בטל אותה, ושמור מחדש.", 409)
+        if snap["host"] != app.state.speaker.host:
+            raise ManagerError(ErrorCode.DENIED, f"הערכים המקוריים נשמרו מרמקול בכתובת {snap['host']}, לא מהכתובת הנוכחית.", 409)
+        return snap
+
+    async def lab_out() -> dict:
+        current, errors = await app.state.speaker.lab_read()
+        try:  # read-only status: the speaker refuses to change it, so it is shown but never written
+            gain = await app.state.speaker.read_source_gain()
+        except SpeakerError as e:
+            if e.code in (ErrorCode.NOT_CONNECTED, ErrorCode.TIMEOUT):
+                raise
+            gain, errors = None, {**errors, "source_gain": e.message}
+        return {"host": app.state.speaker.host, "snapshot": lab_get("lab_original", None), "current": current, "errors": errors,
+                "source_gain": gain, "last": lab_get("lab_last", {}), "observations": lab_get("lab_obs", [])}
+
+    @api.get("/speaker/lab")
+    async def lab_state(_: Identity = Depends(admin)) -> dict:
+        return await lab_out()  # read only
+
+    @api.post("/speaker/lab/snapshot")
+    async def lab_snapshot(ident: Identity = Depends(admin)) -> dict:
+        snap = lab_get("lab_original", None)
+        if snap:
+            # Complete an older snapshot with controls added to the lab since: only the MISSING ones are read and saved.
+            # A value already saved is never overwritten (it may be the only record of the original).
+            missing = [k for k in LAB_CONTROLS if k not in snap["values"]]
+            if not missing:
+                raise ManagerError(ErrorCode.DENIED, "כבר שמורים ערכים מקוריים. שחזר אותם או בטל את השמירה לפני שמירה חדשה.", 409)
+            if snap["host"] != app.state.speaker.host:
+                raise ManagerError(ErrorCode.DENIED, f"הערכים המקוריים נשמרו מרמקול בכתובת {snap['host']}, לא מהכתובת הנוכחית.", 409)
+            values, errors = await app.state.speaker.lab_read()
+            bad = {k: v for k, v in errors.items() if k in missing}
+            if bad:
+                raise ManagerError(ErrorCode.UNSUPPORTED, "לא ניתן לקרוא את כל הערכים, ולכן לא נשמרו: " + "; ".join(f"{k}: {v}" for k, v in bad.items()), 502)
+            added = {k: values[k] for k in missing}
+            snap["values"].update(added)
+            lab_set("lab_original", snap)
+            audit.add(ident.ip, ident.name, "speaker_lab", "השמירה הושלמה: " + json.dumps(added, ensure_ascii=False))
+            return await lab_out()
+        values, errors = await app.state.speaker.lab_read()
+        if errors:
+            raise ManagerError(ErrorCode.UNSUPPORTED, "לא ניתן לקרוא את כל הערכים, ולכן לא נשמרו: " + "; ".join(f"{k}: {v}" for k, v in errors.items()), 502)
+        lab_set("lab_original", {"host": app.state.speaker.host, "at": time.time(), "values": values})
+        audit.add(ident.ip, ident.name, "speaker_lab", "נשמרו ערכים מקוריים: " + json.dumps(values, ensure_ascii=False))
+        return await lab_out()
+
+    @api.delete("/speaker/lab/snapshot")
+    async def lab_discard(ident: Identity = Depends(admin)) -> dict:
+        lab_set("lab_original", None)  # the speaker keeps its current values
+        audit.add(ident.ip, ident.name, "speaker_lab", "השמירה בוטלה בלי שחזור")
+        return await lab_out()
+
+    async def lab_test(ident: Identity, name: str, value) -> dict:
+        not_loading()
+        lab_snapshot_for_tests(name)
+        r = await app.state.speaker.probe(name, value)
+        r["at"] = time.time()
+        last = lab_get("lab_last", {})
+        last[name] = r
+        lab_set("lab_last", last)
+        audit.add(ident.ip, ident.name, "speaker_lab", f"בדיקה {name}: נשלח {value}, מדווח {r['after']}" + (f", שגיאה: {r['speaker_error']}" if r["speaker_error"] else ""))
+        return {"result": r, **await lab_out()}
+
+    @api.post("/speaker/lab/bass")
+    async def lab_bass(body: LabBass, ident: Identity = Depends(admin)) -> dict:
+        return await lab_test(ident, "bass", float(body.value))
+
+    @api.post("/speaker/lab/brightness")
+    async def lab_brightness(body: LabBrightness, ident: Identity = Depends(admin)) -> dict:
+        return await lab_test(ident, "brightness", body.value)
+
+    @api.post("/speaker/lab/rgb")
+    async def lab_rgb(body: LabRgb, ident: Identity = Depends(admin)) -> dict:
+        await app.state.cycle.stop_if_running("נבחר צבע ידני (מעבדה)")
+        return await lab_test(ident, "rgb", body.model_dump())
+
+    @api.post("/speaker/lab/eq_enabled")
+    async def lab_eq_enabled(body: LabBool, ident: Identity = Depends(admin)) -> dict:
+        return await lab_test(ident, "eq_enabled", body.value)
+
+    @api.post("/speaker/lab/loudness")
+    async def lab_loudness(body: LabBool, ident: Identity = Depends(admin)) -> dict:
+        return await lab_test(ident, "loudness", body.value)
+
+    @api.post("/speaker/lab/balance")
+    async def lab_balance(body: LabBass, ident: Identity = Depends(admin)) -> dict:
+        return await lab_test(ident, "balance", float(body.value))  # any finite number: range and direction unknown
+
+    @api.post("/speaker/lab/restore")
+    async def lab_restore(ident: Identity = Depends(admin)) -> dict:
+        not_loading()
+        snap = lab_snapshot_for_tests()
+        results = await app.state.speaker.restore(snap["values"])
+        ok = all(r["ok"] for r in results.values())
+        if ok:  # keep the originals until every one of them is confirmed back on the speaker
+            lab_set("lab_original", None)
+        audit.add(ident.ip, ident.name, "speaker_lab", "שחזור " + ("הושלם" if ok else "חלקי: " + ", ".join(k for k, r in results.items() if not r["ok"])))
+        return {"restored": ok, "results": results, **await lab_out()}
+
+    @api.post("/speaker/lab/observation")
+    async def lab_observation(body: LabObservation, ident: Identity = Depends(admin)) -> dict:
+        last = lab_get("lab_last", {}).get(body.control)
+        if not last:
+            raise ManagerError(ErrorCode.INVALID_COMMAND, "אין בדיקה אחרונה לפקד הזה.", 409)
+        obs = lab_get("lab_obs", [])
+        obs.insert(0, {"control": body.control, "result": body.result, "note": body.note, "sent": last["sent"],
+                       "after": last["after"], "speaker_error": last["speaker_error"], "at": time.time(), "who": ident.name})
+        lab_set("lab_obs", obs[:100])
+        word = {"changed": "נראה/נשמע שינוי", "no_change": "לא השתנה דבר", "unsure": "לא בטוח"}[body.result]
+        audit.add(ident.ip, ident.name, "speaker_lab", f"תצפית {body.control} ({last['sent']}): {word}")
+        return await lab_out()
 
     app.include_router(api)
 

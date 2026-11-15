@@ -123,3 +123,90 @@ export interface LogEntry {
   label: string
   outcome: 'sent' | 'simulated' | ErrorCode
 }
+
+/** B&W Zeppelin speaker, as read by the server. null = that value could not be read (see errors). */
+export interface SpeakerState {
+  host: string
+  reachable: boolean
+  volume: number | null
+  treble: number | null
+  light: boolean | null
+  bass: number | null
+  brightness: number | null
+  rgb: { red: number; green: number; blue: number } | null
+  mute: boolean | null
+  loudness: boolean | null
+  /** Range and which sign is left/right are unknown. */
+  balance: number | null
+  errors: Record<string, string>
+}
+
+/** Zeppelin test lab (admin): controls whose write effect is not verified yet. */
+export type LabControl = 'bass' | 'brightness' | 'rgb' | 'eq_enabled' | 'loudness' | 'balance'
+export interface Rgb { red: number; green: number; blue: number }
+export type LabValue = number | Rgb | boolean
+export interface LabValues {
+  bass: number | null; brightness: number | null; rgb: Rgb | null
+  /** Optional: a snapshot saved before these were in the lab lacks them until it is completed. */
+  eq_enabled?: boolean | null; loudness?: boolean | null; balance?: number | null
+}
+/** Source gain as the speaker reports it. Read only: the speaker refuses to change it. Units not verified. */
+export interface SourceGain { name: string; value: number; min: number; max: number }
+/** One test: what was sent and what the speaker reported. `stored` is NOT "it worked" — only the user can tell that. */
+export interface LabProbe {
+  control: LabControl; sent: LabValue; before: LabValue; after: LabValue | null
+  speaker_error: string | null; stored: boolean; at: number
+}
+export interface LabObservationEntry {
+  control: LabControl; result: 'changed' | 'no_change' | 'unsure'; note: string | null
+  sent: LabValue; after: LabValue | null; speaker_error: string | null; at: number; who: string
+}
+export interface SpeakerLab {
+  host: string
+  snapshot: { host: string; at: number; values: LabValues } | null
+  current: LabValues
+  errors: Record<string, string>
+  source_gain: SourceGain[] | null
+  last: Partial<Record<LabControl, LabProbe>>
+  observations: LabObservationEntry[]
+}
+
+/** One equalizer band exactly as the speaker describes it: its own range and step. */
+export interface EqBand { band: string; min: number; max: number; step: number; value: number }
+export interface EqState {
+  bands: EqBand[] | null
+  /** equalizerOnOff as the speaker reports it. Read only until its write is verified in the lab. */
+  enabled: boolean | null
+  errors: Record<string, string>
+}
+
+/** Automatic colour cycling, run on the server. */
+export interface CycleConfig {
+  interval_s: number; mode: 'palette' | 'random'; palette: Rgb[]
+  /** Gradual transition: intermediate colours written by the server (not the speaker's own fade). */
+  smooth: boolean
+}
+export interface CycleState {
+  config: CycleConfig
+  status: {
+    running: boolean
+    state: 'stopped' | 'running' | 'disconnected' | 'error'
+    message: string | null
+    last_colour: Rgb | null
+    changed_at: number | null
+    steps: number
+  }
+}
+
+/** A personal speaker profile, stored on the server. Volume is present only when include_volume. */
+export interface Profile {
+  id: string; name: string; include_volume: boolean; created_at: number; updated_at: number
+  data: {
+    eq: Record<string, number>; bass: number; treble: number; loudness: boolean
+    rgb: Rgb; brightness: number; volume?: number
+    cycle: { running: boolean; config: CycleConfig }
+  }
+}
+export interface ProfilesState { profiles: Profile[]; loaded_id: string | null; undo: { at: number; from_profile: string | null } | null; loading: boolean }
+export interface LoadStep { step: string; label: string; ok: boolean; error: string | null }
+export interface LoadResult extends ProfilesState { status: 'full' | 'partial' | 'failed'; steps: LoadStep[] }

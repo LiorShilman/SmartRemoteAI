@@ -26,6 +26,11 @@ interface State {
   keypadMode: 'instant' | 'buffered'
   /** The one-time welcome card on the home screen has been dismissed. */
   introSeen: boolean
+  /** Show a toast after a successful action. Off by default: the controls themselves show the confirmed state.
+   * Errors are always shown. */
+  successToasts: boolean
+  /** Equalizer: send every change as it happens (one request at a time, newest value wins) instead of on "החל". */
+  eqLive: boolean
   /** Which key pair the HOT box actually uses for channel +/-. Chosen by the user after trying them (Settings). */
   channelStepMode: ChannelStepMode
   favorites: Favorite[]
@@ -61,6 +66,8 @@ export const useApp = create<State>()(
       enterAfterDigits: false, // the box collects digits itself and switches after a short pause; an extra OK can PAUSE the stream
       keypadMode: 'instant',
       introSeen: false,
+      successToasts: false,
+      eqLive: true,
       channelStepMode: 'tracked',
       favorites: [],
       liveCaps: {},
@@ -81,6 +88,7 @@ export const useApp = create<State>()(
       removeLog: (ids) => set({ log: get().log.filter((e) => !ids.includes(String(e.at))) }),
       clearLog: () => set({ log: [], lastCommand: undefined }),
       toast: (kind, text) => {
+        if (kind === 'success' && !get().successToasts) return // errors, info and demo notices always show
         const id = ++toastSeq
         set({ toasts: [...get().toasts.slice(-2), { id, kind, text }] })
         setTimeout(() => get().dismissToast(id), 3200)
@@ -101,7 +109,7 @@ export const useApp = create<State>()(
       // `demoCaps`, toasts and last command are session-only.
       partialize: (s) => ({
         mode: s.mode, token: s.token, volumeRole: s.volumeRole, selected: s.selected, digitDelayMs: s.digitDelayMs,
-        enterAfterDigits: s.enterAfterDigits, keypadMode: s.keypadMode, introSeen: s.introSeen, channelStepMode: s.channelStepMode, favorites: s.favorites, liveCaps: s.liveCaps, log: s.log,
+        enterAfterDigits: s.enterAfterDigits, keypadMode: s.keypadMode, introSeen: s.introSeen, successToasts: s.successToasts, eqLive: s.eqLive, channelStepMode: s.channelStepMode, favorites: s.favorites, liveCaps: s.liveCaps, log: s.log,
       }),
     },
   ),

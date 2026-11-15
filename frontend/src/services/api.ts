@@ -1,4 +1,4 @@
-import type { AuditEntry, Policy, TimeRequest, Usage, Command, CommandOutcome, Device, DeviceKind, ErrorCode, IntentResult, Me, Role, Schedule, TokenCreated, TokenInfo } from '../types'
+import type { AuditEntry, CycleConfig, CycleState, EqState, LoadResult, ProfilesState, LabControl, Policy, Rgb, SpeakerLab, SpeakerState, TimeRequest, Usage, Command, CommandOutcome, Device, DeviceKind, ErrorCode, IntentResult, Me, Role, Schedule, TokenCreated, TokenInfo } from '../types'
 
 export const ERROR_TEXT: Record<ErrorCode, string> = {
   NOT_PAIRED: 'המכשיר עדיין לא מצומד. צמד אותו במסך ההגדרות.',
@@ -104,6 +104,62 @@ export const api = {
   clearSchedules: (token: string, ids?: string[]) =>
     request<{ removed: number }>('/api/schedule/clear', token, { method: 'POST', body: JSON.stringify(ids ? { ids } : {}) }),
   cancelSchedule: (token: string, id: string) => request<Schedule>(`/api/schedule/${id}`, token, { method: 'DELETE' }),
+  /** B&W Zeppelin: reading never changes anything on the speaker. */
+  speaker: (token: string) => request<SpeakerState>('/api/speaker', token),
+  /** Each write resolves only after the server read the value back from the speaker and it matched. */
+  speakerVolume: (token: string, value: number) =>
+    request<SpeakerState>('/api/speaker/volume', token, { method: 'POST', body: JSON.stringify({ value }) }),
+  speakerTreble: (token: string, value: number) =>
+    request<SpeakerState>('/api/speaker/treble', token, { method: 'POST', body: JSON.stringify({ value }) }),
+  speakerLight: (token: string, enabled: boolean) =>
+    request<SpeakerState>('/api/speaker/light', token, { method: 'POST', body: JSON.stringify({ enabled }) }),
+  speakerBass: (token: string, value: number) =>
+    request<SpeakerState>('/api/speaker/bass', token, { method: 'POST', body: JSON.stringify({ value }) }),
+  speakerBrightness: (token: string, value: number) =>
+    request<SpeakerState>('/api/speaker/brightness', token, { method: 'POST', body: JSON.stringify({ value }) }),
+  speakerLoudness: (token: string, enabled: boolean) =>
+    request<SpeakerState>('/api/speaker/loudness', token, { method: 'POST', body: JSON.stringify({ enabled }) }),
+  speakerBalance: (token: string, value: number) =>
+    request<SpeakerState>('/api/speaker/balance', token, { method: 'POST', body: JSON.stringify({ value }) }),
+  /** Automatic colour cycling (runs on the server). Reading it does not contact the speaker. */
+  speakerCycle: (token: string) => request<CycleState>('/api/speaker/cycle', token),
+  speakerCycleConfig: (token: string, cfg: CycleConfig) =>
+    request<CycleState>('/api/speaker/cycle/config', token, { method: 'PUT', body: JSON.stringify(cfg) }),
+  speakerCycleStart: (token: string) => request<CycleState>('/api/speaker/cycle/start', token, { method: 'POST' }),
+  speakerCycleStop: (token: string) => request<CycleState>('/api/speaker/cycle/stop', token, { method: 'POST' }),
+  /** Personal profiles (server-side). Loading is a controlled sequence on the server; a partial load says so. */
+  speakerProfiles: (token: string) => request<ProfilesState>('/api/speaker/profiles', token),
+  speakerProfileSave: (token: string, name: string, includeVolume: boolean) =>
+    request<ProfilesState>('/api/speaker/profiles', token, { method: 'POST', body: JSON.stringify({ name, include_volume: includeVolume }) }),
+  speakerProfileRename: (token: string, id: string, name: string) =>
+    request<ProfilesState>(`/api/speaker/profiles/${encodeURIComponent(id)}`, token, { method: 'PATCH', body: JSON.stringify({ name }) }),
+  speakerProfileDelete: (token: string, id: string) =>
+    request<ProfilesState>(`/api/speaker/profiles/${encodeURIComponent(id)}`, token, { method: 'DELETE' }),
+  speakerProfileLoad: (token: string, id: string) =>
+    request<LoadResult>(`/api/speaker/profiles/${encodeURIComponent(id)}/load`, token, { method: 'POST' }),
+  speakerProfileUndo: (token: string) => request<LoadResult>('/api/speaker/profiles/undo', token, { method: 'POST' }),
+  speakerMute: (token: string, enabled: boolean) =>
+    request<SpeakerState>('/api/speaker/mute', token, { method: 'POST', body: JSON.stringify({ enabled }) }),
+  speakerRgb: (token: string, c: Rgb) =>
+    request<SpeakerState>('/api/speaker/rgb', token, { method: 'POST', body: JSON.stringify(c) }),
+  /** 5-band equalizer. Reading writes nothing. */
+  speakerEq: (token: string) => request<EqState>('/api/speaker/eq', token),
+  /** All bands in one request; resolves only after the server read every band back from the speaker and it matched. */
+  speakerEqSet: (token: string, bands: { band: string; value: number }[]) =>
+    request<EqState>('/api/speaker/eq', token, { method: 'POST', body: JSON.stringify({ bands }) }),
+  /** Admin only. Changes the address the server uses; sends nothing to the speaker except a read. */
+  speakerConfig: (token: string, host: string) =>
+    request<SpeakerState>('/api/speaker/config', token, { method: 'PUT', body: JSON.stringify({ host }) }),
+  /** Zeppelin test lab (admin only). Reading writes nothing; tests are refused until the originals are saved. */
+  speakerLab: (token: string) => request<SpeakerLab>('/api/speaker/lab', token),
+  labSnapshot: (token: string) => request<SpeakerLab>('/api/speaker/lab/snapshot', token, { method: 'POST' }),
+  labDiscard: (token: string) => request<SpeakerLab>('/api/speaker/lab/snapshot', token, { method: 'DELETE' }),
+  labRestore: (token: string) =>
+    request<SpeakerLab & { restored: boolean; results: Record<string, { ok: boolean; now: unknown; error: string | null }> }>('/api/speaker/lab/restore', token, { method: 'POST' }),
+  labTest: (token: string, control: LabControl, value: number | Rgb | boolean) =>
+    request<SpeakerLab>(`/api/speaker/lab/${control}`, token, { method: 'POST', body: JSON.stringify(control === 'rgb' ? value : { value }) }),
+  labObserve: (token: string, control: LabControl, result: 'changed' | 'no_change' | 'unsure') =>
+    request<SpeakerLab>('/api/speaker/lab/observation', token, { method: 'POST', body: JSON.stringify({ control, result }) }),
   async command(token: string, deviceId: string, cmd: Command): Promise<CommandOutcome> {
     try {
       await request(`/api/devices/${deviceId || DEVICE_IDS[cmd.target]}/commands`, token, {

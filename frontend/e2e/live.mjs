@@ -10,6 +10,7 @@ await p.locator('input[type=password]').fill('wrong')
 await p.getByText('קוד גישה שגוי').first().waitFor({ timeout: 12000 }).catch(() => fail('bad token not reported'))
 await p.locator('input[type=password]').fill('dev-token-xyz')
 await p.getByText('השרת מחובר').waitFor({ timeout: 12000 }).catch(() => fail('not connected'))
+await p.getByLabel('הצג הודעת אישור אחרי פעולה מוצלחת').check() // this smoke test confirms actions through their toasts
 await p.getByRole('button', { name: /^צמד / }).first().click({ timeout: 8000 }).catch(() => fail('no device to pair (add one first)'))
 await p.getByRole('button', { name: 'התחל צימוד' }).click()
 await p.locator('input[maxlength="8"]').fill('123456')

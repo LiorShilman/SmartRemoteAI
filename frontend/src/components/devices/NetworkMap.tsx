@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type ComponentType } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Router, Satellite, Server, Smartphone, Tv2 } from 'lucide-react'
+import { Router, Satellite, Server, Smartphone, Speaker, Tv2 } from 'lucide-react'
 import { useApp } from '../../app/store'
 import { useBackend, type BackendStatus } from '../../hooks/useDevices'
+import { useSpeaker } from './SpeakerCard'
 import { shortName } from '../../services/deviceName'
 import { ROLE_LABEL, ROLE_PATH } from '../../services/roles'
 import type { Device } from '../../types'
@@ -57,11 +58,16 @@ export function NetworkMap({ devices: all }: { devices: Device[] }) {
 
   const bSt = backendSt(backend)
   const devSt = devices.map((d) => deviceSt(d, demo))
-  const connected = devSt.filter((s) => s === 'ok').length
+  // The speaker is not a paired device: it is shown from what the server last read from it (live mode only).
+  const sq = useSpeaker()
+  const spkSt: St = sq.isPending ? 'warn' : sq.data?.reachable ? 'ok' : 'bad'
+  const extra = backend === 'online' ? [{ id: 'speaker', st: spkSt }] : []
+  const connected = [...devSt, ...extra.map((e) => e.st)].filter((s) => s === 'ok').length
+  const total = devices.length + extra.length
   const lanSt: St = demo ? 'demo' : backend !== 'online' ? 'idle' : connected > 0 ? 'ok' : 'warn'
 
   // Horizontal on wide screens (right -> left in RTL reading order), vertical on phones. Devices stack evenly.
-  const n = Math.max(devices.length, 1)
+  const n = Math.max(total, 1)
   const rowH = 126
   const rows = Math.ceil(n / 2)
   const vb = wide ? [1000, Math.max(330, n * rowH + 40)] : [360, 618 + (rows - 1) * rowH]
@@ -76,16 +82,21 @@ export function NetworkMap({ devices: all }: { devices: Device[] }) {
   const nodes: Node[] = [
     { id: 'browser', x: pos.browser[0], y: pos.browser[1], Icon: Smartphone, title: 'המכשיר שלך', sub: demo ? 'מצב הדגמה' : 'דפדפן', st: demo ? 'demo' : 'ok', label: demo ? 'הדגמה' : 'פעיל' },
     { id: 'server', x: pos.server[0], y: pos.server[1], Icon: Server, title: 'שרת השלט', sub: backend === 'unauthorized' ? 'קוד גישה שגוי' : demo ? 'מדומה' : 'Backend', st: bSt, label: WORD[bSt] },
-    { id: 'lan', x: pos.lan[0], y: pos.lan[1], Icon: Router, title: 'רשת ביתית', sub: `${connected}/${devices.length} מכשירים`, st: lanSt, label: lanSt === 'ok' ? 'פעילה' : WORD[lanSt] },
+    { id: 'lan', x: pos.lan[0], y: pos.lan[1], Icon: Router, title: 'רשת ביתית', sub: `${connected}/${total} מכשירים`, st: lanSt, label: lanSt === 'ok' ? 'פעילה' : WORD[lanSt] },
     ...devices.map((d, i): Node => ({
       id: `dev:${d.id}`, x: devPos(i)[0], y: devPos(i)[1], Icon: d.role === 'tv' ? Tv2 : Satellite,
       title: ROLE_LABEL[d.role], sub: shortName(d), st: devSt[i], label: WORD[devSt[i]], href: ROLE_PATH[d.role], deviceId: d.id,
+    })),
+    ...extra.map((e): Node => ({
+      id: e.id, x: devPos(devices.length)[0], y: devPos(devices.length)[1], Icon: Speaker,
+      title: 'רמקול', sub: 'B&W Zeppelin', st: e.st, label: e.st === 'warn' ? 'בודק…' : WORD[e.st],
     })),
   ]
   const links: Link[] = [
     { from: 'browser', to: 'server', st: bSt },
     { from: 'server', to: 'lan', st: demo ? 'demo' : backend === 'online' ? 'ok' : 'idle' },
     ...devices.map((d, i): Link => ({ from: 'lan', to: `dev:${d.id}`, st: devSt[i] })),
+    ...extra.map((e): Link => ({ from: 'lan', to: e.id, st: e.st })),
   ]
   const byId = Object.fromEntries(nodes.map((nd) => [nd.id, nd]))
 
@@ -111,7 +122,7 @@ export function NetworkMap({ devices: all }: { devices: Device[] }) {
   const chain = pulse && byId[pulse.to] ? ['browser', 'server', 'lan', pulse.to] : []
   const packetPath = chain.slice(1).map((id, i) => pathBetween(byId[chain[i]], byId[id]))
 
-  const summary = `מפת חיבורים: שרת ${WORD[bSt]}, ${devices.map((d, i) => `${ROLE_LABEL[d.role]} ${WORD[devSt[i]]}`).join(', ') || 'אין מכשירים'}`
+  const summary = `מפת חיבורים: שרת ${WORD[bSt]}, ${[...devices.map((d, i) => `${ROLE_LABEL[d.role]} ${WORD[devSt[i]]}`), ...extra.map((e) => `רמקול ${WORD[e.st]}`)].join(', ') || 'אין מכשירים'}`
 
   return (
     <div className="relative overflow-hidden rounded-[24px] glass p-3 sm:p-4">

@@ -345,3 +345,174 @@ class MeOut(BaseModel):
 class HealthOut(BaseModel):
     ok: bool = True
     version: str
+
+
+# ---- B&W Zeppelin speaker: one schema per verified control. There is no "path" field anywhere, by design.
+class SpeakerVolume(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    value: int = Field(strict=True, ge=0, le=100)
+
+
+class SpeakerTreble(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    value: float = Field(strict=True, ge=-6, le=6)
+
+
+class SpeakerLight(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    enabled: bool = Field(strict=True)
+
+
+class SpeakerBass(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    value: float = Field(strict=True, ge=-6, le=6)
+
+
+class SpeakerBrightness(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    value: int = Field(strict=True, ge=0, le=100)
+
+
+class SpeakerRgb(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    red: int = Field(strict=True, ge=0, le=255)
+    green: int = Field(strict=True, ge=0, le=255)
+    blue: int = Field(strict=True, ge=0, le=255)
+
+
+class SpeakerMute(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    enabled: bool = Field(strict=True)
+
+
+class SpeakerLoudness(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    enabled: bool = Field(strict=True)
+
+
+class SpeakerBalance(BaseModel):
+    """-6..+6, chosen by the user (the speaker stores any value, so it cannot tell its range). Which sign is left/right
+    is unknown. The lab still accepts any finite number for tests outside this range."""
+    model_config = ConfigDict(extra="forbid")
+    value: float = Field(strict=True, ge=-6, le=6)
+
+
+class SpeakerConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    host: str
+
+    @field_validator("host")
+    @classmethod
+    def _host(cls, v: str) -> str:
+        return check_host(v)
+
+
+class SpeakerState(BaseModel):
+    host: str
+    reachable: bool
+    volume: int | None = None
+    treble: float | None = None
+    light: bool | None = None
+    bass: float | None = None
+    brightness: int | None = None
+    rgb: dict[str, int] | None = None
+    mute: bool | None = None
+    loudness: bool | None = None
+    balance: float | None = None
+    errors: dict[str, str] = Field(default_factory=dict)  # per control, when that one could not be read
+
+
+# ---- Zeppelin test lab (admin): unverified controls. Only the value TYPE is checked, never a guessed range: what the
+# speaker accepts is exactly what the lab is for finding out. (RGB channels 0..255 are the colour format itself.)
+I32_MIN, I32_MAX = -(2**31), 2**31 - 1
+LabControl = Literal["bass", "brightness", "rgb", "eq_enabled", "loudness", "balance"]
+
+
+class LabBass(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    value: float = Field(strict=True, allow_inf_nan=False)
+
+
+class LabBrightness(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    value: int = Field(strict=True, ge=I32_MIN, le=I32_MAX)
+
+
+class LabRgb(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    red: int = Field(strict=True, ge=0, le=255)
+    green: int = Field(strict=True, ge=0, le=255)
+    blue: int = Field(strict=True, ge=0, le=255)
+
+
+class LabBool(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    value: bool = Field(strict=True)
+
+
+class LabObservation(BaseModel):
+    """What the user saw/heard on the speaker after the last test of this control."""
+    model_config = ConfigDict(extra="forbid")
+    control: LabControl
+    result: Literal["changed", "no_change", "unsure"]
+    note: str | None = Field(default=None, max_length=120)
+
+
+# ---- Zeppelin 5-band equalizer. Range and step come from the speaker per band and are checked on the server against
+# what the speaker reports at write time, not against constants here.
+class EqBandValue(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    band: str = Field(min_length=1, max_length=8, pattern=r"^\d{1,6}$")
+    value: float = Field(strict=True, allow_inf_nan=False)
+
+
+class EqWrite(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    bands: list[EqBandValue] = Field(min_length=1, max_length=10)
+
+    @model_validator(mode="after")
+    def _unique(self) -> "EqWrite":
+        if len({b.band for b in self.bands}) != len(self.bands):
+            raise ValueError("duplicate band")
+        return self
+
+
+class EqBand(BaseModel):
+    band: str
+    min: float
+    max: float
+    step: float
+    value: float
+
+
+class EqOut(BaseModel):
+    bands: list[EqBand] | None = None
+    enabled: bool | None = None  # equalizerOnOff, read only here until its write is verified
+    errors: dict[str, str] = Field(default_factory=dict)
+
+
+# ---- Zeppelin automatic colour cycling (run on the server). Interval limits are the app's, to never flood the speaker.
+class CycleConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    interval_s: int = Field(strict=True, ge=3, le=3600)
+    mode: Literal["palette", "random"]
+    palette: list[SpeakerRgb] = Field(default_factory=list, max_length=12)
+    smooth: bool = Field(default=False, strict=True)  # intermediate colours, written by the server (not a speaker fade)
+
+
+# ---- Zeppelin personal profiles
+class ProfileName(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    name: str = Field(min_length=1, max_length=40)
+
+    @field_validator("name")
+    @classmethod
+    def _clean(cls, v: str) -> str:
+        v = v.strip()
+        if not v or CONTROL_CHARS.search(v):
+            raise ValueError("name must be 1-40 printable characters")
+        return v
+
+
+class ProfileCreate(ProfileName):
+    include_volume: bool = Field(default=False, strict=True)  # volume only when explicitly chosen

@@ -30,7 +30,8 @@ body {
   color: var(--color-text);
   font-family: var(--font-sans);
   -webkit-tap-highlight-color: transparent;
-  overflow-x: hidden;
+  /* no overflow-x: hidden here: it makes <body> a scroll container and breaks the sticky desktop sidebar.
+     overflow-x: clip above already stops wide children from widening the page. */
 }
 * { box-sizing: border-box; }
 button { font: inherit; color: inherit; }
@@ -119,3 +120,20 @@ select.input option { background: #11182b; color: var(--color-text); }
   .flow { animation: none; }
   *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
 }
+
+/* Graphic EQ: the handle is an SVG slider; show keyboard focus as a ring around it. */
+.eq-handle:focus-visible circle:first-child { stroke: #f4f7ff; stroke-width: 4; }
+
+/* Speaker controls: a slim styled range; the fill is drawn by the --track gradient set on the element. */
+.pro-range { -webkit-appearance: none; appearance: none; width: 100%; height: 32px; background: transparent; cursor: pointer; display: block; }
+.pro-range:disabled { cursor: default; opacity: .4; }
+.pro-range::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: var(--track); }
+.pro-range::-moz-range-track { height: 6px; border-radius: 999px; background: var(--track); }
+.pro-range::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 20px; height: 20px; margin-top: -7px; border-radius: 50%;
+  background: #f4f7ff; border: 3px solid #22d3c5; box-shadow: 0 0 12px rgba(34,211,197,.55);
+}
+.pro-range::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #f4f7ff; border: 3px solid #22d3c5; box-shadow: 0 0 12px rgba(34,211,197,.55); }
+.pro-range:focus-visible { outline: none; }
+.pro-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgba(244,247,255,.85), 0 0 12px rgba(34,211,197,.55); }
+.pro-range:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 4px rgba(244,247,255,.85); }

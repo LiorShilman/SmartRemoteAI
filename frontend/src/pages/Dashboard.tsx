@@ -2,6 +2,9 @@ import { Link } from 'react-router-dom'
 import { History, Mic, Search } from 'lucide-react'
 import { DeviceCard } from '../components/devices/DeviceCard'
 import { NetworkMap } from '../components/devices/NetworkMap'
+import { SpeakerCard } from '../components/devices/SpeakerCard'
+import { SpeakerEq } from '../components/devices/SpeakerEq'
+import { SpeakerProfiles } from '../components/devices/SpeakerProfiles'
 import { UsageCard } from '../components/devices/UsageCard'
 import { WelcomeCard } from '../components/WelcomeCard'
 import { useIsAdmin } from './SecurityCards'
@@ -56,6 +59,9 @@ export default function Dashboard() {
       ) : (
         <div className="grid gap-4 grid-cols-[minmax(0,1fr)] md:grid-cols-2">
           {cards.map((c) => <DeviceCard key={c.device?.id ?? c.role} role={c.role} device={c.device} />)}
+          <SpeakerCard />
+          {/* EQ and profiles share one column, so profiles fill the space under the EQ */}
+          <div className="flex flex-col gap-4 min-w-0"><SpeakerEq /><SpeakerProfiles /></div>
         </div>
       )}
 

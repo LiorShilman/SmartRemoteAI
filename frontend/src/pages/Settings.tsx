@@ -9,6 +9,8 @@ import { AuditSection, SecuritySection, useIsAdmin, useMe } from './SecurityCard
 import { useSend } from '../hooks/useSend'
 import { shortName } from '../services/deviceName'
 import { DRIVER_LABEL, ROLE_LABEL } from '../services/roles'
+import { useSpeaker } from '../components/devices/SpeakerCard'
+import { SpeakerLab } from '../components/devices/SpeakerLab'
 import type { Device, DeviceKind, Role } from '../types'
 
 function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
@@ -344,9 +346,9 @@ function ChannelStepTest() {
 }
 
 function Preferences() {
-  const { volumeRole, set } = useApp()
+  const { volumeRole, successToasts, set } = useApp()
   return (
-    <Card>
+    <Card className="flex flex-col gap-4">
       <SectionTitle hint="איזה מכשיר מקבל פקודות עוצמה מהכפתורים ומהקול. ההגדרה לא בודקת איזה מכשיר באמת שולט בשמע.">יעד עוצמת קול</SectionTitle>
       <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="יעד עוצמת קול">
         {(['tv', 'box'] as const).map((r) => (
@@ -356,6 +358,14 @@ function Preferences() {
           </Key>
         ))}
       </div>
+      <label className="flex items-start gap-3 text-sm border-t border-white/5 pt-4">
+        <input type="checkbox" className="w-5 h-5 mt-0.5 shrink-0" checked={successToasts}
+          onChange={(e) => set({ successToasts: e.target.checked })} />
+        <span>
+          <span className="font-semibold">הצג הודעת אישור אחרי פעולה מוצלחת</span>
+          <span className="block text-xs text-muted">הודעות שגיאה מוצגות תמיד.</span>
+        </span>
+      </label>
     </Card>
   )
 }
@@ -390,6 +400,40 @@ function Diagnostics() {
   )
 }
 
+/** Admin: the address of the B&W Zeppelin speaker. Saving changes only the address; nothing is written to the speaker. */
+function SpeakerAddress() {
+  const { token, toast } = useApp()
+  const qc = useQueryClient()
+  const q = useSpeaker()
+  const [host, setHost] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+  const value = host ?? q.data?.host ?? ''
+  const save = async () => {
+    setBusy(true)
+    try {
+      const next = await api.speakerConfig(token, value.trim())
+      qc.setQueryData(['speaker', token], next)
+      setHost(null)
+      toast(next.reachable ? 'success' : 'info', next.reachable ? 'הכתובת נשמרה והרמקול עונה' : 'הכתובת נשמרה, אבל הרמקול לא עונה בה כרגע')
+    } catch (e) {
+      toast('error', e instanceof ApiError ? (e.code === 'INVALID_COMMAND' ? 'כתובת לא תקינה. יש להזין כתובת IP ברשת הביתית, למשל 192.168.1.52.' : e.message) : 'השמירה נכשלה.')
+    } finally { setBusy(false) }
+  }
+  return (
+    <Card className="flex flex-col gap-3">
+      <SectionTitle hint="כתובת ה-IP של רמקול Bowers & Wilkins Zeppelin ברשת הביתית. כל התקשורת עוברת דרך השרת.">רמקול</SectionTitle>
+      <Field label="כתובת הרמקול">
+        <input className="input ltr" inputMode="decimal" value={value} placeholder="192.168.1.52" maxLength={15}
+          onChange={(e) => setHost(e.target.value)} />
+      </Field>
+      <Key label="שמור כתובת רמקול" variant="primary" className="h-11 px-5 font-bold self-start"
+        disabled={busy || !value.trim() || value.trim() === q.data?.host} onClick={save}>
+        {busy ? 'שומר…' : 'שמור'}
+      </Key>
+    </Card>
+  )
+}
+
 export default function Settings() {
   const live = useApp((s) => s.mode) === 'live'
   const admin = useIsAdmin()
@@ -398,7 +442,7 @@ export default function Settings() {
     <div className="flex flex-col gap-5">
       <h1 className="text-2xl font-extrabold">הגדרות</h1>
       <div className="grid gap-5 grid-cols-[minmax(0,1fr)] lg:grid-cols-2 items-stretch">
-        <div className="flex flex-col gap-5"><ModeSection />{admin && live && online && <SecuritySection />}<DevicesSection /></div>
+        <div className="flex flex-col gap-5"><ModeSection />{admin && live && online && <SecuritySection />}<DevicesSection />{admin && live && online && <SpeakerAddress />}{admin && live && online && <SpeakerLab />}</div>
         <div className="flex flex-col gap-5"><DigitTest /><ChannelStepTest /><Preferences />{admin && live && online && <AuditSection />}<Diagnostics /></div>
       </div>
     </div>

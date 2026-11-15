@@ -37,6 +37,8 @@ class Settings:
     # Optional allowlist of client networks (CIDR). Empty = anyone with a valid code. Loopback is always allowed.
     allowed_cidrs: list[str] = field(default_factory=list)
     llm_model: str = "claude-opus-5-5"
+    # B&W Zeppelin speaker. The admin can change it at runtime (Settings); the saved value then wins over this default.
+    zeppelin_host: str = "192.168.1.52"
     token_was_generated: bool = False
 
     @classmethod
@@ -54,6 +56,7 @@ class Settings:
             ssl_certfile=os.environ.get("SSL_CERTFILE", ""),
             ssl_keyfile=os.environ.get("SSL_KEYFILE", ""),
             use_mock_adapters=os.environ.get("USE_MOCK_ADAPTERS", "").lower() in {"1", "true", "yes"},
+            zeppelin_host=os.environ.get("ZEPPELIN_HOST", "").strip() or "192.168.1.52",
         )
         if not s.access_token or s.access_token == "change-me":
             s.access_token = secrets.token_urlsafe(24)
