@@ -76,7 +76,7 @@ if ((await page.getByRole('slider', { name: 'עוצמה' }).inputValue()) !== '2
 const minus = await page.getByRole('button', { name: 'הנמך עוצמה' }).boundingBox(), plus0 = await page.getByRole('button', { name: 'הגבר עוצמה' }).boundingBox()
 if (!(minus.x < plus0.x)) fail('dial: - should be left of +')
 // every slider: Hebrew order (+ left, - right) and the track itself runs right-to-left, so + sits at its maximum end
-for (const n of ['באס', 'גבוהים', 'בהירות', 'איזון']) {
+for (const n of ['באס', 'גבוהים', 'בהירות']) {
   const bm = await page.getByRole('button', { name: 'הנמך ' + n }).boundingBox(), bp = await page.getByRole('button', { name: 'הגבר ' + n }).boundingBox()
   if (!(bp.x < bm.x)) fail(`slider ${n}: + should be left of -`)
   const dir = await page.getByRole('slider', { name: n }).evaluate((el) => getComputedStyle(el).direction)
@@ -147,27 +147,9 @@ await page.waitForTimeout(900)
 writeDelayMs = 0
 if (writes.length !== 1 || writes[0].path !== '/api/speaker/mute' || writes[0].body.enabled !== true) fail(`mute write: ${JSON.stringify(writes)}`)
 if ((await page.getByRole('switch', { name: /השתק/ }).getAttribute('aria-checked')) !== 'true') fail('mute not shown on after confirm')
-// Loudness and balance are on the main card, without any "experimental" wording.
-if (await page.getByText('ניסיוני').count()) fail('"experimental" shown on the main screen')
-writes.length = 0
-writeDelayMs = 500
-await page.getByRole('switch', { name: /Loudness/ }).click()
-await page.waitForTimeout(120)
-if (!(await page.getByRole('switch', { name: /Loudness/ }).isDisabled())) fail('loudness switch not disabled during the request')
-await page.waitForTimeout(900)
-writeDelayMs = 0
-if (writes.length !== 1 || writes[0].path !== '/api/speaker/loudness' || writes[0].body.enabled !== true) fail(`loudness write: ${JSON.stringify(writes)}`)
-writes.length = 0
-const bal = page.getByRole('slider', { name: 'איזון' })
-if ((await bal.inputValue()) !== '0' || (await bal.getAttribute('min')) !== '-6' || (await bal.getAttribute('max')) !== '6') fail('balance slider range/value wrong')
-await page.getByRole('button', { name: 'הגבר איזון' }).click()
-await page.waitForTimeout(700)
-await page.getByRole('button', { name: 'מרכז את האיזון (0)' }).click()
-await page.waitForTimeout(700)
-const bw = writes.filter((w) => w.path === '/api/speaker/balance').map((w) => w.body.value)
-if (JSON.stringify(bw) !== '[1,0]') fail(`balance writes: ${JSON.stringify(writes)}`)
-const balText = await page.locator('section', { has: page.getByRole('slider', { name: 'איזון' }) }).last().innerText()
-if (/ימין|שמאל/.test(balText)) fail('balance shows left/right words before they were verified')
+// Loudness and balance are hidden from the main card for now (no audible effect found); they stay in the lab.
+for (const x of [page.getByRole('switch', { name: /Loudness/ }), page.getByRole('slider', { name: 'איזון' }), page.getByText('ניסיוני')])
+  if (await x.count()) fail('loudness/balance/"experimental" shown on the main card')
 
 // 4f. Automatic colour cycling: settings saved on the server, explicit start/stop, refused with the light off,
 // and a manual colour stops it. Brightness is never written by any of this.
@@ -191,7 +173,7 @@ await page.waitForTimeout(400)
 if (cyclePosts.at(-1)?.body?.smooth !== true) fail('smooth not saved')
 const cyc = page.getByRole('switch', { name: /החלפת צבעים אוטומטית/ })
 await cyc.click()
-await page.getByText('פועל ברמקול גם כשהדפדפן סגור').waitFor({ timeout: 4000 }).catch(() => fail('running state not shown'))
+await page.getByRole('switch', { name: 'עצור החלפת צבעים אוטומטית' }).waitFor({ timeout: 4000 }).catch(() => fail('running state not shown'))
 if (!cyclePosts.some((x) => x.path.endsWith('/start'))) fail('start not sent')
 await page.getByLabel('צבע התאורה').fill('#112233') // manual colour -> the server stops the cycle
 await page.waitForTimeout(900)

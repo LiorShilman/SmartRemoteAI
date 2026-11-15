@@ -21,7 +21,7 @@ export function ColourCycle({ lightOn, disabled, Switch }: {
   const q = useQuery({
     queryKey: ['speaker-cycle', token],
     queryFn: () => api.speakerCycle(token), // no speaker request: the server just reports its own state
-    refetchInterval: (query) => ((query.state.data as CycleState | undefined)?.status?.running ? 3000 : 15000),
+    refetchInterval: (query) => ((query.state.data as CycleState | undefined)?.status?.running ? 1000 : 15000), // cheap (no speaker request): keeps the shown colour close to the speaker's
     retry: false,
   })
   const [busy, setBusy] = useState(false)
@@ -71,12 +71,6 @@ export function ColourCycle({ lightOn, disabled, Switch }: {
       {!running && lightOff && <p className="text-xs text-warn">יש להדליק את התאורה לפני הפעלת החלפת הצבעים.</p>}
       {st && (st.state === 'disconnected' || st.state === 'error') && <p role="alert" className="text-xs text-danger">{st.message}</p>}
       {st && st.state === 'stopped' && st.message && <p className="text-xs text-muted">{st.message}</p>}
-      {running && st && (
-        <p className="text-xs text-secondary flex items-center gap-1.5" role="status">
-          פועל ברמקול גם כשהדפדפן סגור · כל {cfg?.interval_s} שנ׳
-          {st.last_colour && <span className="inline-block w-3 h-3 rounded-full border border-white/30" style={{ background: rgbToHex(st.last_colour) }} aria-hidden />}
-        </p>
-      )}
       {q.isError && <p role="alert" className="text-xs text-danger">{q.error instanceof ApiError ? q.error.message : 'לא ניתן לקרוא את מצב החלפת הצבעים.'}</p>}
 
       {cfg && (

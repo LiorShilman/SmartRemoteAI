@@ -40,6 +40,31 @@ Address: `ZEPPELIN_HOST` (default `192.168.1.52`); the admin can change it in Se
 The speaker stores ANY value it is sent (bass ±7 and brightness 101 were stored as sent), so reading back cannot reveal
 its range; the ranges above are a choice, and whether values beyond them have an effect was not tested.
 
+## Loudness and balance — investigation (2026-11-15, read-only)
+
+Both store and read back, but no audible effect. Still experimental; at the user's request both controls are hidden from the main card and remain only in the test lab (the API endpoints are unchanged).
+
+**Verified on this speaker (StreamSDK 1.12.1.1, board `Stream800_demo_client`):**
+- The speaker's own menu (`ui:/settings/audio/tone`) lists Postprocessing, Bass, Treble, Loudness and Balance together;
+  Balance is declared `slider −10…+10 step 0.5 dB` (same for bass/treble). So both are standard StreamSDK tone settings.
+- `settings:/mediaPlayer/alsaMixerElements` maps only `bassElem: Bass`, `trebleElem: Treble`, `muteElem`/`attenuationElem: Master`.
+  There is no element for balance or loudness.
+- `postprocessing` is already `true`; `volumeOnDsp` is `true`. No other loudness/balance node exists under
+  `settings:/mediaPlayer`, `dspControl`, `bw`, `illusonic`, `imx8AudioFramework`, `qcs40xDolby`, `formation`.
+- B&W's own app protocol (StateD, `https://<host>:42425`, used by the B&W Music App) answers `get_property` for
+  `liberty.property.gain.bass` (100 = 1 dB, mirrors `settings:/mediaPlayer/bass`), `gain.treble` (600) and `gain.offset`
+  (-120, meaning unknown). For `gain.balance`, `balance`, `loudness`, `gain.loudness` it answers
+  "unsupported property". Nothing was written on either API.
+- Public projects (Fosi S3 Home Assistant integration on StreamSDK; space192/zeppelin for this speaker) expose balance only on
+  other StreamSDK devices; none expose loudness, and the Zeppelin integration has only bass and treble.
+
+**Hypotheses (not verified):**
+- Bass/treble work because they are wired to ALSA mixer controls that B&W's DSP implements; StreamSDK applies balance
+  and loudness through its own generic path, which this product's audio pipeline (Illusonic DSP, volume on DSP)
+  probably bypasses. That would explain values being stored with no effect.
+- No extra activation or alternative path was found. Changing `alsaMixerElements`, `postprocessing` or DSP settings
+  might wire them, but those are internal DSP settings and were deliberately not touched.
+
 Test lab (Settings, admin only): tries bass/brightness/colour with saved originals and restore, and records what the user
 observed. Kids-mode codes can read the speaker state but cannot change it.
 

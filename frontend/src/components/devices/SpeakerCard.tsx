@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { AudioLines, Lightbulb, LightbulbOff, Minus, Palette, Plus, RefreshCw, Speaker, Sun, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react'
+import { Lightbulb, LightbulbOff, Minus, Palette, Plus, RefreshCw, Speaker, Sun, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react'
 import { Card, Key } from '../ui/Primitives'
 import { useApp } from '../../app/store'
 import { useBackend } from '../../hooks/useDevices'
 import { ApiError, api } from '../../services/api'
-import { BALANCE, BASS, BRIGHTNESS, TREBLE, VOLUME, changeToSend, clamp, hexToRgb, rgbToHex, trebleLabel, type Rgb } from '../../services/speaker'
+import { BASS, BRIGHTNESS, TREBLE, VOLUME, changeToSend, clamp, hexToRgb, rgbToHex, trebleLabel, type Rgb } from '../../services/speaker'
 import type { SpeakerState } from '../../types'
 import { ColourCycle } from './ColourCycle'
 
-type Num = 'volume' | 'treble' | 'bass' | 'brightness' | 'balance'
-type Field = Num | 'light' | 'rgb' | 'mute' | 'loudness'
+type Num = 'volume' | 'treble' | 'bass' | 'brightness'
+type Field = Num | 'light' | 'rgb' | 'mute'
 
 /** Every numeric control: its range, its +/- step, how it is sent and how a confirmed value is announced. */
 const NUM: Record<Num, {
@@ -21,7 +21,6 @@ const NUM: Record<Num, {
   treble: { label: 'גבוהים', range: TREBLE, send: api.speakerTreble, show: trebleLabel },
   bass: { label: 'באס', range: BASS, send: api.speakerBass, show: trebleLabel },
   brightness: { label: 'בהירות', range: BRIGHTNESS, send: api.speakerBrightness, show: String },
-  balance: { label: 'איזון', range: BALANCE, send: api.speakerBalance, show: trebleLabel },
 }
 
 export function useSpeaker() {
@@ -101,16 +100,6 @@ export function SpeakerCard() {
       toast('success', enabled ? 'התאורה הודלקה' : 'התאורה כובתה')
     } catch (e) { fail(e) } finally { mark('light', false) }
   }
-  /** Loudness: disabled while its request is on its way; a failure shows the error and re-reads the speaker. */
-  const toggleLoudness = async () => {
-    if (s?.loudness == null || running.current.loudness) return
-    const enabled = !s.loudness
-    mark('loudness', true)
-    try {
-      qc.setQueryData(['speaker', token], await api.speakerLoudness(token, enabled)) // server read it back and compared
-      toast('success', enabled ? 'Loudness הופעל' : 'Loudness כובה')
-    } catch (e) { fail(e) } finally { mark('loudness', false) }
-  }
   /** Mute: disabled while its request is on its way; a failure shows the error and re-reads the speaker. */
   const toggleMute = async () => {
     if (s?.mute == null || running.current.mute) return
@@ -189,14 +178,6 @@ export function SpeakerCard() {
           <Section title="טון">
             <ProSlider {...ctl('bass')} bipolar unit="dB" />
             <ProSlider {...ctl('treble')} bipolar unit="dB" />
-            <div className="flex items-center gap-3 border-t border-white/5 pt-4">
-              <AudioLines size={16} className="text-muted shrink-0" aria-hidden />
-              <span className="flex-1 text-sm font-semibold"><bdi>Loudness</bdi></span>
-              <Switch on={s.loudness} busy={!!busy.loudness} disabled={disabled(s.loudness) || !!busy.loudness} error={s.errors.loudness}
-                label={s.loudness ? 'כבה Loudness' : 'הפעל Loudness'} onText="פועל" offText="כבוי"
-                iconOn={<AudioLines size={14} className="m-1 text-bg" aria-hidden />} iconOff={<AudioLines size={14} className="m-1 text-bg/60" aria-hidden />}
-                onToggle={() => void toggleLoudness()} />
-            </div>
           </Section>
 
           <Section title="תאורה" aside={
@@ -206,14 +187,6 @@ export function SpeakerCard() {
             <ProSlider {...ctl('brightness')} unit="%" icon={<Sun size={16} aria-hidden />} />
             <ColourField value={s.rgb} error={s.errors.rgb} busy={!!busy.rgb} disabled={disabled(s.rgb)} onCommit={(c) => void setColour(c)} />
             <ColourCycle lightOn={s.light} disabled={disabled(s.rgb)} Switch={(p) => <Switch {...p} />} />
-          </Section>
-
-          <Section title="איזון">
-            <ProSlider {...ctl('balance')} bipolar unit="" />
-            <Key label="מרכז את האיזון (0)" className="h-10 px-4 self-center text-sm" disabled={disabled(s.balance) || shown('balance') === 0}
-              onClick={() => want('balance', 0)}>
-              מרכז
-            </Key>
           </Section>
         </>
       )}
@@ -408,7 +381,14 @@ function ColourField({ value, error, busy, disabled, onCommit }: {
         <Palette size={16} className="text-muted" aria-hidden />
         <span className="font-semibold flex-1">צבע</span>
         {error && <span className="text-xs text-danger">{error}</span>}
-        {value && <span className={`ltr text-xs text-muted tabular-nums transition-opacity ${busy ? 'opacity-50' : ''}`}>{value.red},{value.green},{value.blue}</span>}
+        {value && (
+          <span role="img" aria-label={`הצבע הנוכחי ברמקול: אדום ${value.red}, ירוק ${value.green}, כחול ${value.blue}`}
+            title={`${value.red}, ${value.green}, ${value.blue}`}
+            className={`flex items-center gap-2 text-xs text-muted transition-opacity ${busy ? 'opacity-50' : ''}`}>
+            נוכחי
+            <span className="w-6 h-6 rounded-full border border-white/25 transition-[background-color,box-shadow] duration-700" style={{ background: current ?? undefined, boxShadow: `0 0 10px ${current}66` }} />
+          </span>
+        )}
       </div>
       <div className="flex flex-wrap items-center gap-2.5">
         {SWATCHES.map((s) => {
@@ -422,8 +402,8 @@ function ColourField({ value, error, busy, disabled, onCommit }: {
           )
         })}
         <label className="relative w-9 h-9 rounded-full border-2 border-dashed border-white/30 grid place-items-center cursor-pointer overflow-hidden"
-          title="צבע מותאם" style={{ background: SWATCHES.some((s) => rgbToHex(s.c) === current) ? undefined : hex }}>
-          <Plus size={14} className="text-white mix-blend-difference" aria-hidden />
+          title="צבע מותאם">
+          <Plus size={14} className="text-muted" aria-hidden />
           <input ref={ref} type="color" aria-label="צבע התאורה" value={hex} disabled={disabled}
             className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => setDraft(e.target.value)} />
         </label>
