@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Clock, Mic, MicOff, Play, Send, Sparkles, X } from 'lucide-react'
+import { Clock, Mic, MicOff, Play, Send, Sparkles, Speaker, Tv2, Volume2, X } from 'lucide-react'
 import { Card, Key, SectionTitle } from '../components/ui/Primitives'
 import { SelectableRow, SelectToolbar, useSelection } from '../components/ui/Selectable'
 import { useApp } from '../app/store'
@@ -8,7 +8,7 @@ import { useSend } from '../hooks/useSend'
 import { useBackend, useVolumeDevice } from '../hooks/useDevices'
 import { ApiError, api } from '../services/api'
 import { needsConfirmation, parseIntent } from '../services/intentParser'
-import type { Command, Schedule } from '../types'
+import type { Schedule, StepCommand } from '../types'
 
 interface SpeechRec {
   lang: string; interimResults: boolean; continuous: boolean
@@ -32,8 +32,16 @@ const MIC_ERRORS: Record<string, string> = {
   network: 'זיהוי הדיבור דורש חיבור לשירות של הדפדפן ולא הצליח להתחבר.',
 }
 
-interface PreviewStep { command: Command; label: string; delaySeconds: number }
+interface PreviewStep { command: StepCommand; label: string; delaySeconds: number }
 interface Preview { steps: PreviewStep[]; unrecognized: string[]; provider: 'rules' | 'llm' }
+
+/** Example commands, grouped. A press only fills the box and previews; it never sends anything. */
+const EXAMPLES: { title: string; Icon: typeof Tv2; liveOnly?: boolean; items: string[] }[] = [
+  { title: 'טלוויזיה וממיר', Icon: Tv2, items: ['ערוץ 12', 'תגביר', 'תנמיך', 'השתק', 'פתח יוטיוב', 'תעבור ל-HDMI 2', 'כבה טלוויזיה', 'בית', 'חזור'] },
+  { title: 'רמקול – עוצמה', Icon: Volume2, liveOnly: true, items: ['תגביר את הרמקול', 'תנמיך את הרמקול', 'עוצמה 25 ברמקול', 'השתק את הרמקול'] },
+  { title: 'רמקול – צליל ותאורה', Icon: Speaker, liveOnly: true, items: ['יותר בס', 'פחות בס', 'טרבל 2', 'אור כחול', 'בהירות 50', 'כבה את האור', 'מחזור צבעים'] },
+  { title: 'תזמון', Icon: Clock, liveOnly: true, items: ['השתק את הרמקול בעוד שעה', 'כבה את הטלוויזיה בעוד חצי שעה', 'ערוץ 12 ואז תנמיך את הרמקול'] },
+]
 
 const STATUS: Record<Schedule['status'], [string, string]> = {
   pending: ['', 'ממתין'], done: ['ok', 'בוצע'], failed: ['bad', 'נכשל'], missed: ['bad', 'הוחמץ'], cancelled: ['', 'בוטל'],
@@ -85,7 +93,8 @@ export default function VoiceAssistant() {
     if (!t.trim()) { setParsed(null); setParsing(false); return }
     if (!live || backend !== 'online') {
       const r = parseIntent(t, { volumeTarget })
-      const unrecognized = r.unrecognized.map((u) => (/בעוד/.test(u) && !live ? `${u} (תזמון זמין במצב אמיתי בלבד)` : u))
+      const unrecognized = r.unrecognized.map((u) => (/בעוד/.test(u) && !live ? `${u} (תזמון זמין במצב אמיתי בלבד)`
+        : /רמקול|בס|באס|טרבל|תאורה|אור|צבע|בהירות|פרופיל/.test(u) ? `${u} (פקודות רמקול זמינות במצב אמיתי בלבד)` : u))
       setParsed({ steps: r.steps.map((s) => ({ ...s, delaySeconds: 0 })), unrecognized, provider: 'rules' })
       return
     }
@@ -96,7 +105,7 @@ export default function VoiceAssistant() {
         if (my !== seq.current) return // a newer sentence superseded this one
         setParsed({
           provider: r.provider, unrecognized: r.unrecognized,
-          steps: r.steps.map((s) => ({ command: { target: s.target, action: s.action, params: s.params }, label: s.label, delaySeconds: s.delay_seconds })),
+          steps: r.steps.map((s) => ({ command: { target: s.target, action: s.action, params: s.params } as StepCommand, label: s.label, delaySeconds: s.delay_seconds })),
         })
       } catch (e) {
         if (my === seq.current) { setParsed(null); toast('error', e instanceof ApiError ? e.message : 'הניתוח נכשל.') }
@@ -133,6 +142,18 @@ export default function VoiceAssistant() {
         } catch (e) {
           toast('error', e instanceof ApiError ? e.message : 'התזמון נכשל.')
           break
+        }
+      } else if (step.command.target === 'speaker') {
+        try {
+          // resolves only after the server read the new value back from the speaker
+          const st = await api.speakerStep(token, step.command.action, step.command.params ?? {})
+          qc.setQueryData(['speaker', token], st)
+          void qc.invalidateQueries({ queryKey: ['speaker-cycle'] })
+          void qc.invalidateQueries({ queryKey: ['speaker-profiles'] })
+          toast('success', step.label)
+        } catch (e) {
+          toast('error', `${step.label}: ${e instanceof ApiError ? e.message : 'הפעולה נכשלה.'}`)
+          break // never continue a sequence after a failure
         }
       } else {
         const o = await send(step.command, step.label)
@@ -192,10 +213,27 @@ export default function VoiceAssistant() {
           <input className="input flex-1" value={text} onChange={(e) => preview(e.target.value)}
             placeholder="למשל: ערוץ 12 ואז תנמיך, או: כבה את הטלוויזיה בעוד שעה" aria-label="פקודה בטקסט" />
         </form>
-        <p className="text-xs text-muted mt-2">
-          פקודות נתמכות: ערוץ [מספר] · תגביר · תנמיך · השתק · פתח יוטיוב · תעבור ל-HDMI [מספר] · כבה טלוויזיה · בית · חזור.
-          {live ? ' אפשר להוסיף ״בעוד שעה / חצי שעה / 20 דקות״ לתזמון בשרת.' : ''}
-        </p>
+        {!parsed && !parsing && (
+          <div className="mt-4 flex flex-col gap-3.5">
+            <p className="text-xs text-muted">דוגמאות. לחיצה ממלאת את הפקודה ומציגה מה יבוצע. שום דבר לא נשלח לפני "בצע".</p>
+            {EXAMPLES.filter((g) => live || !g.liveOnly).map((g) => (
+              <div key={g.title} className="flex flex-col gap-1.5">
+                <div className="flex items-center gap-1.5 text-[12px] font-bold text-text/80">
+                  <g.Icon size={14} className="text-secondary" aria-hidden /> {g.title}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {g.items.map((t) => (
+                    <button key={t} type="button" onClick={() => preview(t)}
+                      className="rounded-full border border-white/10 bg-white/[.04] px-3 py-1.5 text-[13px] text-text/90 hover:bg-white/[.09] hover:border-white/20 transition">
+                      {t}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            {live && <p className="text-xs text-muted">לפרופיל: ״פרופיל״ ואחריו השם ששמרת. בלי המילה ״רמקול״, תגביר/תנמיך/השתק הולכים לטלוויזיה.</p>}
+          </div>
+        )}
 
         {parsing && <p className="text-sm text-muted mt-3" role="status">מנתח…</p>}
         {parsed && !parsing && (

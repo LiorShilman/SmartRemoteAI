@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { AudioLines, Lightbulb, LightbulbOff, Minus, Palette, Plus, RefreshCw, Speaker, Sun, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react'
+import { AudioLines, Lightbulb, LightbulbOff, Minus, Moon, Palette, Plus, RefreshCw, Speaker, Sun, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react'
 import { Card, Key } from '../ui/Primitives'
 import { useApp } from '../../app/store'
 import { useBackend } from '../../hooks/useDevices'
@@ -140,7 +140,10 @@ export function SpeakerCard() {
   }
 
   const live = mode === 'live' && backend === 'online'
-  const chip: [string, string] = !live ? ['', 'לא זמין'] : q.isPending ? ['', 'בודק…'] : q.isError ? ['bad', 'שגיאה'] : s?.reachable ? ['ok', 'מחובר'] : ['bad', 'מנותק']
+  // With network standby the speaker still answers while "off", so reachable alone is not "on".
+  const asleep = live && !!s?.reachable && s.power === 'networkStandby'
+  const chip: [string, string] = !live ? ['', 'לא זמין'] : q.isPending ? ['', 'בודק…'] : q.isError ? ['bad', 'שגיאה']
+    : !s?.reachable ? ['bad', 'מנותק'] : asleep ? ['off', 'כבוי'] : ['ok', 'מחובר']
   const disabled = (value: unknown) => !live || !s?.reachable || value == null
   const shown = (f: Num) => draft[f] ?? s?.[f] ?? null
   const ctl = (f: Num) => ({
@@ -154,7 +157,7 @@ export function SpeakerCard() {
     <Card className="flex flex-col gap-5">
       <div className="flex items-start gap-3">
         <div className="grid place-items-center w-12 h-12 rounded-2xl bg-white/5 border border-white/10">
-          <Speaker size={24} className="text-secondary" aria-hidden />
+          <Speaker size={24} className={asleep ? 'text-muted/50' : 'text-secondary'} aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="font-bold text-lg leading-tight">רמקול</h3>
@@ -164,7 +167,7 @@ export function SpeakerCard() {
           </p>
         </div>
         <span className={`chip ${chip[0]}`}>
-          {chip[0] === 'ok' ? <Wifi size={13} aria-hidden /> : <WifiOff size={13} aria-hidden />}
+          {chip[0] === 'ok' ? <Wifi size={13} aria-hidden /> : chip[0] === 'off' ? <Moon size={13} aria-hidden /> : <WifiOff size={13} aria-hidden />}
           {chip[1]}
         </span>
         <Key label="רענן את מצב הרמקול" className="!min-w-11 !min-h-11 !rounded-full" disabled={!live || q.isFetching}
@@ -180,6 +183,17 @@ export function SpeakerCard() {
         <p role="alert" className="text-sm text-danger">
           הרמקול לא עונה בכתובת <bdi className="ltr">{s.host}</bdi>. ודא שהוא דלוק ומחובר לאותה רשת, או עדכן את הכתובת במסך ההגדרות.
         </p>
+      )}
+
+      {asleep && (
+        <div role="status" className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/[.03] p-3 text-sm">
+          <Moon size={18} className="text-muted shrink-0 mt-0.5" aria-hidden />
+          <p className="text-muted">
+            <span className="font-semibold text-text">הרמקול כבוי (מצב המתנה)</span>
+            {s?.power_reason === 'idleTimer' && ' – כבה לבד אחרי זמן ללא השמעה'}.
+            {' '}הוא נדלק מעצמו כשמנגנים אליו (AirPlay, Bluetooth, Spotify) או בלחיצה על הכפתור שעליו. ההגדרות כאן עדיין נשמרות בו.
+          </p>
+        </div>
       )}
 
       {live && s?.reachable && (
@@ -378,8 +392,9 @@ function Switch({ on, busy, disabled, error, label, onToggle, onText = 'דלוק
       <span className={`text-sm font-semibold ${on ? 'text-secondary' : 'text-muted'}`}>{busy ? 'שולח…' : on == null ? '—' : on ? onText : offText}</span>
       <button type="button" role="switch" aria-checked={on ?? undefined} aria-label={label} aria-busy={busy} disabled={disabled}
         onClick={onToggle} dir="ltr"
-        className={`relative w-14 h-8 rounded-full border transition-colors disabled:opacity-40 ${on ? 'bg-secondary/80 border-secondary/60 shadow-[0_0_16px_rgba(34,211,197,.45)]' : 'bg-white/10 border-white/15'}`}>
-        <span className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow transition-[left] duration-150 ${on ? 'left-7' : 'left-1'}`}>
+        className={`relative w-14 h-8 rounded-full border transition-colors disabled:opacity-40 ${on ? 'bg-secondary/15 border-secondary/40' : 'bg-white/[.06] border-white/[.12]'}`}>
+        {/* calm: a tinted track and a coloured knob, no saturated glowing track */}
+        <span className={`absolute top-1 w-6 h-6 rounded-full shadow transition-[left,background-color] duration-150 ${on ? 'left-7 bg-secondary' : 'left-1 bg-white/70'}`}>
           {on ? (iconOn ?? <Lightbulb size={14} className="m-1 text-bg" aria-hidden />) : (iconOff ?? <LightbulbOff size={14} className="m-1 text-bg/60" aria-hidden />)}
         </span>
       </button>

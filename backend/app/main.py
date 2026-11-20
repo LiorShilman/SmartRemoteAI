@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.config import VERSION, Settings
-from app.models.schemas import CycleConfig, ProfileCreate, ProfileName, EqBand, EqOut, EqWrite, LabBass, LabBool, LabBrightness, LabObservation, LabRgb, SpeakerBalance, SpeakerBass, SpeakerBluetooth, SpeakerSources, SpeakerStandby, SpeakerStandbySet, SpeakerBrightness, SpeakerLoudness, SpeakerMute, SpeakerRgb, check_host
+from app.models.schemas import CycleConfig, ProfileCreate, ProfileName, EqBand, EqOut, EqWrite, LabBass, LabBool, LabBrightness, LabObservation, LabRgb, SpeakerBalance, SpeakerBass, SpeakerBluetooth, SpeakerStepRequest, SpeakerUnpair, SpeakerSources, SpeakerStandby, SpeakerStandbySet, SpeakerBrightness, SpeakerLoudness, SpeakerMute, SpeakerRgb, check_host
 from app.models.schemas import (
     KEYS_BY_KIND, LG_APPS, Action, AuditOut, ChannelSet, CommandRequest, CommandResponse, DeviceOut, DeviceUpdate,
     ErrorCode, HealthOut, IntentOut, IntentParseRequest, MeOut, NewDevice, PairConfirm, PointerEvent, ScheduleClear,
@@ -30,6 +30,7 @@ from app.services.manager import DeviceManager, ManagerError
 from app.services.scheduler import Scheduler, ScheduleStore
 from app.services.colorcycle import ColorCycle
 from app.services.profiles import ProfileService, ProfileStore
+from app.services.speaker_voice import run_step as run_speaker_step
 from app.services.zeppelin import LAB as LAB_CONTROLS, SpeakerError, ZeppelinClient
 from app.storage.db import Store
 from app.storage.security import AuditStore, TimeStore, TokenRow, TokenStore, UsageStore
@@ -90,6 +91,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.cycle = ColorCycle(lambda: app.state.speaker, store, on_event=lambda msg: audit.add("server", "אוטומטי", "speaker_cycle", msg))
     # Personal profiles: never loaded automatically. While one loads, every other speaker write is refused.
     app.state.profiles = ProfileService(lambda: app.state.speaker, app.state.cycle, store, ProfileStore(*store.connection))
+
+    async def speaker_step(op: str, params: dict) -> str:
+        """One step of the closed voice vocabulary, on whatever speaker is current. Read back inside; raises on failure."""
+        return await run_speaker_step(app.state.speaker, app.state.cycle, app.state.profiles, op, params)
+
+    async def scheduled_speaker_step(op: str, params: dict) -> None:
+        audit.add("server", "אוטומטי", "speaker", f"מתוזמן: {await speaker_step(op, params)}")
+
+    scheduler.speaker_runner = scheduled_speaker_step
 
     if settings.allowed_origins:  # explicit origins only; never "*"
         app.add_middleware(CORSMiddleware, allow_origins=settings.allowed_origins,
@@ -309,7 +319,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @api.post("/intents/parse", response_model=IntentOut)
     async def parse_intent(body: IntentParseRequest) -> IntentOut:
         # Parsing never executes anything; the UI shows the preview and runs each step through /commands or /schedule.
-        return await intents.parse(body.text, body.volume_target)
+        profiles = [(p["id"], p["name"]) for p in app.state.profiles.profiles.list()]  # names only; "פרופיל ערב"
+        return await intents.parse(body.text, body.volume_target, profiles)
 
     @api.get("/schedule", response_model=list[ScheduleOut])
     async def list_schedule() -> list[ScheduleOut]:
@@ -317,7 +328,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @api.post("/schedule", response_model=ScheduleOut, status_code=201)
     async def create_schedule(body: ScheduleCreate, ident: Identity = Depends(auth)) -> ScheduleOut:
-        enforce_schedule(ident, body.action, body.params, body.delay_seconds)
+        if body.target == "speaker":
+            if ident.policy:  # kids-mode codes may not change the speaker, now or later
+                deny(ident, "אין הרשאה לשנות את הרמקול בקוד הזה.")
+            enforce_schedule(ident)
+        else:
+            enforce_schedule(ident, body.action, body.params, body.delay_seconds)
         out = schedules.add(body, time.time())
         if out is None:
             raise ManagerError(ErrorCode.DENIED, "יש יותר מדי פעולות מתוזמנות. בטל חלק מהן.", 429)
@@ -478,6 +494,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         audit.add(ident.ip, ident.name, "speaker", "Loudness " + ("הופעל" if body.enabled else "כובה"))
         return SpeakerState(**await app.state.speaker.state())
 
+    @api.post("/speaker/step", response_model=SpeakerState)
+    async def speaker_voice_step(body: SpeakerStepRequest, ident: Identity = Depends(speaker_writer)) -> SpeakerState:
+        """A voice-command step: a closed list of ops over the verified controls (no paths). Success = read back."""
+        done = await speaker_step(body.op.value, body.params)
+        audit.add(ident.ip, ident.name, "speaker", f"קול: {done}")
+        return SpeakerState(**await app.state.speaker.state())
+
     @api.get("/speaker/bluetooth", response_model=SpeakerBluetooth)
     async def speaker_bluetooth() -> SpeakerBluetooth:
         return SpeakerBluetooth(**await app.state.speaker.bluetooth())  # read only
@@ -488,6 +511,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         out = await app.state.speaker.open_pairing()  # success only when the speaker reports discoverable=true
         if out["sent"]:
             audit.add(ident.ip, ident.name, "speaker", "מצב צימוד Bluetooth נפתח")
+        return SpeakerBluetooth(**out)
+
+    @api.post("/speaker/bluetooth/unpair", response_model=SpeakerBluetooth)
+    async def speaker_unpair(body: SpeakerUnpair, ident: Identity = Depends(speaker_writer)) -> SpeakerBluetooth:
+        """Unpair one paired device (opaque id from GET /speaker/bluetooth) through the speaker's own Unpair action;
+        success only once the speaker no longer lists it as paired."""
+        out = await app.state.speaker.unpair(body.id)
+        audit.add(ident.ip, ident.name, "speaker", f"בוטל צימוד Bluetooth: {out['unpaired']}")
         return SpeakerBluetooth(**out)
 
     @api.get("/speaker/standby", response_model=SpeakerStandby)

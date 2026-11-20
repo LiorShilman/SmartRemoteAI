@@ -12,8 +12,12 @@ every write is followed by a read-back, and success is reported only when the sp
 from __future__ import annotations
 
 import asyncio
+import hashlib
+import hmac
 import json
 import math
+import re
+import secrets
 from dataclasses import dataclass
 from typing import Any
 
@@ -75,6 +79,15 @@ LAB: dict[str, Control] = {
 BT_STATE = Control("bluetooth:state", "bluetoothState")
 BT_PAIRING_ACTION = "bluetooth:deviceList/discoverable"
 BT_CONFIRM_S = 3.0  # how long to wait for the speaker to report that it became visible
+BT_PAIRING_TIMEOUT = Control("settings:/bluetooth/bluetoothPairingTimeout", "i32_")  # read only (300 s seen)
+# Paired devices, as the speaker's own menu lists them (ui:/bluetooth): a header row per section, then one container per
+# device "bluetooth:devices/<address>/sectionN". section1 = "Inputs", section2 = "Speakers" (both paired);
+# section3 = "New devices" (seen nearby, NOT paired) is ignored. Unpair = the device container's own "Unpair" action
+# row, used exactly as the speaker lists it; verified 2026-11-16 (one user-approved unpair: the device left the menu).
+BT_MENU = "ui:/bluetooth"
+BT_PAIRED_SECTIONS = {"section1": "input", "section2": "speaker"}
+_BT_DEVICE = re.compile(r"^bluetooth:devices/([0-9A-Za-z_:]{1,40})/(section\d+)$")
+BT_UNPAIR_CONFIRM_S = 3.0
 # Standby timeout: the value the speaker's own menu shows as "Standby Timeout" (ui:/settings/powerManagement/idleTime).
 # A write is accepted only if it is one of the options the speaker lists under its enumPath, read fresh each time.
 # Verified 2026-11-16: 1200 -> 1800 written and read back, then restored to 1200.
@@ -187,6 +200,23 @@ def _gains(v: Any) -> list[dict]:
     return out
 
 
+# Power state, read only. With network standby the speaker keeps answering on the network while "off", so
+# "reachable" alone cannot tell on from off. Seen on the real speaker: {"powerTarget": {"target": "networkStandby",
+# "reason": "idleTimer", ...}, "type": "powerTarget"}; "online" when playing / awake.
+POWER_PATH = "powermanager:target"
+_WORD = re.compile(r"^[A-Za-z]{1,32}$")
+
+
+def _power(body: Any) -> tuple[str | None, str | None]:
+    """(target, reason) from a powerTarget reply; None for anything not in the expected shape."""
+    v = body[0] if isinstance(body, list) and body else body
+    t = v.get("powerTarget") if isinstance(v, dict) else None
+    if not isinstance(t, dict):
+        return None, None
+    word = lambda x: x if isinstance(x, str) and _WORD.match(x) else None  # noqa: E731
+    return word(t.get("target")), word(t.get("reason"))
+
+
 def on_step(value: float, lo: float, hi: float, step: float) -> bool:
     """value is inside [lo, hi] and lands on lo + k*step (with float tolerance)."""
     if not (lo - 1e-9 <= value <= hi + 1e-9):
@@ -211,6 +241,7 @@ class ZeppelinClient:
         self.host = host
         self._http = httpx.AsyncClient(timeout=TIMEOUT_S, transport=transport, follow_redirects=False)
         self._lock = asyncio.Lock()  # one request at a time: a write and its read-back never interleave with others
+        self._id_key = secrets.token_bytes(16)  # opaque device ids: the Bluetooth address never leaves the server
 
     async def aclose(self) -> None:
         await self._http.aclose()
@@ -274,6 +305,13 @@ class ZeppelinClient:
                         if rest not in out:
                             out[rest] = None
                     break
+        out["power"], out["power_reason"] = None, None
+        if out["reachable"]:
+            try:
+                async with self._lock:
+                    out["power"], out["power_reason"] = _power(await self._call("getData", {"path": POWER_PATH, "roles": "value"}))
+            except SpeakerError as e:
+                out["errors"]["power"] = e.message
         return out
 
     async def _set_and_read(self, control: Control, value: Any) -> Any:
@@ -311,9 +349,64 @@ class ZeppelinClient:
                 "connected_device": str(dev.get("name") or "") if isinstance(dev, dict) else None,
                 "paired": [str(d.get("name") or "") for d in st.get("pairedDevices") or [] if isinstance(d, dict)]}
 
+    def _dev_id(self, address: str) -> str:
+        return hmac.new(self._id_key, address.encode(), hashlib.sha256).hexdigest()[:12]
+
+    async def _bt_devices(self) -> list[dict]:
+        """Paired devices from the speaker's menu: [{id, name, roles, _address, _container}] (underscored = server only)."""
+        out: dict[str, dict] = {}
+        for title, _value, path, kind, _disabled in await self._rows(BT_MENU):
+            m = _BT_DEVICE.match(path) if kind == "container" and isinstance(path, str) else None
+            role = BT_PAIRED_SECTIONS.get(m.group(2)) if m else None
+            if not role:
+                continue
+            d = out.setdefault(m.group(1), {"id": self._dev_id(m.group(1)), "name": str(title or ""), "roles": [],
+                                            "_address": m.group(1), "_container": path})
+            if role not in d["roles"]:
+                d["roles"].append(role)
+        return list(out.values())
+
+    async def _bt_full(self) -> dict:
+        """Bluetooth state plus the paired list and pairing window; the extras are optional (None when unreadable)."""
+        st = await self._bt()
+        try:
+            st["devices"] = [{k: v for k, v in d.items() if not k.startswith("_")} for d in await self._bt_devices()]
+        except SpeakerError:
+            st["devices"] = None
+        try:
+            t = await self._read(BT_PAIRING_TIMEOUT)
+            st["pairing_seconds"] = t if isinstance(t, int) and not isinstance(t, bool) and 0 < t <= 3600 else None
+        except SpeakerError:
+            st["pairing_seconds"] = None
+        return st
+
     async def bluetooth(self) -> dict:
         async with self._lock:
-            return await self._bt()
+            return await self._bt_full()
+
+    async def unpair(self, device_id: str) -> dict:
+        """Unpair one paired device, by its opaque id from the list just read. Success only once the device is gone from
+        the speaker's paired sections. Returns the Bluetooth state afterwards plus the name that was unpaired."""
+        async with self._lock:
+            dev = next((d for d in await self._bt_devices() if d["id"] == device_id), None)
+            if dev is None:
+                raise SpeakerError(ErrorCode.INVALID_COMMAND, "המכשיר לא נמצא ברשימת המצומדים של הרמקול. רענן ונסה שוב.", 404)
+            prefix = f"bluetooth:devices/{dev['_address']}/"
+            acts = [r for r in await self._rows(dev["_container"])
+                    if r[3] == "action" and r[2] == prefix + "unpair" and r[4] is not True]
+            if len(acts) != 1:
+                raise SpeakerError(ErrorCode.UNSUPPORTED, "הרמקול לא מציע ביטול צימוד למכשיר הזה.", 502)
+            await self._activate(acts[0][2])
+            waited = 0.0
+            while True:
+                gone = all(d["id"] != device_id for d in await self._bt_devices())
+                if gone or waited >= BT_UNPAIR_CONFIRM_S:
+                    break
+                await asyncio.sleep(0.5)
+                waited += 0.5
+            if not gone:
+                raise SpeakerError(ErrorCode.DENIED, "הרמקול קיבל את הבקשה, אבל המכשיר עדיין מופיע כמצומד.", 502)
+            return {**await self._bt_full(), "unpaired": dev["name"]}
 
     async def open_pairing(self) -> dict:
         """Make the speaker visible for pairing. Already visible: nothing is sent (a second activation is not verified).
@@ -321,7 +414,7 @@ class ZeppelinClient:
         async with self._lock:
             before = await self._bt()
             if before["discoverable"]:
-                return {**before, "sent": False}
+                return {**await self._bt_full(), "sent": False}
             await self._activate(BT_PAIRING_ACTION)
             waited = 0.0
             while True:
@@ -330,6 +423,8 @@ class ZeppelinClient:
                     break
                 await asyncio.sleep(0.5)
                 waited += 0.5
+            if now["discoverable"]:
+                now = await self._bt_full()
         if not now["discoverable"]:
             raise SpeakerError(ErrorCode.DENIED, "הרמקול קיבל את הבקשה, אבל לא דיווח שנכנס למצב צימוד.", 502)
         return {**now, "sent": True}

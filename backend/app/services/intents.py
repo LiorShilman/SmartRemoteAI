@@ -21,6 +21,8 @@ from pydantic import BaseModel
 from app.models.schemas import (
     MAX_SCHEDULE_S, Action, IntentOut, IntentStepOut, check_kind, check_params,
 )
+from app.services import speaker_voice as sv
+from app.services.speaker_voice import SpeakerOp
 
 log = logging.getLogger("smart_remote.intents")
 
@@ -47,6 +49,20 @@ def _label(target: str, action: str, p: dict) -> str:
         "search": f"{who}: חיפוש ב-{str(p.get('app', '')).capitalize()}: {p.get('query')}",
         "text": f"{who}: הקלדה",
     }.get(action, f"{who}: {action}")
+
+
+def _speaker_step(op: SpeakerOp, params: dict, delay_s: int, profile_name: str | None = None) -> IntentStepOut | None:
+    """The gate for speaker steps: the same validation the endpoint and the scheduler apply."""
+    try:
+        sv.check_speaker(op, params)
+    except ValueError:
+        return None
+    if not 0 <= delay_s <= MAX_SCHEDULE_S:
+        return None
+    label = sv.label(op, params, profile_name)
+    if delay_s:
+        label += f" (בעוד {_fmt_delay(delay_s)})"
+    return IntentStepOut(target="speaker", action=op, params=params, label=label, delay_seconds=delay_s)
 
 
 def _step(target: str, action: str, params: dict, delay_s: int = 0) -> IntentStepOut | None:
@@ -85,16 +101,76 @@ def _delay_seconds(q: str) -> int:
     return int(n) * (3600 if unit.startswith("שע") else 60)
 
 
+Profiles = list[tuple[str, str]]  # (id, name) of the saved speaker profiles
+
+
 class IntentProvider(Protocol):
     name: str
 
-    async def parse(self, text: str, volume_target: str) -> IntentOut: ...
+    async def parse(self, text: str, volume_target: str, profiles: Profiles | None = None) -> IntentOut: ...
+
+
+# ---- speaker grammar. Volume and mute go to the speaker only when the sentence names it ("ברמקול"); light, colour,
+# bass, treble and profiles exist only on the speaker, so they need no "רמקול".
+SPK = re.compile(r"(?:^|\s)(?:את\s+)?(?:של\s+)?(?:ב-?|ל-?)?ה?(?:רמקול|זפלין)(?=\s|$)")
+UP = r"(?:תגביר|הגבר|תעלה|העלה|תוסיף|הוסף|יותר)"
+DOWN = r"(?:תנמיך|הנמך|תוריד|הורד|פחות|תפחית|הפחת)"
+BY = r"(?:\s+ב-?\s*(\d{1,2}))?"
+VOL = r"(?:\s+(?:את\s+)?ה?(?:עוצמה|ווליום))?"
+COLOR_RE = "|".join(sv.COLORS)
+CYC = r"(?:מחזור ה?צבעים|החלפת ה?צבעים(?: ה?אוטומטית)?|ה?צבעים מתחלפים)"
+
+
+def _num(s: str | None, default: int) -> int:
+    return int(s) if s else default
+
+
+def _speaker_one(t: str, delay: int, profiles: Profiles) -> IntentStepOut | None:
+    spk = bool(SPK.search(t))
+    t = re.sub(r"\s+", " ", SPK.sub(" ", t)).strip()
+    if spk:
+        if (m := re.match(r"^(?:תשים\s+|שים\s+|קבע\s+)?(?:עוצמה|ווליום|וליום|עוצמת שמע)\s*(?:על|ל-?)?\s*(\d{1,2})$", t)):
+            return _speaker_step(SpeakerOp.VOLUME, {"value": int(m.group(1))}, delay)
+        if (m := re.match(rf"^(?:{UP}{VOL}|יותר חזק|חזק יותר){BY}$", t)):
+            return _speaker_step(SpeakerOp.VOLUME, {"delta": _num(m.group(1), sv.VOLUME_STEP)}, delay)
+        if (m := re.match(rf"^(?:{DOWN}{VOL}|יותר חלש|חלש יותר|יותר שקט){BY}$", t)):
+            return _speaker_step(SpeakerOp.VOLUME, {"delta": -_num(m.group(1), sv.VOLUME_STEP)}, delay)
+        if re.match(r"^(?:תשתיק|השתק|שתק|מיוט|mute)$", t):
+            return _speaker_step(SpeakerOp.MUTE, {"enabled": True}, delay)
+        if re.match(r"^(?:בטל השתקה|תבטל השתקה|בטל מיוט|החזר קול|תחזיר קול|תחזיר את הקול|החזר את הקול|unmute)$", t):
+            return _speaker_step(SpeakerOp.MUTE, {"enabled": False}, delay)
+    for op, words in ((SpeakerOp.BASS, r"(?:בס|באס|בסים)"), (SpeakerOp.TREBLE, r"(?:טרבל|טרבלים|גבוהים)")):
+        if (m := re.match(rf"^{words}\s*(?:על|ל-?)?\s*(מינוס\s*|-)?(\d{{1,2}})$", t)):
+            return _speaker_step(op, {"value": int(m.group(2)) * (-1 if m.group(1) else 1)}, delay)
+        if (m := re.match(rf"^{UP}\s+(?:את\s+)?ה?{words}{BY}$", t)):
+            return _speaker_step(op, {"delta": _num(m.group(1), sv.TONE_STEP_DB)}, delay)
+        if (m := re.match(rf"^{DOWN}\s+(?:את\s+)?ה?{words}{BY}$", t)):
+            return _speaker_step(op, {"delta": -_num(m.group(1), sv.TONE_STEP_DB)}, delay)
+    if re.match(r"^(?:הדלק|תדליק|הפעל|תפעיל)\s+(?:את\s+)?ה?(?:אור|תאורה)$", t):
+        return _speaker_step(SpeakerOp.LIGHT, {"enabled": True}, delay)
+    if re.match(r"^(?:כבה|תכבה)\s+(?:את\s+)?ה?(?:אור|תאורה)$", t):
+        return _speaker_step(SpeakerOp.LIGHT, {"enabled": False}, delay)
+    if (m := re.match(r"^(?:בהירות|עוצמת ה?(?:אור|תאורה))\s*(?:על|ל-?)?\s*(\d{1,3})\s*(?:%|אחוז)?$", t)):
+        return _speaker_step(SpeakerOp.BRIGHTNESS, {"value": int(m.group(1))}, delay)
+    if (m := re.match(rf"^(?:(?:שים|תשים|שנה|תשנה|החלף|תחליף)\s+(?:את\s+)?ה?(?:אור|תאורה|צבע)\s+(?:ל-?)?|(?:אור|תאורה|צבע)\s+)({COLOR_RE})$", t)):
+        return _speaker_step(SpeakerOp.COLOR, {"color": m.group(1)}, delay)
+    if re.match(rf"^(?:(?:הפעל|תפעיל|התחל|תתחיל)\s+(?:את\s+)?ה?)?{CYC}$", t):
+        return _speaker_step(SpeakerOp.CYCLE, {"enabled": True}, delay)
+    if re.match(rf"^(?:עצור|תעצור|הפסק|תפסיק|כבה|תכבה)\s+(?:את\s+)?ה?{CYC}$", t):
+        return _speaker_step(SpeakerOp.CYCLE, {"enabled": False}, delay)
+    if (m := re.match(r"^(?:(?:טען|תטען|הפעל|תפעיל|שים|תשים)\s+(?:את\s+)?ה?)?פרופיל\s+(.+)$", t)):
+        want = _norm(m.group(1))
+        for pid, name in profiles:
+            if _norm(name) == want:
+                return _speaker_step(SpeakerOp.PROFILE, {"id": pid}, delay, name)
+    return None
 
 
 class RuleBasedIntentProvider:
     name = "rules"
 
-    async def parse(self, text: str, volume_target: str = "lg") -> IntentOut:
+    async def parse(self, text: str, volume_target: str = "lg", profiles: Profiles | None = None) -> IntentOut:
+        profiles = profiles or []
         steps: list[IntentStepOut] = []
         unrecognized: list[str] = []
         for part in (p.strip() for p in SPLIT.split(text)):
@@ -104,14 +180,23 @@ class RuleBasedIntentProvider:
             if (m := DELAY.search(_norm(part))):
                 delay = _delay_seconds(m.group("q"))
                 rest = (_norm(part)[:m.start()] + " " + _norm(part)[m.end():]).strip()
-            step = self._one(rest, volume_target, delay)
+            step = self._any(rest, volume_target, delay, profiles)
             if step is None and _norm(rest).startswith("ו"):  # "ותנמיך" = "and lower it"
-                step = self._one(_norm(rest)[1:], volume_target, delay)
+                step = self._any(_norm(rest)[1:], volume_target, delay, profiles)
             if step:
                 steps.append(step)
             else:
                 unrecognized.append(part)
         return IntentOut(steps=steps, unrecognized=unrecognized, provider=self.name)
+
+    def _any(self, raw: str, vt: str, delay: int, profiles: Profiles) -> IntentStepOut | None:
+        t = _norm(raw)
+        if not t:
+            return None
+        step = _speaker_one(t, delay, profiles)
+        if step is None and SPK.search(t):
+            return None  # names the speaker but is not a speaker command: never send it to the TV instead
+        return step or self._one(raw, vt, delay)
 
     @staticmethod
     def _one(raw: str, vt: str, delay: int) -> IntentStepOut | None:
@@ -207,9 +292,14 @@ class LLMIntentProvider:
         self._calls.append(now)
         return True
 
-    async def parse(self, text: str, volume_target: str = "lg") -> IntentOut:
+    async def parse(self, text: str, volume_target: str = "lg", profiles: Profiles | None = None) -> IntentOut:
+        # The model does not know the speaker vocabulary yet: a sentence the rules fully understand and that
+        # includes a speaker step is answered by the rules, without a model call.
+        ruled = await self.fallback.parse(text, volume_target, profiles)
+        if not ruled.unrecognized and any(s.target == "speaker" for s in ruled.steps):
+            return ruled
         if not self._budget_ok():
-            return await self.fallback.parse(text, volume_target)
+            return ruled
         try:
             resp = await self._client.messages.parse(
                 model=self.model, max_tokens=1500,
@@ -223,7 +313,7 @@ class LLMIntentProvider:
             out: LlmOut = resp.parsed_output
         except Exception as e:  # noqa: BLE001 - any provider failure degrades to the rule-based parser
             log.warning("LLM intent parse failed (%s); using rules", type(e).__name__)
-            return await self.fallback.parse(text, volume_target)
+            return ruled
 
         steps: list[IntentStepOut] = []
         unrecognized = [u for u in out.unrecognized if isinstance(u, str)][:10]
@@ -235,7 +325,7 @@ class LLMIntentProvider:
             else:
                 unrecognized.append(f"{s.action} {params}")  # rejected by the allowlist; shown, never run
         if not steps and not unrecognized:
-            return await self.fallback.parse(text, volume_target)
+            return ruled
         return IntentOut(steps=steps, unrecognized=unrecognized, provider=self.name)
 
 

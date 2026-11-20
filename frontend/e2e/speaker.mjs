@@ -24,7 +24,10 @@ const sources = { sources: [
   { id: 'spdif', title: 'SPDIF', active: false, plugged: false, available: false },
   { id: 'airplay', title: 'AirPlay', active: true, plugged: true, available: true },
   { id: 'bluetooth', title: 'Bluetooth', active: false, plugged: false, available: false }] }
-let bt = { name: 'Living Room', discoverable: false, pairable: false, connected_device: 'POCO X7 Pro', paired: ['POCO X7 Pro', 'POCO X7 Pro', 'DESKTOP-TM1E1QQ'], sent: null }
+let bt = { name: 'Living Room', discoverable: false, pairable: false, connected_device: 'POCO X7 Pro', paired: ['POCO X7 Pro', 'POCO X7 Pro', 'DESKTOP-TM1E1QQ'], sent: null,
+  pairing_seconds: 300,
+  devices: [{ id: 'a1b2c3d4e5f6', name: 'DESKTOP-TM1E1QQ', roles: ['input', 'speaker'] }, { id: '0123456789ab', name: 'LG TV[TV]', roles: ['input'] },
+    { id: 'abcdef012345', name: 'POCO X7 Pro', roles: ['input'] }] }
 await page.route('**/api/**', async (route) => {
   const req = route.request()
   const path = new URL(req.url()).pathname.replace(/^.*\/api/, '/api')
@@ -55,6 +58,13 @@ await page.route('**/api/**', async (route) => {
     return json(standby)
   }
   if (path === '/api/speaker/bluetooth') return json(bt)
+  if (path === '/api/speaker/bluetooth/unpair') {
+    const body = JSON.parse(req.postData() || '{}')
+    writes.push({ path, body })
+    const d = bt.devices.find((x) => x.id === body.id)
+    bt = { ...bt, devices: bt.devices.filter((x) => x.id !== body.id) }
+    return json({ ...bt, unpaired: d?.name ?? null })
+  }
   if (path === '/api/speaker/bluetooth/pairing') {
     writes.push({ path, body: null })
     if (bt.discoverable) return json({ ...bt, sent: false })
@@ -89,7 +99,7 @@ await page.goto(base + '/', { waitUntil: 'networkidle' })
 
 // 1. Loading the screen reads the speaker and writes nothing.
 await page.getByText('Bowers & Wilkins Zeppelin').waitFor({ timeout: 10000 }).catch(() => fail('speaker card missing'))
-await page.locator('section', { hasText: 'Bowers & Wilkins Zeppelin' }).getByText('מחובר', { exact: true }).waitFor({ timeout: 8000 }).catch(() => fail('connected chip missing'))
+await page.locator('section', { hasText: 'Bowers & Wilkins Zeppelin' }).locator('.chip').filter({ hasText: /^מחובר$/ }).first().waitFor({ timeout: 8000 }).catch(() => fail('connected chip missing'))
 await page.waitForTimeout(2500)
 if (writes.length) fail(`writes on load: ${JSON.stringify(writes)}`)
 if ((await page.getByRole('slider', { name: 'עוצמה' }).inputValue()) !== '23') fail('volume not shown from the speaker state')
@@ -209,7 +219,25 @@ await page.getByRole('button', { name: 'פתח מצב צימוד Bluetooth' }).c
 await page.getByText('גלוי לצימוד בשם').waitFor({ timeout: 3000 }).catch(() => fail('visible state not shown after the speaker confirmed'))
 if (writes.length !== 1 || writes[0].path !== '/api/speaker/bluetooth/pairing') fail(`pairing writes: ${JSON.stringify(writes)}`)
 if (await page.getByRole('button', { name: 'פתח מצב צימוד Bluetooth' }).count()) fail('pairing button still offered while visible')
+// countdown from the speaker's own pairing timeout (we opened it, so the start is known)
+await page.getByText(/ייסגר בעוד/).waitFor({ timeout: 3000 }).catch(() => fail('pairing countdown missing'))
+if (!(await page.getByText(/^4:5\d$|^5:00$/).count())) fail('countdown does not start near 5:00')
+// the speaker closes pairing by itself -> a clear "closed" note and the button is back
 bt = { ...bt, discoverable: false, pairable: false }
+await page.getByText('חלון הצימוד נסגר').waitFor({ timeout: 6000 }).catch(() => fail('pairing closed note missing'))
+await page.getByRole('button', { name: 'פתח מצב צימוד Bluetooth' }).waitFor({ timeout: 3000 }).catch(() => fail('pairing button not back after close'))
+writes.length = 0
+
+// Unpair: the list is the speaker's own; nothing is sent on the first press, only on the confirming one.
+await page.getByRole('list', { name: 'מכשירים מצומדים' }).waitFor({ timeout: 3000 }).catch(() => fail('paired list missing'))
+await page.getByRole('button', { name: 'בטל צימוד של LG TV[TV]' }).click()
+await page.getByRole('button', { name: 'השאר מצומד' }).click()
+if (writes.length) fail(`unpair sent without confirmation: ${JSON.stringify(writes)}`)
+await page.getByRole('button', { name: 'בטל צימוד של LG TV[TV]' }).click()
+await page.getByRole('button', { name: 'אשר ביטול צימוד של LG TV[TV]' }).click()
+await page.getByText('בוטל הצימוד של LG TV[TV]').waitFor({ timeout: 3000 }).catch(() => fail('unpair toast missing'))
+if (writes.length !== 1 || writes[0].path !== '/api/speaker/bluetooth/unpair' || writes[0].body.id !== '0123456789ab') fail(`unpair writes: ${JSON.stringify(writes)}`)
+if (await page.getByRole('list', { name: 'מכשירים מצומדים' }).getByText('LG TV[TV]').count()) fail('unpaired device still listed')
 writes.length = 0
 
 // 4f. Automatic colour cycling: settings saved on the server, explicit start/stop, refused with the light off,
@@ -256,6 +284,17 @@ await page.getByRole('button', { name: 'הגבר גבוהים' }).click()
 await page.getByText('הרמקול החזיר שגיאה: Invalid value').waitFor({ timeout: 5000 }).catch(() => fail('speaker error not shown'))
 if (await page.getByText(/^גבוהים: /).count()) fail('success shown for a failed write')
 if (writes.length !== 1 || writes[0].body.value !== 5.5) fail(`treble write: ${JSON.stringify(writes)}`)
+
+// 5b. Standby: the speaker still answers, but reports it is off. Shown clearly, nothing written.
+writes.length = 0
+speaker = { ...speaker, power: 'networkStandby', power_reason: 'idleTimer' }
+await page.getByRole('button', { name: 'רענן את מצב הרמקול' }).click()
+await page.getByText('הרמקול כבוי (מצב המתנה)').waitFor({ timeout: 5000 }).catch(() => fail('standby not shown'))
+if (!(await page.getByText('כבה לבד אחרי זמן ללא השמעה').count())) fail('standby reason not shown')
+if (writes.length) fail('wrote while showing standby')
+speaker = { ...speaker, power: 'online', power_reason: 'none' }
+await page.getByRole('button', { name: 'רענן את מצב הרמקול' }).click()
+await page.getByText('הרמקול כבוי (מצב המתנה)').waitFor({ state: 'detached', timeout: 5000 }).catch(() => fail('standby notice stayed after waking'))
 
 // 6. Speaker unreachable: clear message, controls hidden, nothing written.
 writes.length = 0

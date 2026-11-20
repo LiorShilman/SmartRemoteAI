@@ -1,4 +1,4 @@
-import type { Command, DeviceKind } from '../types'
+import type { Command, DeviceKind, StepCommand } from '../types'
 
 export interface ParsedStep {
   command: Command
@@ -94,6 +94,6 @@ export function parseIntent(text: string, opts: Options): ParseResult {
 }
 
 /** Commands that cut power or are otherwise surprising must be confirmed explicitly. */
-export function needsConfirmation(c: Command): boolean {
+export function needsConfirmation(c: StepCommand): boolean {
   return c.action === 'power_off'
 }

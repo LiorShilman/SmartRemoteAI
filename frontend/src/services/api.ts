@@ -1,4 +1,4 @@
-import type { AuditEntry, CycleConfig, CycleState, EqState, LoadResult, ProfilesState, LabControl, Policy, Rgb, SpeakerBluetooth, SpeakerLab, SpeakerSources, SpeakerStandby, SpeakerState, TimeRequest, Usage, Command, CommandOutcome, Device, DeviceKind, ErrorCode, IntentResult, Me, Role, Schedule, TokenCreated, TokenInfo } from '../types'
+import type { AuditEntry, CycleConfig, CycleState, EqState, LoadResult, ProfilesState, LabControl, Policy, Rgb, SpeakerBluetooth, SpeakerLab, SpeakerSources, SpeakerStandby, SpeakerState, SpeakerOp, StepCommand, TimeRequest, Usage, Command, CommandOutcome, Device, DeviceKind, ErrorCode, IntentResult, Me, Role, Schedule, TokenCreated, TokenInfo } from '../types'
 
 export const ERROR_TEXT: Record<ErrorCode, string> = {
   NOT_PAIRED: 'המכשיר עדיין לא מצומד. צמד אותו במסך ההגדרות.',
@@ -95,7 +95,7 @@ export const api = {
   parseIntent: (token: string, text: string, volumeTarget: DeviceKind) =>
     request<IntentResult>('/api/intents/parse', token, { method: 'POST', body: JSON.stringify({ text, volume_target: volumeTarget }) }),
   schedules: (token: string) => request<Schedule[]>('/api/schedule', token),
-  schedule: (token: string, c: Command, delaySeconds: number, label: string) =>
+  schedule: (token: string, c: StepCommand, delaySeconds: number, label: string) =>
     request<Schedule>('/api/schedule', token, {
       method: 'POST',
       body: JSON.stringify({ target: c.target, action: c.action, params: c.params ?? {}, delay_seconds: delaySeconds, label }),
@@ -149,6 +149,12 @@ export const api = {
   speakerBluetooth: (token: string) => request<SpeakerBluetooth>('/api/speaker/bluetooth', token),
   /** Opens pairing; resolves only once the speaker reports it is visible. Already visible: nothing is sent. */
   speakerPairing: (token: string) => request<SpeakerBluetooth>('/api/speaker/bluetooth/pairing', token, { method: 'POST' }),
+  /** One paired device, by its opaque id; resolves only once the speaker no longer lists it as paired. */
+  speakerUnpair: (token: string, id: string) =>
+    request<SpeakerBluetooth>('/api/speaker/bluetooth/unpair', token, { method: 'POST', body: JSON.stringify({ id }) }),
+  /** One voice step (closed list, validated on the server); resolves after the speaker reported the new value. */
+  speakerStep: (token: string, op: SpeakerOp, params: Record<string, string | number | boolean>) =>
+    request<SpeakerState>('/api/speaker/step', token, { method: 'POST', body: JSON.stringify({ op, params }) }),
   speakerMute: (token: string, enabled: boolean) =>
     request<SpeakerState>('/api/speaker/mute', token, { method: 'POST', body: JSON.stringify({ enabled }) }),
   speakerRgb: (token: string, c: Rgb) =>

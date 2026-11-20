@@ -9,8 +9,10 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.models.policy import Policy
+from app.services.speaker_voice import SpeakerOp, check_speaker
 
 DeviceKind = Literal["hot", "lg"]
+StepTarget = Literal["hot", "lg", "speaker"]  # voice steps and schedules may also address the speaker
 Connection = Literal["connected", "disconnected", "unpaired"]
 Role = Literal["tv", "box"]
 CapabilityState = Literal["unknown", "supported", "unsupported"]
@@ -194,8 +196,8 @@ class IntentParseRequest(BaseModel):
 
 
 class IntentStepOut(BaseModel):
-    target: DeviceKind
-    action: Action
+    target: StepTarget
+    action: Action | SpeakerOp
     params: dict[str, str | int | bool] = Field(default_factory=dict)
     label: str
     delay_seconds: int = 0  # >0 means "schedule on the server", never a browser timer
@@ -209,14 +211,19 @@ class IntentOut(BaseModel):
 
 class ScheduleCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    target: DeviceKind
-    action: Action
+    target: StepTarget
+    action: Action | SpeakerOp
     params: dict[str, str | int | bool] = Field(default_factory=dict)
     delay_seconds: int = Field(ge=1, le=MAX_SCHEDULE_S)
     label: str = Field(default="", max_length=120)
 
     @model_validator(mode="after")
     def _check(self) -> ScheduleCreate:
+        if (self.target == "speaker") != isinstance(self.action, SpeakerOp):
+            raise ValueError("speaker steps go to the speaker only")
+        if isinstance(self.action, SpeakerOp):
+            check_speaker(self.action, self.params)
+            return self
         check_params(self.action, self.params)
         if (e := check_kind(self.target, self.action, self.params)):
             raise ValueError(e)
@@ -233,8 +240,8 @@ class ScheduleClear(BaseModel):
 class ScheduleOut(BaseModel):
     id: str
     run_at: float
-    target: DeviceKind
-    action: Action
+    target: StepTarget
+    action: Action | SpeakerOp
     params: dict[str, str | int | bool]
     label: str
     status: Literal["pending", "done", "failed", "missed", "cancelled"]
@@ -448,13 +455,39 @@ class SpeakerSources(BaseModel):
     sources: list[SpeakerSource]
 
 
+class SpeakerBtDevice(BaseModel):
+    id: str                        # opaque, server-made; the Bluetooth address is never sent to the browser
+    name: str
+    roles: list[Literal["input", "speaker"]]
+
+
 class SpeakerBluetooth(BaseModel):
     name: str                      # the name phones see ("Living Room")
     discoverable: bool             # visible / accepting a new pairing right now
     pairable: bool
     connected_device: str | None = None
     paired: list[str] = []
+    devices: list[SpeakerBtDevice] | None = None  # paired devices as the speaker's own menu lists them; None = unreadable
+    pairing_seconds: int | None = None            # how long the speaker keeps pairing open (its own setting, read only)
     sent: bool | None = None       # pairing request only: False = was already visible, nothing sent
+    unpaired: str | None = None    # unpair request only: the name of the device that was removed
+
+
+class SpeakerStepRequest(BaseModel):
+    """One step of the closed voice vocabulary (see services/speaker_voice). No paths, no raw values beyond its ranges."""
+    model_config = ConfigDict(extra="forbid")
+    op: SpeakerOp
+    params: dict[str, str | int | bool] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def _check(self) -> SpeakerStepRequest:
+        check_speaker(self.op, self.params)
+        return self
+
+
+class SpeakerUnpair(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    id: str = Field(pattern=r"^[0-9a-f]{12}$")
 
 
 class SpeakerState(BaseModel):
@@ -469,6 +502,8 @@ class SpeakerState(BaseModel):
     mute: bool | None = None
     loudness: bool | None = None
     balance: float | None = None
+    power: str | None = None         # read only, as reported: "online", "networkStandby", ...
+    power_reason: str | None = None  # e.g. "idleTimer" (the automatic standby)
     errors: dict[str, str] = Field(default_factory=dict)  # per control, when that one could not be read
 
 

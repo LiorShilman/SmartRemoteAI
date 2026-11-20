@@ -12,6 +12,7 @@ import sqlite3
 import threading
 import time
 import uuid
+from collections.abc import Awaitable, Callable
 
 from app.models.schemas import ScheduleCreate, ScheduleOut
 from app.services.manager import DeviceManager, ManagerError
@@ -89,6 +90,8 @@ class Scheduler:
     def __init__(self, store: ScheduleStore, manager: DeviceManager):
         self.store, self.manager = store, manager
         self._task: asyncio.Task | None = None
+        # set by the app: runs one validated speaker step (services/speaker_voice.run_step) on the current speaker
+        self.speaker_runner: Callable[[str, dict], Awaitable[object]] | None = None
 
     async def start(self) -> None:
         self._task = asyncio.create_task(self._loop())
@@ -114,9 +117,18 @@ class Scheduler:
             if not self.store.set_status(s.id, "done", only_if="pending"):  # claim it; cancelled meanwhile -> skip
                 continue
             try:
-                await self.manager.send_to_kind(s.target, s.action.value, s.params)
+                if s.target == "speaker":
+                    if self.speaker_runner is None:
+                        raise RuntimeError("no speaker runner")
+                    await self.speaker_runner(s.action.value, s.params)
+                else:
+                    await self.manager.send_to_kind(s.target, s.action.value, s.params)
             except ManagerError as e:
                 self.store.set_status(s.id, "failed", e.message)
             except Exception as e:  # noqa: BLE001
+                msg = getattr(e, "message", None)
+                if isinstance(msg, str):  # SpeakerError: the speaker's own reason (refused, unchanged, unreachable)
+                    self.store.set_status(s.id, "failed", msg)
+                    continue
                 log.warning("scheduled %s failed: %r", s.id, e)
                 self.store.set_status(s.id, "failed", "הפעולה המתוזמנת נכשלה.")

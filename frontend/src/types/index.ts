@@ -45,9 +45,21 @@ export type CommandOutcome =
   | { ok: true; status: 'sent' | 'simulated' }
   | { ok: false; code: ErrorCode; message: string }
 
+/** Voice / schedule steps for the speaker: a closed list the server validates (no paths, no raw values). */
+export type SpeakerOp =
+  | 'speaker_volume' | 'speaker_mute' | 'speaker_bass' | 'speaker_treble' | 'speaker_light'
+  | 'speaker_brightness' | 'speaker_color' | 'speaker_cycle' | 'speaker_profile'
+export interface SpeakerCommand {
+  target: 'speaker'
+  action: SpeakerOp
+  params?: Record<string, string | number | boolean>
+}
+/** What a voice step or a schedule can run: a device command, or a speaker step. */
+export type StepCommand = Command | SpeakerCommand
+
 export interface IntentStep {
-  target: DeviceKind
-  action: CommandAction
+  target: DeviceKind | 'speaker'
+  action: CommandAction | SpeakerOp
   params: Record<string, string | number | boolean>
   label: string
   /** >0: run later, scheduled on the server (never a browser timer). */
@@ -62,8 +74,8 @@ export interface IntentResult {
 export interface Schedule {
   id: string
   run_at: number
-  target: DeviceKind
-  action: CommandAction
+  target: DeviceKind | 'speaker'
+  action: CommandAction | SpeakerOp
   params: Record<string, string | number | boolean>
   label: string
   status: 'pending' | 'done' | 'failed' | 'missed' | 'cancelled'
@@ -136,8 +148,14 @@ export interface SpeakerBluetooth {
   pairable: boolean
   connected_device: string | null
   paired: string[]
+  /** Paired devices as the speaker's own menu lists them (null/absent = unreadable). Ids are opaque, never addresses. */
+  devices?: SpeakerBtDevice[] | null
+  /** How long the speaker keeps pairing open, its own setting (read only). */
+  pairing_seconds?: number | null
   sent?: boolean | null
+  unpaired?: string | null
 }
+export interface SpeakerBtDevice { id: string; name: string; roles: ('input' | 'speaker')[] }
 
 export interface SpeakerState {
   host: string
@@ -152,6 +170,9 @@ export interface SpeakerState {
   loudness: boolean | null
   /** Range and which sign is left/right are unknown. */
   balance: number | null
+  /** Read only, as the speaker reports it: "online", "networkStandby", ... (optional: older servers omit it). */
+  power?: string | null
+  power_reason?: string | null
   errors: Record<string, string>
 }
 

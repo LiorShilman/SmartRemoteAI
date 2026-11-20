@@ -85,6 +85,8 @@ button { font: inherit; color: inherit; }
 .chip.ok { color: var(--color-secondary); border-color: rgba(34,211,197,.35); background: rgba(34,211,197,.08); }
 .chip.bad { color: var(--color-danger); border-color: rgba(255,102,122,.35); background: rgba(255,102,122,.08); }
 .chip.demo { color: var(--color-warn); border-color: rgba(255,200,87,.4); background: rgba(255,200,87,.1); }
+/* a device that answers but is switched off / in standby */
+.chip.off { color: var(--color-warn); border-color: rgba(255,200,87,.3); background: rgba(255,200,87,.06); }
 
 .input {
   width: 100%; min-height: 48px; padding: 0 14px; border-radius: 16px;

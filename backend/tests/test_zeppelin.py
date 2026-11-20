@@ -35,6 +35,8 @@ class FakeSpeaker:
             "settings:/mediaPlayer/sourceGain": {"type": "sourceGainList", "sourceGainList": [
                 {"sources": [], "alsaMixer": "", "min": -60, "max": 20, "path": "", "name": "All", "value": 0}]},
             "settings:/mediaPlayer/balance": {"type": "double_", "double_": 0},
+            # exactly the shape the real speaker returned (awake here; the standby test changes it)
+            "powermanager:target": {"powerTarget": {"reason": "none", "nextReason": "none", "target": "online", "nextTarget": "none"}, "type": "powerTarget"},
         }
         self.requests: list[httpx.Request] = []
         self.error_on_set = False      # HTTP 200 with an error object
@@ -93,7 +95,8 @@ def test_read_state_never_writes(client, fake):
     r = client.get("/api/speaker", headers=H)
     assert r.status_code == 200
     assert r.json() == {"host": "192.168.1.52", "reachable": True, "volume": 23, "treble": 5.0, "light": True,
-                        "bass": -1.0, "brightness": 100, "rgb": {"red": 255, "green": 6, "blue": 126}, "mute": False, "loudness": False, "balance": 0.0, "errors": {}}
+                        "bass": -1.0, "brightness": 100, "rgb": {"red": 255, "green": 6, "blue": 126}, "mute": False, "loudness": False, "balance": 0.0,
+                        "power": "online", "power_reason": "none", "errors": {}}
     assert fake.sets() == []
     assert all(rq.url.path == "/api/getData" for rq in fake.requests)
     q = parse_qs(urlsplit(str(fake.requests[0].url)).query)
@@ -348,3 +351,24 @@ def test_kids_cannot_change_loudness_or_balance(client, fake):
     assert client.post("/api/speaker/loudness", json={"enabled": True}, headers=kid).status_code == 403
     assert client.post("/api/speaker/balance", json={"value": 1}, headers=kid).status_code == 403
     assert fake.sets() == []
+
+
+def test_standby_is_reported_read_only(client, fake):
+    fake.values["powermanager:target"] = {"powerTarget": {"reason": "idleTimer", "nextReason": "none", "target": "networkStandby",
+                                                          "nextTarget": "none"}, "type": "powerTarget"}
+    d = client.get("/api/speaker", headers=H).json()
+    assert d["reachable"] is True and d["power"] == "networkStandby" and d["power_reason"] == "idleTimer"
+    assert fake.sets() == []
+
+
+@pytest.mark.parametrize("bad", [{"type": "powerTarget"}, {"powerTarget": {"target": "<script>"}}, {"powerTarget": "online"}])
+def test_power_unexpected_shape_is_unknown_not_an_error(client, fake, bad):
+    fake.values["powermanager:target"] = bad
+    d = client.get("/api/speaker", headers=H).json()
+    assert d["power"] is None and d["volume"] == 23 and "power" not in d["errors"]
+
+
+def test_power_unreadable_does_not_hide_controls(client, fake):
+    del fake.values["powermanager:target"]
+    d = client.get("/api/speaker", headers=H).json()
+    assert d["power"] is None and d["volume"] == 23 and "power" in d["errors"]

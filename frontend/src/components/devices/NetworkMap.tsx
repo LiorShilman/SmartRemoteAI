@@ -60,7 +60,9 @@ export function NetworkMap({ devices: all }: { devices: Device[] }) {
   const devSt = devices.map((d) => deviceSt(d, demo))
   // The speaker is not a paired device: it is shown from what the server last read from it (live mode only).
   const sq = useSpeaker()
-  const spkSt: St = sq.isPending ? 'warn' : sq.data?.reachable ? 'ok' : 'bad'
+  // network standby: it still answers, but it is switched off -> grey "כבוי", like a device that is off
+  const spkAsleep = !!sq.data?.reachable && sq.data.power === 'networkStandby'
+  const spkSt: St = sq.isPending ? 'warn' : spkAsleep ? 'idle' : sq.data?.reachable ? 'ok' : 'bad'
   const extra = backend === 'online' ? [{ id: 'speaker', st: spkSt }] : []
   const connected = [...devSt, ...extra.map((e) => e.st)].filter((s) => s === 'ok').length
   const total = devices.length + extra.length
@@ -89,7 +91,7 @@ export function NetworkMap({ devices: all }: { devices: Device[] }) {
     })),
     ...extra.map((e): Node => ({
       id: e.id, x: devPos(devices.length)[0], y: devPos(devices.length)[1], Icon: Speaker,
-      title: 'רמקול', sub: 'B&W Zeppelin', st: e.st, label: e.st === 'warn' ? 'בודק…' : WORD[e.st],
+      title: 'רמקול', sub: 'B&W Zeppelin', st: e.st, label: e.st === 'warn' ? 'בודק…' : spkAsleep ? 'כבוי' : WORD[e.st],
     })),
   ]
   const links: Link[] = [
