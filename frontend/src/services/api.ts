@@ -16,6 +16,18 @@ const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? ''
 
 const DEVICE_IDS: Record<string, string> = { hot: 'hot', lg: 'lg' }
 
+/** Spoken reply as audio (MP3) from the server's Hebrew voice. Only the text is sent; nothing is executed. */
+export async function fetchSpeech(token: string, text: string): Promise<Blob> {
+  const res = await fetch(API_BASE + '/api/tts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+    body: JSON.stringify({ text }),
+    signal: AbortSignal.timeout(15000),
+  })
+  if (!res.ok) throw new Error(`tts ${res.status}`)
+  return res.blob()
+}
+
 export class ApiError extends Error {
   constructor(public code: ErrorCode, message?: string) {
     super(message ?? ERROR_TEXT[code])

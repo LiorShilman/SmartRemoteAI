@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Clock, Mic, MicOff, Play, Send, Sparkles, Speaker, Tv2, Volume2, X } from 'lucide-react'
+import { Clock, Mic, MicOff, Play, Send, Sparkles, Speaker, Tv2, Volume2, VolumeX, X } from 'lucide-react'
 import { Card, Key, SectionTitle } from '../components/ui/Primitives'
 import { SelectableRow, SelectToolbar, useSelection } from '../components/ui/Selectable'
 import { useApp } from '../app/store'
@@ -8,11 +8,12 @@ import { useSend } from '../hooks/useSend'
 import { useBackend, useVolumeDevice } from '../hooks/useDevices'
 import { ApiError, api } from '../services/api'
 import { needsConfirmation, parseIntent } from '../services/intentParser'
+import { isSpeaking, sentReply, speak, speakServer, speakerReply, stopSpeaking, unlockAudio, useHebrewVoice } from '../services/speech'
 import type { Schedule, StepCommand } from '../types'
 
 interface SpeechRec {
   lang: string; interimResults: boolean; continuous: boolean
-  start(): void; stop(): void
+  start(): void; stop(): void; abort(): void
   onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }> }) => void) | null
   onerror: ((e: { error: string }) => void) | null
   onend: (() => void) | null
@@ -74,6 +75,15 @@ export default function VoiceAssistant() {
   const recRef = useRef<SpeechRec | null>(null)
   const seq = useRef(0)
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const { supported: ttsSupported, voice } = useHebrewVoice()
+  const [replyOn, setReplyOn] = useState(() => localStorage.getItem('voice-reply') !== '0')
+  const serverVoice = live && backend === 'online' // the server makes the audio: works in any browser
+  const canReply = serverVoice || (ttsSupported && !!voice)
+  const reply = async (t: string) => {
+    if (serverVoice && await speakServer(token, t)) return
+    if (!speak(t, voice)) toast('info', 'ההקראה לא זמינה כרגע.')
+  }
+  const toggleReply = () => setReplyOn((v) => { localStorage.setItem('voice-reply', v ? '0' : '1'); return !v })
 
   useEffect(() => () => { recRef.current?.stop(); clearTimeout(timer.current) }, [])
   useEffect(() => setConfirmed(false), [parsed])
@@ -118,12 +128,16 @@ export default function VoiceAssistant() {
   const toggleMic = () => {
     if (!Ctor) return
     if (listening) { recRef.current?.stop(); return }
+    stopSpeaking() // the reply must not be heard by the microphone
     const rec = new Ctor()
     rec.lang = 'he-IL'
     rec.interimResults = true
     rec.continuous = false
-    rec.onresult = (e) => preview(Array.from(e.results).map((r) => r[0].transcript).join(' '))
-    rec.onerror = (e) => toast('error', MIC_ERRORS[e.error] ?? `שגיאת זיהוי קול: ${e.error}`)
+    rec.onresult = (e) => {
+      if (recRef.current !== rec || isSpeaking()) return // our own spoken reply is not a command
+      preview(Array.from(e.results).map((r) => r[0].transcript).join(' '))
+    }
+    rec.onerror = (e) => { if (e.error !== 'aborted') toast('error', MIC_ERRORS[e.error] ?? `שגיאת זיהוי קול: ${e.error}`) }
     rec.onend = () => setListening(false)
     recRef.current = rec
     setListening(true)
@@ -132,15 +146,25 @@ export default function VoiceAssistant() {
 
   const run = async () => {
     if (!parsed?.steps.length) return
+    // stop listening before anything is said back, so the reply is never picked up as a new command
+    recRef.current?.abort()
+    recRef.current = null
+    setListening(false)
+    if (replyOn && canReply) unlockAudio() // still inside the press
     let ran = 0
+    const said: string[] = [] // spoken reply: only what actually happened, as reported back
+    const failed = (label: string, msg: string) => said.push(`נכשל: ${label.replace(/^[^:]+:\s*/, '')}. ${msg}`)
     for (const step of parsed.steps) {
       if (step.delaySeconds > 0) {
         try {
           await api.schedule(token, step.command, step.delaySeconds, step.label)
           toast('success', `תוזמן: ${step.label}`)
+          said.push(`תוזמן: ${step.label.replace(/^[^:]+:\s*/, '')}`)
           void qc.invalidateQueries({ queryKey: ['schedules'] })
         } catch (e) {
-          toast('error', e instanceof ApiError ? e.message : 'התזמון נכשל.')
+          const msg = e instanceof ApiError ? e.message : 'התזמון נכשל.'
+          toast('error', msg)
+          failed(step.label, msg)
           break
         }
       } else if (step.command.target === 'speaker') {
@@ -151,16 +175,21 @@ export default function VoiceAssistant() {
           void qc.invalidateQueries({ queryKey: ['speaker-cycle'] })
           void qc.invalidateQueries({ queryKey: ['speaker-profiles'] })
           toast('success', step.label)
+          said.push(speakerReply(step.command.action, step.command.params ?? {}, st, step.label))
         } catch (e) {
-          toast('error', `${step.label}: ${e instanceof ApiError ? e.message : 'הפעולה נכשלה.'}`)
+          const msg = e instanceof ApiError ? e.message : 'הפעולה נכשלה.'
+          toast('error', `${step.label}: ${msg}`)
+          failed(step.label, msg)
           break // never continue a sequence after a failure
         }
       } else {
         const o = await send(step.command, step.label)
-        if (!o.ok) break // never continue a sequence after a failure
+        if (!o.ok) { failed(step.label, o.message); break } // never continue a sequence after a failure
+        said.push(sentReply(step.label, o.status === 'simulated'))
       }
       ran++
     }
+    if (replyOn && canReply) void reply(said.join('. '))
     setHistory((h) => [{ id: crypto.randomUUID(), text, ran }, ...h].slice(0, 10))
     setText(''); setParsed(null)
   }
@@ -201,6 +230,24 @@ export default function VoiceAssistant() {
               ? 'מיקרופון דורש חיבור מאובטח (HTTPS) כשנכנסים מהטלפון. בינתיים אפשר להקליד.'
               : listening ? 'מקשיב… דבר עכשיו.' : 'לחץ על המיקרופון ודבר. ההקלטה מתחילה רק בלחיצה.'}
         </p>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <button type="button" role="switch" aria-checked={replyOn && canReply} disabled={!canReply} onClick={toggleReply}
+            className={`inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm transition disabled:opacity-50 ${replyOn && canReply ? 'border-secondary/40 bg-secondary/10 text-secondary' : 'border-white/10 bg-white/[.04] text-muted'}`}>
+            {replyOn && canReply ? <Volume2 size={15} aria-hidden /> : <VolumeX size={15} aria-hidden />}
+            תשובה בקול {replyOn && canReply ? 'פועלת' : 'כבויה'}
+          </button>
+          {canReply && replyOn && (
+            <button type="button" onClick={() => { unlockAudio(); void reply('כך תישמע התשובה. הרמקול על 25.') }}
+              className="rounded-full border border-white/10 bg-white/[.04] px-3 py-1.5 text-xs text-muted hover:bg-white/[.09]">
+              השמע דוגמה
+            </button>
+          )}
+        </div>
+        {!canReply && (
+          <p className="text-xs text-muted text-center max-w-md">
+            {ttsSupported ? 'לא נמצא בדפדפן קול בעברית, ולכן אין תשובה בקול. ב-Edge ובכרום באנדרואיד יש בדרך כלל קול עברי.' : 'הדפדפן הזה לא תומך בהקראה.'}
+          </p>
+        )}
         {micOk && (
           <p className="text-xs text-muted text-center max-w-md">
             פרטיות: בחלק מהדפדפנים הדיבור נשלח לשירות הזיהוי של הדפדפן/הספק ואינו מעובד מקומית.

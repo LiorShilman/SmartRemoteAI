@@ -14,7 +14,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, FastAPI, Header, Query, Request, WebSocket, WebSocketDisconnect
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 from app.config import VERSION, Settings
 from app.models.schemas import CycleConfig, ProfileCreate, ProfileName, EqBand, EqOut, EqWrite, LabBass, LabBool, LabBrightness, LabObservation, LabRgb, SpeakerBalance, SpeakerBass, SpeakerBluetooth, SpeakerStepRequest, SpeakerUnpair, SpeakerSources, SpeakerStandby, SpeakerStandbySet, SpeakerBrightness, SpeakerLoudness, SpeakerMute, SpeakerRgb, check_host
@@ -22,7 +22,7 @@ from app.models.schemas import (
     KEYS_BY_KIND, LG_APPS, Action, AuditOut, ChannelSet, CommandRequest, CommandResponse, DeviceOut, DeviceUpdate,
     ErrorCode, HealthOut, IntentOut, IntentParseRequest, MeOut, NewDevice, PairConfirm, PointerEvent, ScheduleClear,
     ScheduleCreate, ScheduleOut, SpeakerConfig, SpeakerLight, SpeakerState, SpeakerTreble, SpeakerVolume, TimeDecide, TimeRequestCreate, TimeRequestOut, TokenClear, TokenCreate, TokenCreated, TokenOut,
-    TokenPolicy, UsageDay, UsageOut,
+    TokenPolicy, TtsRequest, UsageDay, UsageOut,
 )
 from app.services.intents import build_provider
 from app.services.policy import deny_reason, over_limit, remaining_min, schedule_denied, window_open
@@ -31,6 +31,7 @@ from app.services.scheduler import Scheduler, ScheduleStore
 from app.services.colorcycle import ColorCycle
 from app.services.profiles import ProfileService, ProfileStore
 from app.services.speaker_voice import run_step as run_speaker_step
+from app.services.tts import Tts, TtsError
 from app.services.zeppelin import LAB as LAB_CONTROLS, SpeakerError, ZeppelinClient
 from app.storage.db import Store
 from app.storage.security import AuditStore, TimeStore, TokenRow, TokenStore, UsageStore
@@ -86,6 +87,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.tokens, app.state.audit = tokens, audit
     app.state.usage, app.state.times = usage, times
     app.state.clock = datetime.now  # tests replace it to control the time of day
+    app.state.tts = Tts()  # tests replace it with one on a fake synthesizer
     app.state.speaker = ZeppelinClient(speaker_host)  # tests replace it with one on a mock transport
     # One colour cycle per speaker. It is never started here: only an explicit request starts it.
     app.state.cycle = ColorCycle(lambda: app.state.speaker, store, on_event=lambda msg: audit.add("server", "אוטומטי", "speaker_cycle", msg))
@@ -315,6 +317,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @api.get("/devices/{device_id}/diagnostics")
     async def diagnostics(device_id: str) -> dict:
         return manager.diagnostics(device_id)  # no certificates, keys or tokens
+
+    @api.post("/tts")
+    async def tts(body: TtsRequest, _: Identity = Depends(auth)) -> Response:
+        """A spoken reply (MP3). Only this short text goes to the online voice service; nothing is executed."""
+        try:
+            audio = await app.state.tts.speak(body.text, body.voice)
+        except TtsError as e:
+            raise ManagerError(ErrorCode.UNSUPPORTED, str(e), 503) from e
+        return Response(audio, media_type="audio/mpeg", headers={"Cache-Control": "no-store"})
 
     @api.post("/intents/parse", response_model=IntentOut)
     async def parse_intent(body: IntentParseRequest) -> IntentOut:

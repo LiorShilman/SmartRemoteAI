@@ -11,6 +11,7 @@ dependencies = [
   "anthropic>=1.0",
   "pydantic>=2.7",
   "httpx>=0.27",  # B&W Zeppelin speaker HTTP API
+  "edge-tts>=7.0",  # spoken replies (Hebrew neural voice); optional at runtime
 ]
 
 [project.optional-dependencies]

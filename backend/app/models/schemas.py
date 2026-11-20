@@ -349,6 +349,19 @@ class MeOut(BaseModel):
     pending_requests: int | None = None
 
 
+class TtsRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    text: str = Field(min_length=1, max_length=300)
+    voice: Literal["hila", "avri"] = "hila"
+
+    @field_validator("text")
+    @classmethod
+    def _printable(cls, v: str) -> str:
+        if CONTROL_CHARS.search(v) or not v.strip():
+            raise ValueError("text must be printable")
+        return v
+
+
 class HealthOut(BaseModel):
     ok: bool = True
     version: str
