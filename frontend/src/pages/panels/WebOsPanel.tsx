@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Home, Power, Tv2, Undo2, Volume1, Volume2, VolumeX } from 'lucide-react'
 import { Card, CapChip, Key, SectionTitle } from '../../components/ui/Primitives'
 import { DPad } from '../../components/remote/Controls'
@@ -6,12 +7,16 @@ import { AppLauncher } from '../../components/remote/AppLauncher'
 import { KeyboardCard } from '../../components/remote/KeyboardCard'
 import { Touchpad } from '../../components/remote/Touchpad'
 import { useRemote } from '../../hooks/useRemote'
+import { TvAudioStatus } from '../../components/devices/TvAudio'
 import type { Device } from '../../types'
 
 /** Controls for an LG webOS device (real pointer, inputs, apps, power off). */
 export default function WebOsPanel({ device: dev }: { device: Device }) {
   const { device, press, can, blocked } = useRemote(dev)
   const [confirmOff, setConfirmOff] = useState(false)
+  const qc = useQueryClient()
+  // the TV pushes the new volume at once; refresh the shown status instead of waiting for the next poll
+  const fresh = () => setTimeout(() => { void qc.invalidateQueries({ queryKey: ['devices'] }); void qc.invalidateQueries({ queryKey: ['speaker'] }) }, 600)
   const key = (k: string, label: string) => () => press({ target: 'lg', action: 'key_press', params: { key: k } }, label)
 
   return (
@@ -52,12 +57,13 @@ export default function WebOsPanel({ device: dev }: { device: Device }) {
             <SectionTitle>עוצמה</SectionTitle>
             <div className="grid grid-cols-3 gap-3">
               <Key label="הנמך עוצמה" className="h-16" disabled={!can('volume')}
-                onClick={() => press({ target: 'lg', action: 'volume_down' }, 'עוצמה −')}><Volume1 /></Key>
+                onClick={() => { press({ target: 'lg', action: 'volume_down' }, 'עוצמה −'); fresh() }}><Volume1 /></Key>
               <Key label="השתק" className="h-16" disabled={!can('mute')}
-                onClick={() => press({ target: 'lg', action: 'mute' }, 'השתקה')}><VolumeX /></Key>
+                onClick={() => { press({ target: 'lg', action: 'mute' }, 'השתקה'); fresh() }}><VolumeX /></Key>
               <Key label="הגבר עוצמה" className="h-16" disabled={!can('volume')}
-                onClick={() => press({ target: 'lg', action: 'volume_up' }, 'עוצמה +')}><Volume2 /></Key>
+                onClick={() => { press({ target: 'lg', action: 'volume_up' }, 'עוצמה +'); fresh() }}><Volume2 /></Key>
             </div>
+            <div className="mt-4"><TvAudioStatus audio={device?.audio} /></div>
           </Card>
 
           <Card>

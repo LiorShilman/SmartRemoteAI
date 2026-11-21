@@ -84,7 +84,8 @@ class DeviceManager:
                                  channel=self.store.get_state(r.id, "channel"),
                                  previous_channel=self.store.get_state(r.id, "previous_channel"),
                                  connection=a.connection, capabilities=a.capabilities,
-                                 last_error=getattr(a, "last_error", None)))
+                                 last_error=getattr(a, "last_error", None),
+                                 audio=a.audio_status() if isinstance(a, LgWebOsAdapter) else None))
         return out
 
     def add(self, kind: str, host: str, role: str | None = None, name: str | None = None) -> DeviceOut:

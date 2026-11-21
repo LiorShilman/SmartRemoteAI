@@ -22,6 +22,18 @@ export interface Device {
   /** Channel this server last typed into the box (not read from it; stale after using a physical remote). */
   channel?: string | null
   previous_channel?: string | null
+  /** LG only: sound status the TV pushed (null for other devices / an unpaired TV). */
+  audio?: TvAudio | null
+}
+
+/** tv_volume is the TV's own scale, never the speaker's. "bluetooth" is any Bluetooth device, not assumed to be the Zeppelin. */
+export interface TvAudio {
+  state: 'ready' | 'pending' | 'offline'
+  output: string | null
+  output_kind: 'tv_speaker' | 'bluetooth' | 'external' | 'headphones' | 'other' | null
+  output_label: string | null
+  tv_volume: number | null
+  tv_muted: boolean | null
 }
 
 export type ErrorCode =

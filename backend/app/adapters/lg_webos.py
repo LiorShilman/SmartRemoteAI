@@ -17,7 +17,7 @@ from aiowebostv import WebOsClient, WebOsTvCommandError, WebOsTvPairError
 from aiowebostv.exceptions import WebOsTvCommandTimeoutError
 
 from app.adapters.base import AdapterError, DeviceAdapter
-from app.models.schemas import CapabilityState, Connection, ErrorCode
+from app.models.schemas import CapabilityState, Connection, ErrorCode, TvAudio
 from app.services.appnames import friendly
 
 log = logging.getLogger("smart_remote.lg_webos")
@@ -35,6 +35,10 @@ SOUND_OUTPUT_HE = {
     "external_arc": "מערכת חיצונית ב-ARC",
     "lineout": "יציאת קו", "headphone": "אוזניות", "bt_soundbar": "סאונדבר בבלוטות'",
 }
+# Only ids seen or documented; anything else is reported as "other" with its raw id, never guessed.
+OUTPUT_KIND = {"tv_speaker": "tv_speaker", "bt_soundbar": "bluetooth", "external_optical": "external",
+               "external_arc": "external", "lineout": "external", "headphone": "headphones"}
+OUTPUT_LABEL = {"tv_speaker": "רמקולי הטלוויזיה", **SOUND_OUTPUT_HE}
 
 PAIR_DEADLINE_S = 60.0   # the TV prompt times out after ~10s per attempt; we re-prompt until this deadline
 PAIR_WAIT_S = 6.0        # how long pair_confirm waits before telling the user to approve and retry
@@ -81,6 +85,30 @@ class LgWebOsAdapter(DeviceAdapter):
         caps: dict[str, CapabilityState] = {k: "unknown" for k in ("nav", "volume", "mute", "power_off", "inputs", "apps")}
         caps["wol"] = "unsupported"
         return caps
+
+    def audio_status(self) -> TvAudio | None:
+        """Sound output, volume and mute as the TV last pushed them. Sends nothing to the TV.
+
+        Values are shown only while connected: after a drop they may be stale, so they are withheld.
+        """
+        if not self.paired:
+            return None
+        c = self._client
+        if c is None or not self._available or not c.is_connected():
+            return TvAudio(state="offline")
+        st = getattr(c, "tv_state", None)
+        out = getattr(st, "sound_output", None)
+        vol = getattr(st, "volume", None)
+        muted = getattr(st, "muted", None)
+        out = out if isinstance(out, str) and out else None
+        vol = vol if isinstance(vol, int) and not isinstance(vol, bool) else None
+        muted = muted if isinstance(muted, bool) else None
+        if out is None and vol is None and muted is None:
+            return TvAudio(state="pending")
+        return TvAudio(state="ready", output=out,
+                       output_kind=OUTPUT_KIND.get(out, "other") if out else None,
+                       output_label=OUTPUT_LABEL.get(out, out) if out else None,
+                       tv_volume=vol, tv_muted=muted)
 
     def diagnostics(self) -> dict:
         return {"adapter": "aiowebostv", "paired": self.paired, "available": self._available,

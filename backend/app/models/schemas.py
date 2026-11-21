@@ -175,6 +175,20 @@ class PairConfirm(BaseModel):
     code: str = Field(default="", max_length=16)
 
 
+class TvAudio(BaseModel):
+    """LG sound status, taken only from the TV's own push updates (no extra requests, no polling).
+
+    tv_volume / tv_muted are the TV's own scale. They are NOT the Zeppelin's volume, even when the sound goes
+    to a Bluetooth speaker: "bluetooth" means some Bluetooth audio device, never assumed to be the Zeppelin.
+    """
+    state: Literal["ready", "pending", "offline"]  # offline: not connected; pending: connected, no update yet
+    output: str | None = None  # raw webOS id, e.g. tv_speaker, bt_soundbar
+    output_kind: Literal["tv_speaker", "bluetooth", "external", "headphones", "other"] | None = None
+    output_label: str | None = None
+    tv_volume: int | None = None
+    tv_muted: bool | None = None
+
+
 class DeviceOut(BaseModel):
     id: str
     kind: DeviceKind
@@ -187,6 +201,7 @@ class DeviceOut(BaseModel):
     # Channel numbers this server last typed into the box. NOT read from the box: a physical remote makes it stale.
     channel: str | None = None
     previous_channel: str | None = None
+    audio: TvAudio | None = None  # LG only; None for other devices and for an unpaired TV
 
 
 class IntentParseRequest(BaseModel):
