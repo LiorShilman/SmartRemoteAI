@@ -1,4 +1,4 @@
-import type { AuditEntry, CycleConfig, CycleState, EqState, LoadResult, ProfilesState, LabControl, Policy, Rgb, SpeakerBluetooth, SpeakerLab, SpeakerSources, SpeakerStandby, SpeakerState, SpeakerOp, StepCommand, TimeRequest, Usage, Command, CommandOutcome, Device, DeviceKind, ErrorCode, IntentResult, Me, Role, Schedule, TokenCreated, TokenInfo } from '../types'
+import type { AuditEntry, CycleConfig, CycleState, EqState, LoadResult, ProfilesState, LabControl, Policy, Rgb, SpeakerBluetooth, SpeakerLab, SpeakerReboot, SpeakerSources, SpeakerStandby, SpeakerState, SpeakerOp, StepCommand, TimeRequest, Usage, Command, CommandOutcome, Device, DeviceKind, ErrorCode, IntentResult, Me, Role, Schedule, TokenCreated, TokenInfo } from '../types'
 
 export const ERROR_TEXT: Record<ErrorCode, string> = {
   NOT_PAIRED: 'המכשיר עדיין לא מצומד. צמד אותו במסך ההגדרות.',
@@ -154,6 +154,9 @@ export const api = {
     request<LoadResult>(`/api/speaker/profiles/${encodeURIComponent(id)}/load`, token, { method: 'POST' }),
   speakerProfileUndo: (token: string) => request<LoadResult>('/api/speaker/profiles/undo', token, { method: 'POST' }),
   speakerStandby: (token: string) => request<SpeakerStandby>('/api/speaker/standby', token),
+  speakerReboot: (token: string) => request<SpeakerReboot>('/api/speaker/reboot', token),
+  /** Restarts the speaker; resolves only once it stopped answering. GET speakerReboot reports when it is back. */
+  speakerRebootStart: (token: string) => request<SpeakerReboot>('/api/speaker/reboot', token, { method: 'POST' }),
   /** Only an option the speaker lists; resolves with the value read back from the speaker. */
   speakerStandbySet: (token: string, seconds: number) =>
     request<SpeakerStandby>('/api/speaker/standby', token, { method: 'POST', body: JSON.stringify({ seconds }) }),

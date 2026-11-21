@@ -204,6 +204,15 @@ def _gains(v: Any) -> list[dict]:
 # "reachable" alone cannot tell on from off. Seen on the real speaker: {"powerTarget": {"target": "networkStandby",
 # "reason": "idleTimer", ...}, "type": "powerTarget"}; "online" when playing / awake.
 POWER_PATH = "powermanager:target"
+# Restart: the speaker's own action node (getData roles=@all -> {"type": "action", "path": "powermanager:goReboot"},
+# found 2026-11-20). It also publishes settings:/ui/disabledReboot (false) for its own reboot button; when true, nothing
+# is sent. Expected to equal a short press of the small reset button on the speaker, which on 2026-11-20 restarted it
+# and kept pairings and settings. There is no read-back for a restart: success = it stopped answering, then answered.
+REBOOT_ACTION = "powermanager:goReboot"
+REBOOT_DISABLED = Control("settings:/ui/disabledReboot", "bool_")
+REBOOT_DOWN_S = 20.0    # it must stop answering within this, or the restart did not happen
+REBOOT_BACK_S = 180.0   # then it must answer again within this
+REBOOT_POLL_S, REBOOT_BACK_POLL_S = 0.5, 3.0  # how often it is asked meanwhile (tests shorten these)
 _WORD = re.compile(r"^[A-Za-z]{1,32}$")
 
 
@@ -428,6 +437,45 @@ class ZeppelinClient:
         if not now["discoverable"]:
             raise SpeakerError(ErrorCode.DENIED, "הרמקול קיבל את הבקשה, אבל לא דיווח שנכנס למצב צימוד.", 502)
         return {**now, "sent": True}
+
+    # ---- restart
+    async def _answers(self) -> bool:
+        """True if the speaker answers at all (an error reply is still an answer). Lock held."""
+        try:
+            await self._call("getData", {"path": POWER_PATH, "roles": "value"})
+        except SpeakerError as e:
+            return e.code not in (ErrorCode.NOT_CONNECTED, ErrorCode.TIMEOUT)
+        return True
+
+    async def reboot(self) -> None:
+        """Restart the speaker. Returns only once it has stopped answering (the restart began); raises otherwise."""
+        async with self._lock:
+            if await self._read(REBOOT_DISABLED):
+                raise SpeakerError(ErrorCode.DENIED, "הרמקול לא מאפשר כרגע הפעלה מחדש.", 409)
+            try:
+                await self._activate(REBOOT_ACTION)
+            except SpeakerError as e:
+                if e.code not in (ErrorCode.NOT_CONNECTED, ErrorCode.TIMEOUT):
+                    raise  # a refusal inside the reply: nothing restarts
+                # it may drop the connection while going down: decided below by whether it still answers
+            waited = 0.0
+            while waited < REBOOT_DOWN_S:
+                if not await self._answers():
+                    return
+                await asyncio.sleep(REBOOT_POLL_S)
+                waited += REBOOT_POLL_S
+        raise SpeakerError(ErrorCode.DENIED, "הרמקול קיבל את הבקשה, אבל לא הופעל מחדש.", 502)
+
+    async def wait_back(self) -> bool:
+        """After reboot(): True as soon as the speaker answers again, False if it did not within REBOOT_BACK_S."""
+        waited = 0.0
+        while waited < REBOOT_BACK_S:
+            await asyncio.sleep(REBOOT_BACK_POLL_S)
+            waited += REBOOT_BACK_POLL_S
+            async with self._lock:
+                if await self._answers():
+                    return True
+        return False
 
     # ---- lists the speaker publishes (getRows; read only)
     async def _rows(self, path: str) -> list[list]:

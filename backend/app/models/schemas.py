@@ -446,6 +446,11 @@ class SpeakerStandbyOption(BaseModel):
     title: str                     # as the speaker names it ("30 minutes")
 
 
+class SpeakerReboot(BaseModel):
+    phase: Literal["idle", "restarting", "back", "timeout"]
+    seconds: int | None = None  # since the restart began; once finished, how long it took
+
+
 class SpeakerStandby(BaseModel):
     seconds: int                   # current value; may be one the list does not contain (factory 1200)
     options: list[SpeakerStandbyOption]

@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 
 from app.config import VERSION, Settings
-from app.models.schemas import CycleConfig, ProfileCreate, ProfileName, EqBand, EqOut, EqWrite, LabBass, LabBool, LabBrightness, LabObservation, LabRgb, SpeakerBalance, SpeakerBass, SpeakerBluetooth, SpeakerStepRequest, SpeakerUnpair, SpeakerSources, SpeakerStandby, SpeakerStandbySet, SpeakerBrightness, SpeakerLoudness, SpeakerMute, SpeakerRgb, check_host
+from app.models.schemas import CycleConfig, ProfileCreate, ProfileName, EqBand, EqOut, EqWrite, LabBass, LabBool, LabBrightness, LabObservation, LabRgb, SpeakerBalance, SpeakerBass, SpeakerBluetooth, SpeakerReboot, SpeakerStepRequest, SpeakerUnpair, SpeakerSources, SpeakerStandby, SpeakerStandbySet, SpeakerBrightness, SpeakerLoudness, SpeakerMute, SpeakerRgb, check_host
 from app.models.schemas import (
     KEYS_BY_KIND, LG_APPS, Action, AuditOut, ChannelSet, CommandRequest, CommandResponse, DeviceOut, DeviceUpdate,
     ErrorCode, HealthOut, IntentOut, IntentParseRequest, MeOut, NewDevice, PairConfirm, PointerEvent, ScheduleClear,
@@ -30,6 +30,7 @@ from app.services.manager import DeviceManager, ManagerError
 from app.services.scheduler import Scheduler, ScheduleStore
 from app.services.colorcycle import ColorCycle
 from app.services.profiles import ProfileService, ProfileStore
+from app.services.speaker_reboot import SpeakerReboot as RebootService
 from app.services.speaker_voice import run_step as run_speaker_step
 from app.services.tts import Tts, TtsError
 from app.services.zeppelin import LAB as LAB_CONTROLS, SpeakerError, ZeppelinClient
@@ -78,6 +79,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         await scheduler.stop()
         await manager.shutdown()
         await app.state.cycle.shutdown()  # stop and clear the colour task before the speaker client closes
+        await app.state.reboot.shutdown()
         await app.state.speaker.aclose()
 
     app = FastAPI(title="Smart Remote AI", version=VERSION, docs_url=None, redoc_url=None, openapi_url=None,
@@ -93,6 +95,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.cycle = ColorCycle(lambda: app.state.speaker, store, on_event=lambda msg: audit.add("server", "אוטומטי", "speaker_cycle", msg))
     # Personal profiles: never loaded automatically. While one loads, every other speaker write is refused.
     app.state.profiles = ProfileService(lambda: app.state.speaker, app.state.cycle, store, ProfileStore(*store.connection))
+    # Restart: only on an explicit request; the server watches until the speaker answers again.
+    app.state.reboot = RebootService(lambda: app.state.speaker, app.state.cycle,
+                                     on_event=lambda msg: audit.add("server", "אוטומטי", "speaker", msg))
 
     async def speaker_step(op: str, params: dict) -> str:
         """One step of the closed voice vocabulary, on whatever speaker is current. Read back inside; raises on failure."""
@@ -457,6 +462,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if ident.policy:  # kids-mode codes control the screens they were given, not the speaker
             deny(ident, "אין הרשאה לשנות את הרמקול בקוד הזה.")
         not_loading()
+        if app.state.reboot.restarting:
+            raise ManagerError(ErrorCode.DENIED, "הרמקול בהפעלה מחדש. נסה שוב כשיחזור לפעול.", 409)
         return ident
 
     @api.get("/speaker", response_model=SpeakerState)
@@ -531,6 +538,17 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         out = await app.state.speaker.unpair(body.id)
         audit.add(ident.ip, ident.name, "speaker", f"בוטל צימוד Bluetooth: {out['unpaired']}")
         return SpeakerBluetooth(**out)
+
+    @api.get("/speaker/reboot", response_model=SpeakerReboot)
+    async def speaker_reboot_status() -> SpeakerReboot:
+        return SpeakerReboot(**app.state.reboot.status())  # read only
+
+    @api.post("/speaker/reboot", response_model=SpeakerReboot)
+    async def speaker_reboot(ident: Identity = Depends(speaker_writer)) -> SpeakerReboot:
+        """Restart the speaker (one fixed action). Returns once it stopped answering; GET reports when it is back."""
+        out = await app.state.reboot.start()
+        audit.add(ident.ip, ident.name, "speaker", "הרמקול הופעל מחדש")
+        return SpeakerReboot(**out)
 
     @api.get("/speaker/standby", response_model=SpeakerStandby)
     async def speaker_standby() -> SpeakerStandby:
