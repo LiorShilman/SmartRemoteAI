@@ -140,7 +140,9 @@ if (await list.getByText('צהריים', { exact: true }).count()) fail('delete 
 // 7. Mobile: compact, no sideways scroll.
 await page.setViewportSize({ width: 390, height: 900 })
 await page.waitForTimeout(300)
+await page.getByRole('tab', { name: 'פרופילים' }).click() // phone: profiles are a tab inside the speaker card
+await page.getByLabel('שם לפרופיל חדש').waitFor({ timeout: 3000 }).catch(() => fail('profiles tab missing on mobile'))
 if (await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth) > 0) fail('profiles card scrolls sideways on mobile')
-await card.screenshot({ path: process.env.SHOT ?? 'speaker-profiles.png' })
+await page.getByRole('tabpanel').screenshot({ path: process.env.SHOT ?? 'speaker-profiles.png' })
 await b.close()
 console.log(process.exitCode ? 'speaker profiles e2e: FAILED' : 'speaker profiles e2e: OK')

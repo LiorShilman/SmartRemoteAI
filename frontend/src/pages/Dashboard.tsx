@@ -5,6 +5,7 @@ import { NetworkMap } from '../components/devices/NetworkMap'
 import { SpeakerCard } from '../components/devices/SpeakerCard'
 import { SpeakerEq } from '../components/devices/SpeakerEq'
 import { SpeakerProfiles } from '../components/devices/SpeakerProfiles'
+import { usePhone } from '../hooks/usePhone'
 import { UsageCard } from '../components/devices/UsageCard'
 import { WelcomeCard } from '../components/WelcomeCard'
 import { useIsAdmin } from './SecurityCards'
@@ -23,6 +24,7 @@ const OUTCOME: Record<string, string> = {
 export default function Dashboard() {
   const { devices, loading, backend } = useDevices()
   const admin = useIsAdmin()
+  const phone = usePhone() // the speaker as one card with tabs
   const { mode, log, removeLog, clearLog, toast } = useApp()
   const shown = log.slice(0, 8)
   const sel = useSelection(shown.map((e) => String(e.at)))
@@ -59,9 +61,13 @@ export default function Dashboard() {
       ) : (
         <div className="grid gap-4 grid-cols-[minmax(0,1fr)] md:grid-cols-2">
           {cards.map((c) => <DeviceCard key={c.device?.id ?? c.role} role={c.role} device={c.device} />)}
-          <SpeakerCard />
-          {/* EQ and profiles share one column, so profiles fill the space under the EQ */}
-          <div className="flex flex-col gap-4 min-w-0"><SpeakerEq /><SpeakerProfiles /></div>
+          {phone ? <SpeakerCard tabs /> : (
+            <>
+              <SpeakerCard />
+              {/* EQ and profiles share one column, so profiles fill the space under the EQ */}
+              <div className="flex flex-col gap-4 min-w-0"><SpeakerEq /><SpeakerProfiles /></div>
+            </>
+          )}
         </div>
       )}
 

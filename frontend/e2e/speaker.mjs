@@ -6,7 +6,7 @@ import { chromium } from 'playwright-core'
 const base = process.env.BASE_URL ?? 'http://127.0.0.1:5173'
 const fail = (m) => { console.error('FAIL:', m); process.exitCode = 1 }
 const b = await chromium.launch({ channel: process.env.BROWSER ?? 'msedge' })
-const ctx = await b.newContext({ viewport: { width: 420, height: 1400 } })
+const ctx = await b.newContext({ viewport: { width: 800, height: 1400 } })
 const page = await ctx.newPage()
 
 let speaker = { host: '192.168.1.52', reachable: true, volume: 23, treble: 5, light: true, bass: -1, brightness: 100, rgb: { red: 255, green: 6, blue: 126 }, loudness: false, mute: false, balance: 0, errors: {} }

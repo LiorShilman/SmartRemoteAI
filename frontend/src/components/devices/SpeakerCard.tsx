@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { AudioLines, Lightbulb, LightbulbOff, Minus, Moon, Palette, Plus, RefreshCw, Speaker, Sun, Volume2, VolumeX, Wifi, WifiOff } from 'lucide-react'
+import { AudioLines, Bookmark, Lightbulb, LightbulbOff, Minus, Moon, Palette, Plus, RefreshCw, Settings2, Speaker, Sun, Volume2, VolumeX, Wifi, WifiOff, type LucideIcon } from 'lucide-react'
 import { Card, Key } from '../ui/Primitives'
+import { SwipeRange } from '../ui/SwipeRange'
+import { usePhone } from '../../hooks/usePhone'
 import { useApp } from '../../app/store'
 import { useBackend } from '../../hooks/useDevices'
 import { ApiError, api } from '../../services/api'
@@ -9,6 +11,9 @@ import { BASS, BRIGHTNESS, TREBLE, VOLUME, changeToSend, hexToRgb, rgbToHex, sna
 import type { CycleState, SpeakerState } from '../../types'
 import { ColourCycle } from './ColourCycle'
 import { SpeakerBluetooth } from './SpeakerBluetooth'
+import { SpeakerEq } from './SpeakerEq'
+import { SpeakerProfiles } from './SpeakerProfiles'
+import { SpeakerReboot, SpeakerRebootStatus, useSpeakerReboot } from './SpeakerReboot'
 import { SpeakerSources } from './SpeakerSources'
 import { SpeakerStandby } from './SpeakerStandby'
 
@@ -40,8 +45,30 @@ export function useSpeaker() {
 
 /** B&W Zeppelin Pro Edition. Shows what the speaker reports; a change is sent only on an explicit user action
  * (releasing a slider, a +/- press, the light button, closing the colour picker), never on load, refresh or polling. */
-export function SpeakerCard() {
+type Tab = 'sound' | 'light' | 'profiles' | 'more'
+const TABS: { id: Tab; label: string; Icon: LucideIcon }[] = [
+  { id: 'sound', label: 'צליל', Icon: AudioLines },
+  { id: 'light', label: 'תאורה', Icon: Lightbulb },
+  { id: 'profiles', label: 'פרופילים', Icon: Bookmark },
+  { id: 'more', label: 'עוד', Icon: Settings2 },
+]
+const savedTab = (): Tab => {
+  const t = localStorage.getItem('speaker-tab')
+  return TABS.some((x) => x.id === t) ? (t as Tab) : 'sound'
+}
+
+/** `tabs`: the phone layout. Volume and mute stay at the top, the rest is split into tabs, and the EQ and profiles are
+ * inside the card (one tab each) instead of separate cards. Switching tabs only shows; it never sends anything. */
+export function SpeakerCard({ tabs = false }: { tabs?: boolean }) {
   const { mode, token, toast } = useApp()
+  const [tab, setTab] = useState<Tab>(savedTab)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const pickTab = (t: Tab) => {
+    setTab(t)
+    localStorage.setItem('speaker-tab', t)
+    // scrolled down into a long tab: start the new one at its top, under the bar
+    requestAnimationFrame(() => { if ((panelRef.current?.getBoundingClientRect().top ?? 0) < 0) panelRef.current?.scrollIntoView({ block: 'start' }) })
+  }
   const backend = useBackend()
   const qc = useQueryClient()
   const q = useSpeaker()
@@ -142,6 +169,7 @@ export function SpeakerCard() {
   const live = mode === 'live' && backend === 'online'
   // With network standby the speaker still answers while "off", so reachable alone is not "on".
   const asleep = live && !!s?.reachable && s.power === 'networkStandby'
+  const restarting = useSpeakerReboot(live).data?.phase === 'restarting' // the speaker is silent on purpose meanwhile
   const chip: [string, string] = !live ? ['', 'לא זמין'] : q.isPending ? ['', 'בודק…'] : q.isError ? ['bad', 'שגיאה']
     : !s?.reachable ? ['bad', 'מנותק'] : asleep ? ['off', 'כבוי'] : ['ok', 'מחובר']
   const disabled = (value: unknown) => !live || !s?.reachable || value == null
@@ -152,6 +180,48 @@ export function SpeakerCard() {
     onDraft: (v: number) => setDraft((d) => ({ ...d, [f]: v })), onCommit: (v: number) => want(f, v),
     onStep: (dir: 1 | -1) => step(f, dir * NUM[f].range.button),
   })
+
+  // the sections, shared by the desktop layout (all at once) and the phone layout (one tab at a time)
+  const source = s?.reachable && (
+    <Section title="מקור שמע">
+      <SpeakerSources enabled={live && !!s.reachable} />
+    </Section>
+  )
+  const tone = s?.reachable && (
+    <Section title="טון">
+      <ProSlider {...ctl('bass')} bipolar unit="dB" />
+      <ProSlider {...ctl('treble')} bipolar unit="dB" />
+      <div className="flex items-center gap-3 border-t border-white/5 pt-4">
+        <AudioLines size={16} className="text-muted shrink-0" aria-hidden />
+        <span className="flex-1 text-sm font-semibold"><bdi>Loudness</bdi></span>
+        <Switch on={s.loudness} busy={!!busy.loudness} disabled={disabled(s.loudness) || !!busy.loudness} error={s.errors.loudness}
+          label={s.loudness ? 'כבה Loudness' : 'הפעל Loudness'} onText="פועל" offText="כבוי"
+          iconOn={<AudioLines size={14} className="m-1 text-bg" aria-hidden />} iconOff={<AudioLines size={14} className="m-1 text-bg/60" aria-hidden />}
+          onToggle={() => void toggleLoudness()} />
+      </div>
+    </Section>
+  )
+  const light = s?.reachable && (
+    <Section title="תאורה" aside={
+      <Switch on={s.light} busy={!!busy.light} disabled={disabled(s.light)} error={s.errors.light}
+        label={s.light ? 'כבה את תאורת הרמקול' : 'הדלק את תאורת הרמקול'} onToggle={() => void toggleLight()} />
+    }>
+      <ProSlider {...ctl('brightness')} unit="%" icon={<Sun size={16} aria-hidden />} />
+      <ColourField value={cycleColour ?? s.rgb} error={s.errors.rgb} busy={!!busy.rgb} disabled={disabled(s.rgb)} onCommit={(c) => void setColour(c)} />
+      <ColourCycle lightOn={s.light} disabled={disabled(s.rgb)} Switch={(p) => <Switch {...p} />} />
+    </Section>
+  )
+  const bluetooth = s?.reachable && (
+    <Section title="Bluetooth">
+      <SpeakerBluetooth enabled={live && !!s.reachable} />
+    </Section>
+  )
+  const power = s?.reachable && (
+    <Section title="חשמל">
+      <SpeakerStandby enabled={live && !!s.reachable} />
+      <SpeakerReboot enabled={live && !!s.reachable} />
+    </Section>
+  )
 
   return (
     <Card className="flex flex-col gap-5">
@@ -179,7 +249,8 @@ export function SpeakerCard() {
       {mode === 'demo' && <p className="text-sm text-muted">השליטה ברמקול זמינה במצב אמיתי בלבד. במצב הדגמה לא נשלח דבר.</p>}
       {mode === 'live' && backend !== 'online' && <p className="text-sm text-muted">אין חיבור לשרת השלט, ולכן אין גישה לרמקול.</p>}
       {live && q.isError && <p role="alert" className="text-sm text-danger">{q.error instanceof ApiError ? q.error.message : 'קריאת מצב הרמקול נכשלה.'}</p>}
-      {live && s && !s.reachable && (
+      <SpeakerRebootStatus enabled={live} />
+      {live && s && !s.reachable && !restarting && (
         <p role="alert" className="text-sm text-danger">
           הרמקול לא עונה בכתובת <bdi className="ltr">{s.host}</bdi>. ודא שהוא דלוק ומחובר לאותה רשת, או עדכן את הכתובת במסך ההגדרות.
         </p>
@@ -196,7 +267,23 @@ export function SpeakerCard() {
         </div>
       )}
 
-      {live && s?.reachable && (
+      {live && s?.reachable && (tabs ? (
+        <>
+          {/* phone: volume and the tabs stay at the top while scrolling */}
+          <div className="sticky top-0 z-20 -mx-4 sm:-mx-5 px-4 sm:px-5 py-2 flex flex-col gap-2 bg-bg/85 backdrop-blur-md border-b border-white/[.06]">
+            <VolumeBar {...ctl('volume')} mute={s.mute} muteBusy={!!busy.mute} muteDisabled={disabled(s.mute) || !!busy.mute}
+              muteError={s.errors.mute} onMute={() => void toggleMute()} />
+            <TabBar tab={tab} onTab={pickTab} />
+          </div>
+          <div ref={panelRef} id={`speaker-tab-${tab}`} role="tabpanel" aria-labelledby={`speaker-tabbtn-${tab}`}
+            className="flex flex-col gap-4 scroll-mt-36">
+            {tab === 'sound' && <>{tone}<SpeakerEq bare /></>}
+            {tab === 'light' && light}
+            {tab === 'profiles' && <SpeakerProfiles bare />}
+            {tab === 'more' && <>{source}{bluetooth}{power}</>}
+          </div>
+        </>
+      ) : (
         <>
           <VolumeDial {...ctl('volume')} />
           <div className="flex items-center justify-center gap-3 -mt-2">
@@ -207,42 +294,13 @@ export function SpeakerCard() {
               iconOn={<VolumeX size={14} className="m-1 text-bg" aria-hidden />} iconOff={<Volume2 size={14} className="m-1 text-bg/60" aria-hidden />}
               onToggle={() => void toggleMute()} />
           </div>
-
-          <Section title="מקור שמע">
-            <SpeakerSources enabled={live && !!s.reachable} />
-          </Section>
-
-          <Section title="טון">
-            <ProSlider {...ctl('bass')} bipolar unit="dB" />
-            <ProSlider {...ctl('treble')} bipolar unit="dB" />
-            <div className="flex items-center gap-3 border-t border-white/5 pt-4">
-              <AudioLines size={16} className="text-muted shrink-0" aria-hidden />
-              <span className="flex-1 text-sm font-semibold"><bdi>Loudness</bdi></span>
-              <Switch on={s.loudness} busy={!!busy.loudness} disabled={disabled(s.loudness) || !!busy.loudness} error={s.errors.loudness}
-                label={s.loudness ? 'כבה Loudness' : 'הפעל Loudness'} onText="פועל" offText="כבוי"
-                iconOn={<AudioLines size={14} className="m-1 text-bg" aria-hidden />} iconOff={<AudioLines size={14} className="m-1 text-bg/60" aria-hidden />}
-                onToggle={() => void toggleLoudness()} />
-            </div>
-          </Section>
-
-          <Section title="תאורה" aside={
-            <Switch on={s.light} busy={!!busy.light} disabled={disabled(s.light)} error={s.errors.light}
-              label={s.light ? 'כבה את תאורת הרמקול' : 'הדלק את תאורת הרמקול'} onToggle={() => void toggleLight()} />
-          }>
-            <ProSlider {...ctl('brightness')} unit="%" icon={<Sun size={16} aria-hidden />} />
-            <ColourField value={cycleColour ?? s.rgb} error={s.errors.rgb} busy={!!busy.rgb} disabled={disabled(s.rgb)} onCommit={(c) => void setColour(c)} />
-            <ColourCycle lightOn={s.light} disabled={disabled(s.rgb)} Switch={(p) => <Switch {...p} />} />
-          </Section>
-
-          <Section title="Bluetooth">
-            <SpeakerBluetooth enabled={live && !!s.reachable} />
-          </Section>
-
-          <Section title="חשמל">
-            <SpeakerStandby enabled={live && !!s.reachable} />
-          </Section>
+          {source}
+          {tone}
+          {light}
+          {bluetooth}
+          {power}
         </>
-      )}
+      ))}
     </Card>
   )
 }
@@ -263,6 +321,43 @@ interface CtlProps {
   label: string; value: number | null; range: { min: number; max: number; step: number; button: number }
   show: (v: number) => string; busy: boolean; error?: string; disabled: boolean
   onDraft: (v: number) => void; onCommit: (v: number) => void; onStep: (dir: 1 | -1) => void
+}
+
+/** Phone: volume as one compact row that stays at the top: - value [swipe] + and the mute button. */
+function VolumeBar(p: CtlProps & { mute: boolean | null; muteBusy: boolean; muteDisabled: boolean; muteError?: string; onMute: () => void }) {
+  const { min, max, step } = p.range
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-2">
+        <StepKey dir={-1} label={p.label} disabled={p.disabled || p.value == null || p.value <= min} onStep={p.onStep} />
+        <span aria-hidden className={`w-9 text-center text-2xl font-extrabold tabular-nums transition-opacity ${p.busy ? 'opacity-50' : ''} ${p.mute ? 'text-warn' : ''}`}>
+          {p.value == null ? '—' : p.show(p.value)}
+        </span>
+        <SwipeRange label={p.label} min={min} max={max} step={step} value={p.value} disabled={p.disabled}
+          valueText={p.show} onDraft={p.onDraft} onCommit={p.onCommit} />
+        <StepKey dir={1} label={p.label} disabled={p.disabled || p.value == null || p.value >= max} onStep={p.onStep} />
+        <Key label={p.mute ? 'בטל השתקה' : 'השתק את הרמקול'} aria-pressed={!!p.mute} aria-busy={p.muteBusy} disabled={p.muteDisabled}
+          className={`!min-w-10 !min-h-10 !rounded-full shrink-0 ${p.mute ? '!text-warn !border-warn/50 !bg-warn/10' : ''}`} onClick={p.onMute}>
+          {p.mute ? <VolumeX size={17} aria-hidden /> : <Volume2 size={17} aria-hidden />}
+        </Key>
+      </div>
+      {(p.error || p.muteError) && <p className="text-xs text-danger">{p.error ?? p.muteError}</p>}
+    </div>
+  )
+}
+
+function TabBar({ tab, onTab }: { tab: Tab; onTab: (t: Tab) => void }) {
+  return (
+    <div role="tablist" aria-label="אזורי השליטה ברמקול" className="grid grid-cols-4 gap-1 rounded-2xl bg-white/[.04] p-1">
+      {TABS.map(({ id, label, Icon }) => (
+        <button key={id} id={`speaker-tabbtn-${id}`} type="button" role="tab" aria-selected={tab === id} aria-controls={`speaker-tab-${id}`}
+          onClick={() => onTab(id)}
+          className={`flex flex-col items-center gap-0.5 rounded-xl py-1.5 text-xs font-semibold transition-colors ${tab === id ? 'bg-secondary/15 text-secondary' : 'text-muted'}`}>
+          <Icon size={16} aria-hidden />{label}
+        </button>
+      ))}
+    </div>
+  )
 }
 
 function StepKey({ dir, label, disabled, onStep }: { dir: 1 | -1; label: string; disabled: boolean; onStep: (d: 1 | -1) => void }) {
@@ -357,6 +452,7 @@ function ProSlider(p: CtlProps & { bipolar?: boolean; unit: string; icon?: React
   const b = p.bipolar ? Math.max(pct(0), pct(v)) : pct(v)
   const track = `linear-gradient(to left, rgba(166,179,203,.16) 0 ${a}%, #22d3c5 ${a}% ${b}%, rgba(166,179,203,.16) ${b}% 100%)`
   const commit = (e: { currentTarget: HTMLInputElement }) => p.onCommit(Number(e.currentTarget.value))
+  const phone = usePhone() // touch: a range that never moves while the page is being scrolled
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-2 text-sm">
@@ -369,13 +465,18 @@ function ProSlider(p: CtlProps & { bipolar?: boolean; unit: string; icon?: React
       </div>
       <div className="flex items-center gap-3">
         <StepKey dir={-1} label={p.label} disabled={p.disabled || p.value == null || p.value <= min} onStep={p.onStep} />
-        <div className="relative flex-1">
-          {p.bipolar && <span aria-hidden className="absolute top-1/2 -translate-y-1/2 w-0.5 h-4 rounded bg-white/40" style={{ right: `calc(${pct(0)}% - 1px)` }} />}
-          <input id={`pro-${p.label}`} type="range" dir="rtl" className="pro-range" style={{ ['--track' as string]: track }}
-            min={min} max={max} step={step} value={v} disabled={p.disabled}
-            onChange={(e) => p.onDraft(Number(e.currentTarget.value))}
-            onPointerUp={commit} onKeyUp={commit} onBlur={commit} />
-        </div>
+        {phone ? (
+          <SwipeRange id={`pro-${p.label}`} label={p.label} min={min} max={max} step={step} value={p.value} disabled={p.disabled}
+            bipolar={p.bipolar} valueText={(x) => `${p.show(x)} ${p.unit}`} onDraft={p.onDraft} onCommit={p.onCommit} />
+        ) : (
+          <div className="relative flex-1">
+            {p.bipolar && <span aria-hidden className="absolute top-1/2 -translate-y-1/2 w-0.5 h-4 rounded bg-white/40" style={{ right: `calc(${pct(0)}% - 1px)` }} />}
+            <input id={`pro-${p.label}`} type="range" dir="rtl" className="pro-range" style={{ ['--track' as string]: track }}
+              min={min} max={max} step={step} value={v} disabled={p.disabled}
+              onChange={(e) => p.onDraft(Number(e.currentTarget.value))}
+              onPointerUp={commit} onKeyUp={commit} onBlur={commit} />
+          </div>
+        )}
         <StepKey dir={1} label={p.label} disabled={p.disabled || p.value == null || p.value >= max} onStep={p.onStep} />
       </div>
     </div>

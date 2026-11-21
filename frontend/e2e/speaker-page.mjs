@@ -37,7 +37,13 @@ for (const [w, h] of [[1280, 1000], [390, 860]]) {
   if (await page.getByText('מפת חיבורים').count()) fail('home screen still shown on /speaker')
   await page.waitForTimeout(600)
   await page.getByRole('slider', { name: 'עוצמה' }).waitFor({ timeout: 5000 }).catch(() => fail(`speaker card missing at ${w}px`))
-  await page.getByText('חמישה תחומים').waitFor({ timeout: 3000 }).catch(() => fail('EQ missing'))
+  if (w < 768) { // phone: EQ and profiles are tabs inside the speaker card
+    await page.getByRole('tab', { name: 'צליל' }).click()
+    await page.getByText('חמישה תחומים').waitFor({ timeout: 3000 }).catch(() => fail('EQ tab missing'))
+    await page.getByRole('tab', { name: 'פרופילים' }).click()
+  } else {
+    await page.getByText('חמישה תחומים').waitFor({ timeout: 3000 }).catch(() => fail('EQ missing'))
+  }
   await page.getByLabel('שם לפרופיל חדש').waitFor({ timeout: 3000 }).catch(() => fail('profiles missing'))
   if (await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth) > 0) fail(`sideways scroll at ${w}px`)
   await page.screenshot({ path: (process.env.SHOT ?? 'speaker-page') + `-${w}.png`, fullPage: true })
@@ -45,6 +51,7 @@ for (const [w, h] of [[1280, 1000], [390, 860]]) {
 if (writes.length) fail(`writes while opening the page: ${writes}`)
 
 // A change made on another device (here: the mocked server's values change) shows without reloading.
+await page.setViewportSize({ width: 1280, height: 1000 }) // the EQ graph (sliders) is the desktop layout
 volume = 41; eq60 = 3
 await page.getByText('41', { exact: true }).waitFor({ timeout: 7000 }).catch(() => fail('volume changed elsewhere not shown within 7 s'))
 await page.getByRole('slider', { name: /60/ }).first().evaluate((el) => el.getAttribute('aria-valuenow'))

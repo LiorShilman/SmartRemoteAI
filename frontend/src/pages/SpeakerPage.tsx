@@ -2,12 +2,14 @@ import { SpeakerCard } from '../components/devices/SpeakerCard'
 import { SpeakerEq } from '../components/devices/SpeakerEq'
 import { SpeakerProfiles } from '../components/devices/SpeakerProfiles'
 import { useBackend } from '../hooks/useDevices'
+import { usePhone } from '../hooks/usePhone'
 import { useApp } from '../app/store'
 
 /** The speaker on its own screen: controls, EQ and profiles (the same cards as on the home screen). */
 export default function SpeakerPage() {
   const mode = useApp((s) => s.mode)
   const backend = useBackend()
+  const phone = usePhone() // one card with tabs; EQ and profiles are tabs inside it
   return (
     <div className="flex flex-col gap-5">
       <div>
@@ -16,6 +18,8 @@ export default function SpeakerPage() {
       </div>
       {mode !== 'live' || backend !== 'online' ? (
         <p className="text-muted" role="status">הרמקול זמין רק בחיבור לשרת (לא במצב הדגמה).</p>
+      ) : phone ? (
+        <SpeakerCard tabs />
       ) : (
         <div className="grid gap-4 grid-cols-[minmax(0,1fr)] md:grid-cols-2">
           <SpeakerCard />

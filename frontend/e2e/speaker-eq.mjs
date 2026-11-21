@@ -5,7 +5,7 @@ import { chromium } from 'playwright-core'
 const base = process.env.BASE_URL ?? 'http://127.0.0.1:5173'
 const fail = (m) => { console.error('FAIL:', m); process.exitCode = 1 }
 const b = await chromium.launch({ channel: process.env.BROWSER ?? 'msedge' })
-const page = await (await b.newContext({ viewport: { width: 520, height: 2600 } })).newPage()
+const page = await (await b.newContext({ viewport: { width: 800, height: 2600 } })).newPage()
 
 const NAMES = ['60', '250', '1000', '3500', '12000']
 let eq = NAMES.map((band) => ({ min: -6, max: 6, band, step: 0.5, value: 0 }))

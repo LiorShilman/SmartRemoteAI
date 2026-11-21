@@ -27,7 +27,7 @@ function matches(p: Profile, s?: SpeakerState, eq?: EqState, cy?: CycleState): b
 
 /** Personal profiles, stored on the server. Nothing is loaded automatically; loading is a controlled sequence on the
  * server, with an undo snapshot taken first, and a partial load is shown as partial. */
-export function SpeakerProfiles() {
+export function SpeakerProfiles({ bare = false }: { bare?: boolean }) {
   const { mode, token, toast } = useApp()
   const backend = useBackend()
   const live = mode === 'live' && backend === 'online'
@@ -72,7 +72,7 @@ export function SpeakerProfiles() {
   const undo = () => call('undo', () => api.speakerProfileUndo(token), (r) => { setResult({ ...r, title: 'חזרה למצב הקודם' }); resync() })
 
   return (
-    <Card className="flex flex-col gap-3 flex-1">
+    <Card className={`flex flex-col gap-3 flex-1 ${bare ? '!bg-[rgba(8,11,22,.45)] !border-white/10 !shadow-none !backdrop-blur-none !rounded-2xl !p-4' : ''}`}>
       <div className="flex items-center gap-3">
         <div className="grid place-items-center w-10 h-10 rounded-2xl bg-white/5 border border-white/10">
           <Bookmark size={20} className="text-secondary" aria-hidden />

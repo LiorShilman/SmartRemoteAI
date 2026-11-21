@@ -1,8 +1,9 @@
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Radio, RefreshCw, RotateCcw, SlidersHorizontal, Undo2 } from 'lucide-react'
+import { Minus, Plus, Radio, RefreshCw, RotateCcw, SlidersHorizontal, Undo2 } from 'lucide-react'
 import { Card, Key } from '../ui/Primitives'
 import { useApp } from '../../app/store'
+import { usePhone } from '../../hooks/usePhone'
 import { useBackend } from '../../hooks/useDevices'
 import { ApiError, api } from '../../services/api'
 import { bandLabel, snapToStep, trebleLabel } from '../../services/speaker'
@@ -32,8 +33,9 @@ function curve(pts: [number, number][]): string {
 
 /** B&W Zeppelin 5-band equalizer, drawn as a graphic EQ. Dragging and the keyboard edit locally only; "החל" sends all
  * bands in one request, so there are never competing writes. Each band's range and step are the speaker's. */
-export function SpeakerEq() {
+export function SpeakerEq({ bare = false }: { bare?: boolean }) {
   const { mode, token, toast, eqLive, set } = useApp()
+  const phone = usePhone() // phones: a row of large -/+ per band instead of the graph (no dragging while scrolling)
   const backend = useBackend() // always called: hooks must not be conditional
   const live = mode === 'live' && backend === 'online'
   const qc = useQueryClient()
@@ -123,6 +125,12 @@ export function SpeakerEq() {
     setLocal(b, next)
   }
 
+  /** -/+ on a phone row: 1 dB (a whole number of the speaker's own steps), from the value already on its way. */
+  const nudge = (b: EqBand, dir: 1 | -1) => {
+    const inc = b.step < 1 ? Math.ceil(1 / b.step - 1e-9) * b.step : b.step
+    setLocal(b, (target.current?.[b.band] ?? valueOf(b)) + dir * inc)
+  }
+
   const apply = async () => {
     if (!bands || !dirty || applyingRef.current) return
     applyingRef.current = true
@@ -145,11 +153,12 @@ export function SpeakerEq() {
   const applied = bands?.map((b, i): [number, number] => [x(i), y(b.value)]) ?? []
   const nowPath = curve(now)
 
+  const Wrap = bare ? Bare : Card
   return (
-    <Card className="flex flex-col gap-4">
+    <Wrap className="flex flex-col gap-4">
       <div className="flex items-start gap-3">
-        <div className="grid place-items-center w-12 h-12 rounded-2xl bg-white/5 border border-white/10">
-          <SlidersHorizontal size={24} className="text-secondary" aria-hidden />
+        <div className={`grid place-items-center rounded-2xl bg-white/5 border border-white/10 ${bare ? 'w-10 h-10' : 'w-12 h-12'}`}>
+          <SlidersHorizontal size={bare ? 20 : 24} className="text-secondary" aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="font-bold text-lg leading-tight">אקולייזר</h3>
@@ -168,10 +177,38 @@ export function SpeakerEq() {
       {q.isError && <p role="alert" className="text-sm text-danger">{q.error instanceof ApiError ? q.error.message : 'קריאת האקולייזר נכשלה.'}</p>}
       {q.data?.errors.bands && <p role="alert" className="text-sm text-danger">{q.data.errors.bands}</p>}
 
+      {bands && phone && (
+        <ul className="flex flex-col gap-2" aria-label="תחומי האקולייזר">
+          {bands.map((b) => {
+            const v = valueOf(b)
+            const pct = (x: number) => ((x - lo) / (hi - lo || 1)) * 100
+            const from = Math.min(pct(0), pct(v)), to = Math.max(pct(0), pct(v))
+            const warn = edited(b) && !eqLive
+            return (
+              <li key={b.band} className="flex items-center gap-2.5">
+                <span className="w-14 shrink-0 text-sm font-bold ltr text-start">{bandLabel(b.band)}</span>
+                <span aria-hidden className="relative flex-1 h-1.5 rounded-full bg-[rgba(166,179,203,.16)]">
+                  <span className={`absolute inset-y-0 rounded-full ${warn ? 'bg-warn' : 'bg-secondary'}`} style={{ right: `${from}%`, width: `${Math.max(to - from, 0.8)}%` }} />
+                  <span className="absolute top-1/2 -translate-y-1/2 w-0.5 h-3.5 rounded bg-white/40" style={{ right: `calc(${pct(0)}% - 1px)` }} />
+                </span>
+                <Key label={`הנמך ${bandLabel(b.band)}`} className="!min-w-10 !min-h-10 !rounded-full shrink-0" disabled={v <= b.min} onClick={() => nudge(b, -1)}>
+                  <Minus size={16} aria-hidden />
+                </Key>
+                <span role="status" aria-label={`${bandLabel(b.band)}: ${fmt(v)} dB`}
+                  className={`w-11 text-center font-bold tabular-nums ltr transition-opacity ${warn ? 'text-warn' : ''} ${applying ? 'opacity-50' : ''}`}>{fmt(v)}</span>
+                <Key label={`הגבר ${bandLabel(b.band)}`} className="!min-w-10 !min-h-10 !rounded-full shrink-0" disabled={v >= b.max} onClick={() => nudge(b, 1)}>
+                  <Plus size={16} aria-hidden />
+                </Key>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+
       {bands && (
         <>
-          <div dir="ltr" className="rounded-2xl border border-white/10 bg-[rgba(8,11,22,.55)] overflow-hidden">
-            <svg ref={svgRef} viewBox={`0 0 ${VW} ${VH}`} className="block w-full h-auto select-none touch-none"
+          {!phone && <div dir="ltr" className="rounded-2xl border border-white/10 bg-[rgba(8,11,22,.55)] overflow-hidden">
+            <svg ref={svgRef} viewBox={`0 0 ${VW} ${VH}`} className="block w-full h-auto select-none touch-pan-y"
               role="group" aria-label="אקולייזר גרפי: גרור נקודה למעלה או למטה, או השתמש בחיצים">
               <defs>
                 <linearGradient id="eq-fill" x1="0" y1="0" x2="0" y2="1">
@@ -215,14 +252,13 @@ export function SpeakerEq() {
                 return (
                   <g key={b.band}>
                     <rect x={x(i) - COL / 2} y={T - 20} width={COL} height={B - T + 40} fill="transparent" style={{ cursor: 'ns-resize' }}
-                      onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); setDrag(b.band); pointerValue(e, b) }}
                       onPointerMove={(e) => { if (drag === b.band) pointerValue(e, b) }}
                       onPointerUp={() => setDrag(null)} onPointerCancel={() => setDrag(null)} />
                     <text x={x(i)} y={y(v) - 16} textAnchor="middle" fontSize="12.5" fontWeight="700"
                       fill={edited(b) && !eqLive ? '#ffc857' : '#f4f7ff'} opacity={applying ? 0.5 : 1} pointerEvents="none">{fmt(v)}</text>
                     <g role="slider" tabIndex={0} aria-label={bandLabel(b.band)} aria-valuemin={b.min} aria-valuemax={b.max}
                       aria-valuenow={v} aria-valuetext={`${fmt(v)} dB`} data-step={b.step} onKeyDown={(e) => onKey(e, b)}
-                      className="eq-handle" style={{ outline: 'none', cursor: 'ns-resize' }}
+                      className="eq-handle" style={{ outline: 'none', cursor: 'ns-resize', touchAction: 'none' }}
                       onPointerDown={(e) => { const r = e.currentTarget.parentElement?.querySelector('rect'); r?.setPointerCapture(e.pointerId); setDrag(b.band) }}>
                       <circle cx={x(i)} cy={y(v)} r={active ? 13 : 10} fill="#11182b" stroke={edited(b) && !eqLive ? '#ffc857' : '#22d3c5'} strokeWidth="3"
                         filter="url(#eq-glow)" style={{ transition: 'r 120ms ease' }} />
@@ -233,11 +269,11 @@ export function SpeakerEq() {
                 )
               })}
             </svg>
-          </div>
+          </div>}
 
           <p className="text-xs text-muted -mt-1">
             {q.data?.enabled === false && <span className="text-warn">מתג האקולייזר ברמקול כבוי, ולכן השינויים לא יישמעו. </span>}
-            {dirty && !eqLive && <><span className="text-warn">צהוב</span> = לא הוחל, קו מקווקו = מה שיש ברמקול עכשיו</>}
+            {dirty && !eqLive && <><span className="text-warn">צהוב</span> = לא הוחל{phone ? '' : ', קו מקווקו = מה שיש ברמקול עכשיו'}</>}
           </p>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -272,6 +308,11 @@ export function SpeakerEq() {
           </p>
         </>
       )}
-    </Card>
+    </Wrap>
   )
+}
+
+/** Inside the phone speaker card: a plain panel instead of a second glass card. */
+function Bare({ className = '', children }: { className?: string; children: React.ReactNode }) {
+  return <section className={`rounded-2xl border border-white/10 bg-[rgba(8,11,22,.45)] p-4 min-w-0 ${className}`}>{children}</section>
 }
